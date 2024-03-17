@@ -1,0 +1,2 @@
+bloat example:
+  cargo bloat --profile bloat --example {{example}}

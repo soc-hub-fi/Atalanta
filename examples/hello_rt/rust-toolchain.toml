@@ -1,0 +1,4 @@
+[toolchain]
+# The channel definition here is specific to our custom toolchain
+channel = "rve"
+targets = ["riscv32emc-unknown-none-elf"]

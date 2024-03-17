@@ -1,0 +1,25 @@
+[package]
+name = "rust_minimal"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+# Use this feature when using cosimulators such as QuestaSim
+rtl-tb = []
+# Use this feature when deploying on FPGA
+fpga = []
+
+default = ["fpga"]
+
+[dependencies]
+panic-halt = "0.2.0"
+mmap = { package = "memory_map", path = "../memory_map_rs" }
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+debug = true

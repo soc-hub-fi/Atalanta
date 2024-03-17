@@ -1,0 +1,40 @@
+[package]
+name = "hello-rt"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+# Use this feature when using cosimulators such as QuestaSim
+rtl-tb = []
+# Use this feature when deploying on FPGA
+fpga = []
+
+default = ["fpga"]
+
+[dependencies]
+riscv-rt = { git = "https://github.com/hegza/riscv", branch = "feat/rt-ibex", version = "0.13", features = [
+    "single-hart",
+] }
+riscv = { git = "https://github.com/hegza/riscv", branch = "feat/rt-ibex", version = "0.11" }
+riscv-peripheral = { git = "https://github.com/hegza/riscv", branch = "feat/rt-ibex", version = "0.1.0", features = [
+    "clic-smclic",
+    "clic-smclicshv",
+] }
+mmap = { package = "memory_map", path = "../memory_map_rs" }
+ufmt = "0.2.0"
+ufmt-write = "0.1.0"
+
+[profile.dev]
+# There seems to be a problem in riscv-rt with regards to linking in default_start_trap in debug
+# mode. `codegen-units = 1` avoids that
+codegen-units = 1
+opt-level = "s"
+
+[profile.release]
+debug = true
+
+[profile.'bloat']
+inherits = "release"
+strip = false
