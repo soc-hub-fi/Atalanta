@@ -1,10 +1,8 @@
-# Real-Time Subsystem for Bow SoC
+# Atalanta, a RISC-V Microcontroller
 
-## Open items
+## Disclaimer
 
-- DUT expansion (CLIC, AnTiQ)
-- Yosys flow
-- Testset expansion
+This project is still in an experimental state and under internal development, therefore we do not take contributions yet.
 
 ## Simulation with Questa
 
@@ -25,10 +23,18 @@ To enable the Ibex execution trace, substitute `make compile` with `make compile
 To run tests in batch more, use
 
 ```sh
-make simulate <Test Name>=1 STIM_PATH="<Path to Stimulus>"
+make simulate TEST=<TestName>
 ```
 
-The default `STIM_PATH` points to `./stims/nop_loop.hex` to provide a non-functional yet valid program to the CPU instruction memory. `make simulate` will generate the waveform of the simulation in both `vcd` and `wlf` format.
+`TestName` can be set to `jtag_test` to test the functionality of the debug module, or matched with a test name from `./stims/`. For example, 
+
+```sh
+make simulate TEST=uart_test
+```
+will reference `./stims/uart_test_imem.hex` and `./stims/uart_test_dmem.hex`.
+By default, `vsim` tests will use the JTAG interface to load programs. To set memory loading to use SystemVerilog's `$readmemh` task, set `LOAD=READMEM` when using this Makefile.
+
+ `make simulate` will generate the waveform of the simulation in both `vcd` and `wlf` format.
 
 ```sh
 make wave
@@ -36,7 +42,7 @@ make wave
 
 is a shortcut for `gtkwave waveform.vcd` that can be used to open the `vcd` file with GTKWave. The `wlf` file can be viewed in Questa with `vsim wave.wlf`.
 
-## Simulation with Verilator
+## Simulation with Verilator [Experimental]
 
 ### Dependencies
 
@@ -143,74 +149,7 @@ if working on the Tulitikli environment. The compiled programs are formatted to 
 
 **NOTE**: The compilation of stim-files for tests is part of the CI pipeline and thus the files are not tracked in Git. **Do not add new files to `./stims/` in Git**.
 
-## Continuous Integration (CI) Management
 
-Ideally, *all* compilation flows and tests would be run as part of the CI with every commit. In reality this is not practical, but the general guidance should be to include as much of these to the CI as is possible.
-
-### Nightly Run
-
-Certain CI jobs, e.g. FPGA synthesis, will take a significant amount of time (> 5 min). In an effort to decongest our (very limited) CI runners, move long CI jobs to the *RT-SS Nightly* CI run. This can be done by adding
-
-```yml
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-```
-
-### Test Checking
-
-TODO: document adding new tests.
-
-Test outputs are checked with `./check_output.sh`. Use **exactly** `[FAILED]` or `[PASSED]` prints to indicate the result of a test.
-
-## Development and Merge Operations
-
-Project development should be done via feature branches. Merge branches to main often. For fluent merge housekeeping do following. From settings -> Merge requests:
-
-- Enable "delete source branch" option by default: Yes (checkmark the box)
-
-- Squash commits when merging: Encourage or Require. This will clean up main branch history by huge amount.
-
-- Merge checks: Pipelines must succeed: Yes
-
-- Merge checks: Skipped pipelines are considered successfull: No
-
-- Merge checks: All threads must be resolved: Yes
-
-Merges should be **always** reviewed and accepted by another developer.
-
-## Documentation
-
-NDocs documentation available at <https://soc-hub.gitlab-pages.tuni.fi/bow/hw/rt-ss>
-
-## Repository pipeline settings
-
-To ensure flawless operation for CI, ensure that settings -> CI/CD has following settings:
-
-### General pipelines
-
-- Auto-cancel redundant pipelines: Yes
-
-- Git strategy: git clone
-
-- Git shallow clone: 1
-
-### Runners
-
-- Available group runner: tie-sochub-gitlabrunner-ci (if missing contact <matti.kayra@tuni.fi> and/or <arto.oinonen@tuni.fi>)
-
-### Token Access
-
-- Limit access: No (it would prevent hiearchical repository access in CI)
-
-## Pipeline status
-
-Like with the pages, Change **common/ss-template** as you repo path to see pipeline status images as part of this header readme.
-
-Pipeline status: [![pipeline status](https://gitlab.tuni.fi/soc-hub/bow/hw/rt-ss/badges/main/pipeline.svg)](https://gitlab.tuni.fi/soc-hub/bow/hw/rt-ss/-/commits/main)
-
-Coverage: [![coverage report](https://gitlab.tuni.fi/soc-hub/bow/hw/rt-ss/badges/main/coverage.svg)](https://gitlab.tuni.fi/soc-hub/bow/hw/rt-ss/-/commits/main)
-
-Latest release: [![Latest Release](https://gitlab.tuni.fi/soc-hub/bow/hw/rt-ss/-/badges/release.svg)](https://gitlab.tuni.fi/soc-hub/bow/hw/rt-ss/-/releases)
 
 ## Additional important repo notes
 
