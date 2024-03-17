@@ -1,0 +1,15 @@
+[submodule "ips/rt-ibex"]
+	path = ips/rt-ibex
+	url = https://github.com/soc-hub-fi/rt-ibex.git
+[submodule "ips/apb"]
+	path = ips/apb
+	url = https://github.com/pulp-platform/apb.git
+[submodule "riscv-dbg"]
+	path = riscv-dbg
+	url = https://github.com/pulp-platform/riscv-dbg.git
+[submodule "ips/register_interface"]
+	path = ips/register_interface
+	url = https://github.com/pulp-platform/register_interface.git
+[submodule "ips/clic"]
+	path = ips/clic
+	url = https://github.com/pulp-platform/clic.git

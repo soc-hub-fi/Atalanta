@@ -96,12 +96,8 @@ library_mapping: check_env
 	vmap pll_lib $(BUILD_DIR)/pll_lib
 	vmap rt_ss_lib $(BUILD_DIR)/rt_ss_lib
 
-.PHONY: compile_common_ips_libs
-compile_common_ips_libs:
-	$(MAKE) -C ../ips/bow-common-ips/vsim compile BUILD_DIR=$(BUILD_DIR)
-
 .PHONY: compile
-compile: check_env compile_common_ips_libs
+compile: check_env
 	vlib $(BUILD_DIR)/rt_ss_lib
 	vmap rt_ss_lib $(BUILD_DIR)/rt_ss_lib
 	vlog -sv -work rt_ss_lib $(VLOG_DEFINES) \
