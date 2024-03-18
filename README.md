@@ -2,10 +2,11 @@
 
 ## Disclaimer
 
-This project is still in an experimental state and under internal development, therefore we do not take contributions yet.
+This project is still in an experimental state and under internal development, therefore we do not take contributions yet. However, we're happy to address any issues with our design in https://github.com/soc-hub-fi/atalanta/issues.
 
 ## Simulation with Questa
 
+RTL simulation is tested with QuestaSim-64 10.7g.
 To use Questa, i.e. `vsim`, for simulation, source `/opt/soc/eda/mentor/mentor_init.sh` when working on Tulitikli.
 
 To compile the design for Questa, use
@@ -150,7 +151,3 @@ if working on the Tulitikli environment. The compiled programs are formatted to 
 **NOTE**: The compilation of stim-files for tests is part of the CI pipeline and thus the files are not tracked in Git. **Do not add new files to `./stims/` in Git**.
 
 
-
-## Additional important repo notes
-
-Insert source / authors / licences / acknowledgements as deemed needed

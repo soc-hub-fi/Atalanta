@@ -28,32 +28,28 @@ RVFI =
 VLOG_DEFINES = $(SOC_CONNECTIVITY) $(DEBUG) $(RVFI)
 
 # Test params
-IMEM_STIM = "../stims/nop_loop.hex"
-DMEM_STIM = "../stims/nop_loop.hex"
-JTAG_SANITY = 0
-JTAG_HALT = 0
-BLINK_TEST = 0
-JTAG_LOAD = 0
-CSR_TESTS = 0
-UART_TEST = 0
-TIMER_TEST = 0
-DEBUG_SIM = 0
-# CPU configuration
-IBEX_RVE = 1
+TEST      ?= dummy
+jtag_test ?= 0
+SW_TEST   ?= 0
+
+ifeq ($(TEST), jtag_test)
+	jtag_test = 1
+else
+	SW_TEST = 1
+	IMEM_STIM = "../stims/$(TEST)_imem.hex"
+	DMEM_STIM = "../stims/$(TEST)_dmem.hex"
+endif
+
+LOAD ?= JTAG
 
 
-TEST_PARAMS =   -G IMEM_STIM=$(IMEM_STIM) \
-				-G DMEM_STIM=$(DMEM_STIM) \
-				-G JTAG_SANITY=$(JTAG_SANITY) \
-				-G BLINK_TEST=$(BLINK_TEST) \
-				-G JTAG_HALT=$(JTAG_HALT) \
-				-G JTAG_LOAD=$(JTAG_LOAD) \
-				-G CSR_TESTS=$(CSR_TESTS) \
-				-G DEBUG_SIM=$(DEBUG_SIM) \
-				-G UART_TEST=$(UART_TEST) \
-				-G TIMER_TEST=$(TIMER_TEST) \
-				-G IBEX_RVE=$(IBEX_RVE)    \
-				-G CLIC_TESTS=$(CLIC_TESTS)
+TEST_PARAMS =   -G TestName=$(TEST) \
+				-G ImemStim=$(IMEM_STIM) \
+				-G DmemStim=$(DMEM_STIM) \
+				-G JtagTest=$(jtag_test) \
+				-G Load=$(LOAD) \
+				-G SoftwareTest=$(SW_TEST)
+
 
 
 LIBS = \
