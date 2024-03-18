@@ -78,13 +78,13 @@ VERIL_WARN_SUPPRESS += -Wno-MULTIDRIVEN
 endif
 
 VERIL_INCLUDES ?= \
-	+incdir+../ips/bow-common-ips/ips/pulp-common-cells/include/ \
+	+incdir+../ips/common_cells/include/ \
 	+incdir+../ips/rt-ibex/vendor/lowrisc_ip/ip/prim/rtl/ \
 	+incdir+../ips/rt-ibex/rtl/ \
 	+incdir+../ips/register_interface/include \
 	+incdir+../ips/apb/include \
 	+incdir+../ips/rt-ibex/vendor/lowrisc_ip/dv/sv/dv_utils/ \
-	+incdir+../ips/bow-common-ips/ips/axi/include/
+	+incdir+../ips/axi/include/
 
 RTL_SRC_LIST   ?= $(SRC_DIR)/ss-files.list
 EXTRA_SRC_LIST ?= $(SRC_DIR)/verilator.list

@@ -3,7 +3,7 @@
 # Author: Matti Käyrä (Matti.kayra@tuni.fi)
 #
 ######################################################################
-BUILD_DIR ?= $(realpath $(CURDIR))/../build/
+BUILD_DIR ?= $(realpath $(CURDIR))/../build
 START_TIME=`date +%F_%H:%M`
 DATE=`date +%F`
 
@@ -13,12 +13,12 @@ DUT = tb_rt_ss
 
 # library specific OPTS etc can be appended in actual library target
 
-COMMON_CELLS_INC_DIRS = +incdir+../ips/bow-common-ips/ips/pulp-common-cells/include/ \
+COMMON_CELLS_INC_DIRS = +incdir+../ips/common_cells/include/ \
 						+incdir+../ips/rt-ibex/vendor/lowrisc_ip/ip/prim/rtl/ \
 						+incdir+../ips/register_interface/include \
 						+incdir+../ips/apb/include \
 						+incdir+../ips/rt-ibex/vendor/lowrisc_ip/dv/sv/dv_utils/
-AXI_INC_DIRS = $(COMMON_CELLS_INC_DIRS) +incdir+../ips/bow-common-ips/ips/axi/include/
+AXI_INC_DIRS = $(COMMON_CELLS_INC_DIRS) +incdir+../ips/axi/include/
 
 
 SOC_CONNECTIVITY =
@@ -57,11 +57,7 @@ TEST_PARAMS =   -G IMEM_STIM=$(IMEM_STIM) \
 
 
 LIBS = \
-	-L $(BUILD_DIR)/common_cells_lib \
-	-L $(BUILD_DIR)/axi_lib \
-	-L $(BUILD_DIR)/pll_lib \
-	-L $(BUILD_DIR)/common_components_lib \
-	-L $(BUILD_DIR)/rt_ss_lib \
+	-L $(BUILD_DIR)/rt_ss_lib 
 
 VOPT_OPTS = "-check_synthesis"
 VOPT_OPTS += "-pedanticerrors"
@@ -86,15 +82,6 @@ check_env:
 	mkdir -p $(BUILD_DIR)/logs/opt
 	mkdir -p $(BUILD_DIR)/logs/sim
 
-# This target is used to map the compiled libraries correctly for vsim
-.PHONY: library_mapping
-library_mapping: check_env
-	cd $(BUILD_DIR)
-	vmap axi_lib $(BUILD_DIR)/axi_lib
-	vmap common_cells_lib $(BUILD_DIR)/common_cells_lib
-	vmap common_components_lib $(BUILD_DIR)/common_components_lib
-	vmap pll_lib $(BUILD_DIR)/pll_lib
-	vmap rt_ss_lib $(BUILD_DIR)/rt_ss_lib
 
 .PHONY: compile
 compile: check_env
@@ -112,7 +99,7 @@ compile_tieoff: check_env
 	-l $(BUILD_DIR)/logs/compile/vlog-tieoff.log
 
 .PHONY: elaborate
-elaborate: check_env library_mapping
+elaborate: check_env
 	cd $(BUILD_DIR)
 	vopt \
 	$(VOPT_OPTS) \

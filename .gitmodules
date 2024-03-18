@@ -13,3 +13,15 @@
 [submodule "ips/clic"]
 	path = ips/clic
 	url = https://github.com/pulp-platform/clic.git
+[submodule "ips/apb_uart"]
+	path = ips/apb_uart
+	url = https://github.com/pulp-platform/apb_uart.git
+[submodule "ips/tech_cells_generic"]
+	path = ips/tech_cells_generic
+	url = https://github.com/pulp-platform/tech_cells_generic.git
+[submodule "ips/axi"]
+	path = ips/axi
+	url = https://github.com/pulp-platform/axi.git
+[submodule "ips/common_cells"]
+	path = ips/common_cells
+	url = https://github.com/pulp-platform/common_cells.git
