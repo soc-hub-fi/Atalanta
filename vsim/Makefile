@@ -113,7 +113,7 @@ elaborate: check_env
 	-l $(BUILD_DIR)/logs/opt/$(START_TIME)_$(DUT)_vopt.log
 
 .PHONY: dut_sanity_check
-dut_sanity_check: check_env library_mapping elaborate
+dut_sanity_check: check_env elaborate
 	cd $(BUILD_DIR)
 	vsim \
 	$(VSIM_OPTS) \
@@ -126,7 +126,7 @@ dut_sanity_check: check_env library_mapping elaborate
 	-l $(BUILD_DIR)/logs/sim/$(DUT)_vsim.log
 
 .PHONY: run_batch
-run_batch: check_env library_mapping elaborate
+run_batch: check_env elaborate
 	cd $(BUILD_DIR)
 	vsim \
 	$(VSIM_OPTS) \
@@ -142,7 +142,7 @@ run_batch: check_env library_mapping elaborate
 	-l $(BUILD_DIR)/logs/sim/$(DUT)_vsim.log
 
 .PHONY: run_gui
-run_gui: check_env library_mapping elaborate
+run_gui: check_env elaborate
 	cd $(BUILD_DIR)
 	vsim \
 	$(VOPT_SUPPRESS) \

@@ -19,11 +19,15 @@
 ../ips/axi/src/axi_lite_mux.sv
 ../ips/axi/src/axi_lite_to_apb.sv
 ../ips/axi/src/axi_lite_xbar.sv
+../ips/axi/src/axi_lite_to_axi.sv
+../ips/axi/src/axi_err_slv.sv
 
 ../ips/common_cells/src/fifo_v3.sv
 ../ips/common_cells/src/stream_arbiter.sv
 ../ips/common_cells/src/deprecated/fifo_v2.sv
 ../ips/common_cells/src/rr_arb_tree.sv
+../ips/common_cells/src/counter.sv
+../ips/common_cells/src/delta_counter.sv
 
 ../ips/common_cells/src/addr_decode.sv
 ../ips/common_cells/src/onehot_to_bin.sv
@@ -33,6 +37,7 @@
 ../ips/common_cells/src/spill_register_flushable.sv
 ../ips/common_cells/src/fall_through_register.sv
 ../ips/common_cells/src/lzc.sv
+../ips/common_cells/src/cdc_2phase.sv
 
 ../ips/register_interface/vendor/lowrisc_opentitan/src/prim_subreg.sv
 ../ips/register_interface/vendor/lowrisc_opentitan/src/prim_subreg_arb.sv
