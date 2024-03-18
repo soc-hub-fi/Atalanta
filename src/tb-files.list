@@ -1,0 +1,8 @@
+../src/tb/riscv_pkg.sv
+../src/tb/rt_jtag_pkg.sv
+../src/ip/mock_uart.sv
+../ips/rt-ibex/rtl/ibex_tracer_pkg.sv
+../ips/rt-ibex/rtl/ibex_tracer.sv
+../ips/rt-ibex/rtl/ibex_top_tracing.sv
+../src/tb/uart.sv
+../src/tb/tb_rt_ss.sv

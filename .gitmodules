@@ -25,3 +25,6 @@
 [submodule "ips/common_cells"]
 	path = ips/common_cells
 	url = https://github.com/pulp-platform/common_cells.git
+[submodule "ips/riscv-dbg"]
+	path = ips/riscv-dbg
+	url = https://github.com/pulp-platform/riscv-dbg.git
