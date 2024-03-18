@@ -28,9 +28,9 @@ set RT_SS_INCLUDE_PATHS " \
   ${REPO_DIR}/ips/rt-ibex/rtl \
   ${REPO_DIR}/ips/rt-ibex/vendor/lowrisc_ip/dv/sv/dv_utils \
   ${REPO_DIR}/ips/register_interface/include \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/include \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/include \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src \
+  ${REPO_DIR}/ips/axi/include \
+  ${REPO_DIR}/ips/common_cells/include \
+  ${REPO_DIR}/ips/common_cells/src \
 ";
 
 set_property include_dirs ${RT_SS_INCLUDE_PATHS} [current_fileset];
@@ -110,20 +110,20 @@ add_files -norecurse -scan_for_includes ${RT_SS_RISCV_DBG_SRC};
 #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝     ╚═════╝╚══════╝╚══════╝╚══════╝╚══════╝
 
 set RT_SS_COMMON_CELLS_SRC " \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/cf_math_pkg.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/lzc.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/rr_arb_tree.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/spill_register_flushable.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/spill_register.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/addr_decode.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/delta_counter.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/counter.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/cdc_2phase.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/sync.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/fifo_v3.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/deprecated/fifo_v2.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/stream_arbiter.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/stream_arbiter_flushable.sv \
+  ${REPO_DIR}/ips/common_cells/src/cf_math_pkg.sv \
+  ${REPO_DIR}/ips/common_cells/src/lzc.sv \
+  ${REPO_DIR}/ips/common_cells/src/rr_arb_tree.sv \
+  ${REPO_DIR}/ips/common_cells/src/spill_register_flushable.sv \
+  ${REPO_DIR}/ips/common_cells/src/spill_register.sv \
+  ${REPO_DIR}/ips/common_cells/src/addr_decode.sv \
+  ${REPO_DIR}/ips/common_cells/src/delta_counter.sv \
+  ${REPO_DIR}/ips/common_cells/src/counter.sv \
+  ${REPO_DIR}/ips/common_cells/src/cdc_2phase.sv \
+  ${REPO_DIR}/ips/common_cells/src/sync.sv \
+  ${REPO_DIR}/ips/common_cells/src/fifo_v3.sv \
+  ${REPO_DIR}/ips/common_cells/src/deprecated/fifo_v2.sv \
+  ${REPO_DIR}/ips/common_cells/src/stream_arbiter.sv \
+  ${REPO_DIR}/ips/common_cells/src/stream_arbiter_flushable.sv \
 "
 
 add_files -norecurse -scan_for_includes ${RT_SS_COMMON_CELLS_SRC};
@@ -136,17 +136,17 @@ add_files -norecurse -scan_for_includes ${RT_SS_COMMON_CELLS_SRC};
 # ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝
 
 set RT_SS_AXI_SRC " \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_pkg.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_lite_demux.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_lite_mux.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_lite_to_apb.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/onehot_to_bin.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/pulp-common-cells/src/fall_through_register.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_lite_join.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_lite_to_axi.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_err_slv.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_intf.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/axi/src/axi_lite_xbar.sv \
+  ${REPO_DIR}/ips/axi/src/axi_pkg.sv \
+  ${REPO_DIR}/ips/axi/src/axi_lite_demux.sv \
+  ${REPO_DIR}/ips/axi/src/axi_lite_mux.sv \
+  ${REPO_DIR}/ips/axi/src/axi_lite_to_apb.sv \
+  ${REPO_DIR}/ips/common_cells/src/onehot_to_bin.sv \
+  ${REPO_DIR}/ips/common_cells/src/fall_through_register.sv \
+  ${REPO_DIR}/ips/axi/src/axi_lite_join.sv \
+  ${REPO_DIR}/ips/axi/src/axi_lite_to_axi.sv \
+  ${REPO_DIR}/ips/axi/src/axi_err_slv.sv \
+  ${REPO_DIR}/ips/axi/src/axi_intf.sv \
+  ${REPO_DIR}/ips/axi/src/axi_lite_xbar.sv \
 ";
 
 add_files -norecurse -scan_for_includes ${RT_SS_AXI_SRC};
@@ -159,9 +159,9 @@ add_files -norecurse -scan_for_includes ${RT_SS_AXI_SRC};
 #    ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝     ╚═════╝╚══════╝╚══════╝╚══════╝╚══════╝     ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝
 
 set RT_SS_TECH_CELLS_GENERIC_SRC " \
-  ${REPO_DIR}/ips/bow-common-ips/ips/tech_cells_generic/src/rtl/tc_clk.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/tech_cells_generic/src/deprecated/pulp_clk_cells.sv \
-  ${REPO_DIR}/ips/bow-common-ips/ips/tech_cells_generic/src/deprecated/cluster_clk_cells.sv \
+  ${REPO_DIR}/ips/tech_cells_generic/src/rtl/tc_clk.sv \
+  ${REPO_DIR}/ips/tech_cells_generic/src/deprecated/pulp_clk_cells.sv \
+  ${REPO_DIR}/ips/tech_cells_generic/src/deprecated/cluster_clk_cells.sv \
 ";
 
 add_files -norecurse -scan_for_includes ${RT_SS_TECH_CELLS_GENERIC_SRC}
