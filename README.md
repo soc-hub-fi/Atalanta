@@ -150,4 +150,6 @@ if working on the Tulitikli environment. The compiled programs are formatted to 
 
 **NOTE**: The compilation of stim-files for tests is part of the CI pipeline and thus the files are not tracked in Git. **Do not add new files to `./stims/` in Git**.
 
+## Contributing
 
+As RT-Ibex is still in an experimental state and under internal development, we do currently not take external contributions.
