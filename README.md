@@ -7,9 +7,8 @@ This project is still in an experimental state and under internal development, t
 ## Simulation with Questa
 
 RTL simulation is tested with QuestaSim-64 10.7g.
-To use Questa, i.e. `vsim`, for simulation, source `/opt/soc/eda/mentor/mentor_init.sh` when working on Tulitikli.
 
-To compile the design for Questa, use
+To compile the design for `vsim`, use
 
 ```sh
 make repository_init #if starting fresh
