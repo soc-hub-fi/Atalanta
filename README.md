@@ -4,6 +4,33 @@
 
 This project is still in an experimental state and under internal development, therefore we do not take contributions yet. However, we're happy to address any issues with our design in https://github.com/soc-hub-fi/atalanta/issues.
 
+
+## Citing
+
+If you use our work, please consider citing it as 
+```
+@InProceedings{AN2024,
+ author="Nurmi, Antti
+ and Lindgren, Per
+ and Kalache, Abdesattar
+ and Lunnikivi, Henri
+ and H{\"a}m{\"a}l{\"a}inen, Timo D.",
+ editor="Fey, Dietmar
+ and Stabernack, Benno
+ and Lankes, Stefan
+ and Pacher, Mathias
+ and Pionteck, Thilo",
+ title="Atalanta: Open-Source RISC-V Microcontroller for Rust-Based Hard Real-Time Systems",
+ booktitle="Architecture of Computing Systems",
+ year="2024",
+ publisher="Springer Nature Switzerland",
+ address="Cham",
+ pages="316--330",
+ isbn="978-3-031-66146-4"
+}
+
+```
+
 ## Simulation with Questa
 
 RTL simulation is tested with QuestaSim-64 10.7g.
