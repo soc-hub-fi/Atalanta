@@ -29,13 +29,10 @@ sources:
     - src/ip/rt_core.sv
     - src/ip/rt_peripherals.sv
     - src/ip/rt_top.sv
-    - src/ip/rt_top_unwrap.sv
-    - src/wrapper/rt_ss_wrapper_0.v
     - target: any(test, simulation)
       files:
         - src/tb/riscv_pkg.sv
         - src/tb/uart.sv
         - src/tb/rt_jtag_pkg.sv
-        - src/tb/rt_top_tb_wrapper.sv
         - src/tb/tb_rt_ss.sv
 
