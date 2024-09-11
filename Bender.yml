@@ -1,0 +1,38 @@
+package:
+  name: rt-ss
+  authors:
+    - "Antti Nurmi <antti.nurmi@tuni.fi>"
+    - "Abdesattar Kalache <abdesattar.kalache@tuni.fi>"
+
+dependencies:
+  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "54793130c57a2c4b23a2179c785784627d919ae0" }
+  clic: { git: "https://github.com/pulp-platform/clic.git", version: 2.0.0 }
+  riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1}
+  apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
+  obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
+  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.38.0 }
+  apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4}
+
+sources:
+  files:
+    - src/ip/obi_m2s_cut.sv
+    - src/ip/rt_handshake_fsm.sv
+    - src/ip/ibex_axi_bridge.sv
+    - src/ip/sram.sv
+    - src/ip/rt_mem_axi_intf.sv
+    - src/ip/rt_mem.sv
+    - src/ip/rt_debug.sv
+    - src/ip/rt_gpio.sv
+    - src/ip/timer_core.sv
+    - src/ip/rt_register_interface.sv
+    - src/ip/rt_timer.sv
+    - src/ip/rt_core.sv
+    - src/ip/rt_peripherals.sv
+    - src/ip/rt_top.sv
+    - target: any(test, simulation)
+      files:
+        - src/tb/riscv_pkg.sv
+        - src/tb/uart.sv
+        - src/tb/rt_jtag_pkg.sv
+        - src/tb/tb_rt_ss.sv
+

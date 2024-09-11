@@ -15,7 +15,7 @@ module ibex_axi_bridge #(
 )(
   input  logic                  clk_i,
   input  logic                  rst_ni,
-  // ibex side          
+  // ibex side
   input  logic                  req_i,
   output logic                  gnt_o,
   output logic                  rvalid_o,
@@ -49,26 +49,23 @@ module ibex_axi_bridge #(
   output logic                  r_ready_o
 );
 
-enum logic [3:0] {
+typedef enum logic [2:0] {
   IDLE,
-  READ_START,
-  AR_HANDSHAKE,
-  R_HANDSHAKE,
-  WRITE_START,
-  AW_HANDSHAKE,
-  W_HANDSHAKE,
-  WRITE_RESPONSE,
-  WRITE_END,
-  READ_END //,
-  //DELAY
-} curr_state, next_state;
+  AR_REQ,
+  AW_REQ,
+  W_REQ,
+  R_RSP,
+  B_RSP,
+  GNT,
+  RVALID
+} state_t;
 
-logic sel_rdata;
+state_t curr_state, next_state;
 
 //for now direct assignment
 assign w_strb_o = be_i;
 
-always_ff @(posedge(clk_i) or negedge(rst_ni)) 
+always_ff @(posedge(clk_i) or negedge(rst_ni))
   begin : state_reg
     if(~rst_ni) begin
       curr_state <= IDLE;
@@ -78,21 +75,12 @@ always_ff @(posedge(clk_i) or negedge(rst_ni))
     end
   end // state_reg
 
-always_ff @(posedge(clk_i) or negedge(rst_ni))
-  begin : update_reg
-    if(~rst_ni) begin
-      rdata_o <= '0;
-    end
-    else begin
-      rdata_o <= (sel_rdata) ? r_data_i : rdata_o;
-    end
-  end // update_reg
-
-always_comb 
+always_comb
   begin : main_comb
 
     next_state = IDLE;
     gnt_o      =  0;
+    rdata_o    = '0;
     rvalid_o   =  0;
     err_o      =  0;
     aw_addr_o  = '0;
@@ -103,83 +91,65 @@ always_comb
     ar_addr_o  = '0;
     ar_valid_o =  0;
     r_ready_o  =  0;
-    sel_rdata  =  0;
 
     case (curr_state)
-      IDLE: begin 
-        if (req_i & ~we_i)
-          next_state = READ_START;
-        else if (req_i & we_i) begin
-          next_state = WRITE_START;
+      IDLE: begin
+        if(req_i) begin
+          if (we_i) begin
+            next_state = AW_REQ;
+          end else begin
+            next_state = AR_REQ;
+          end
         end
-        else
-	        next_state = IDLE;
-        end
-      READ_START: begin
+      end
+      AR_REQ: begin
         ar_addr_o  = addr_i[AXI_AW-1:0];
         ar_valid_o =  1;
-        r_ready_o  =  1;
-        if (ar_ready_i)
-          next_state = AR_HANDSHAKE;
-	      else
-	        next_state = READ_START;
+        next_state = AR_REQ;
+        if (ar_ready_i) begin
+          next_state = R_RSP;
         end
-      AR_HANDSHAKE: begin
-        sel_rdata  =  1;
-        ar_addr_o  = addr_i[AXI_AW-1:0];
-        r_ready_o  =  1;
-        if (r_valid_i)
-          next_state = R_HANDSHAKE;
-	      else
-	        next_state = AR_HANDSHAKE;
+      end
+      R_RSP: begin
+        r_ready_o  = 1;
+        next_state = R_RSP;
+        if (r_valid_i) begin
+          next_state = GNT;
         end
-      R_HANDSHAKE: begin
-        err_o      = r_resp_i[1];
-        //rvalid_o   = 1;
-        gnt_o      = 1;
-        next_state = READ_END;
-        end
-      READ_END: begin
-        rvalid_o   = 1;
-        next_state = IDLE;
-        end
-      WRITE_START: begin
+      end
+      AW_REQ: begin
         aw_addr_o  = addr_i[AXI_AW-1:0];
-        w_data_o   = wdata_i;
-        aw_valid_o = 1;
-        w_valid_o  = 1;
-        b_ready_o  = 1;
-        if (aw_ready_i && w_ready_i)
-          next_state = W_HANDSHAKE;
-        else if (aw_ready_i)
-          next_state = AW_HANDSHAKE;
-	      else
-	        next_state = WRITE_START;
+        aw_valid_o =  1;
+        next_state = AW_REQ;
+        if (aw_ready_i) begin
+          next_state = W_REQ;
         end
-      AW_HANDSHAKE: begin
+      end
+      W_REQ: begin
         w_data_o   = wdata_i;
         w_valid_o  = 1;
-        b_ready_o  = 1;
-        aw_addr_o  = addr_i[AXI_AW-1:0];
-        if (w_ready_i)
-          next_state = W_HANDSHAKE;
-	      else
-	        next_state = AW_HANDSHAKE;
+        next_state = W_REQ;
+        if (w_ready_i) begin
+          next_state = B_RSP;
         end
-      W_HANDSHAKE: begin
+      end
+      B_RSP: begin
         b_ready_o  = 1;
-        aw_addr_o  = addr_i[AXI_AW-1:0];
+        next_state = B_RSP;
         if (b_valid_i) begin
-          next_state = WRITE_END; 
-          gnt_o      =  1;
+          next_state = GNT;
         end
-	      else
-	        next_state = W_HANDSHAKE;
-        end
-      WRITE_END: begin
-        next_state = IDLE; 
-        rvalid_o   =    1;
-        end
+      end
+      GNT: begin
+        gnt_o      = 1;
+        err_o      = r_resp_i[1];
+        next_state = RVALID;
+      end
+      RVALID: begin
+        rvalid_o   = 1;
+        rdata_o    = r_data_i;
+        next_state = IDLE;
+      end
       default: begin
         end
 

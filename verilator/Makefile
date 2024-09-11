@@ -37,7 +37,6 @@ timer_test = 0
 
 # memory initialisation file used for L2
 TEST               ?= hello_world
-$(TEST) = 1
 TEST_IMEM_FILE      := $(BUILD_DIR)/../stims/$(TEST)_imem.hex
 TEST_DMEM_FILE      := $(BUILD_DIR)/../stims/$(TEST)_dmem.hex
 IMEM_INIT_FILE      := $(BUILD_DIR)/memory_init/test_imem_init.mem
@@ -48,11 +47,7 @@ IDEAL_RESULTS_FILE := $(BUILD_DIR)/ideal_results_veril.log
 #VTRACE_FILE        ?= $(BUILD_DIR)/../sw/ideal_dispatcher/dispatch.hex
 N_VINSN            ?=
 
-VERIL_PARAMS = 	-GBLINK_TEST=$(gpio_blink) \
-				-GUART_TEST=$(uart_test) \
-				-GTIMER_TEST=$(timer_test) \
-				-GCSR_TESTS=$(csr_tests) \
-				-GCLIC_TESTS=$(clic_tests)
+VERIL_PARAMS = -GSoftwareTest=1
 
 VERIL_WARN_SUPPRESS ?= \
   -Wno-BLKANDNBLK      \
@@ -78,13 +73,13 @@ VERIL_WARN_SUPPRESS += -Wno-MULTIDRIVEN
 endif
 
 VERIL_INCLUDES ?= \
-	+incdir+../ips/common_cells/include/ \
+	+incdir+../ips/bow-common-ips/ips/pulp-common-cells/include/ \
 	+incdir+../ips/rt-ibex/vendor/lowrisc_ip/ip/prim/rtl/ \
 	+incdir+../ips/rt-ibex/rtl/ \
 	+incdir+../ips/register_interface/include \
 	+incdir+../ips/apb/include \
 	+incdir+../ips/rt-ibex/vendor/lowrisc_ip/dv/sv/dv_utils/ \
-	+incdir+../ips/axi/include/
+	+incdir+../ips/bow-common-ips/ips/axi/include/
 
 RTL_SRC_LIST   ?= $(SRC_DIR)/ss-files.list
 EXTRA_SRC_LIST ?= $(SRC_DIR)/verilator.list
