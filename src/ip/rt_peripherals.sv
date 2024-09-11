@@ -1,3 +1,5 @@
+`define FULL_UART 1
+ 
 `ifdef SYNTHESIS
   `define NOT_MOCK
 `elsif FPGA
@@ -7,22 +9,31 @@
 `endif
 
 module rt_peripherals #(
-  parameter int unsigned DATA_WIDTH = 32,
-  parameter int unsigned ADDR_WIDTH = 32
+  parameter int unsigned AddrWidth = 32,
+  parameter int unsigned DataWidth = 32,
+  parameter int unsigned NSource   = 64,
+  parameter type         rule_t    = logic,
+  localparam int         SrcW      = $clog2(NSource),
+  localparam int         StrbWidth = (DataWidth / 8)
 )(
-  input  logic        clk_i,
-  input  logic        rst_ni,
-  output logic [ 3:0] gpio_output_o,
-  input  logic [ 3:0] gpio_input_i,
-  output logic        mtimer_irq_o,
-  output logic        fetch_enable_o,
-  output logic        cpu_rst_o,
-  output logic [23:0] cpu_boot_addr_o,
-  output logic        uart_tx_o,
-  input  logic        uart_rx_i,
-  output logic        uart_intr_o,
-  AXI_LITE.Slave      axi_lite_slv
+  input  logic                 clk_i,
+  input  logic                 rst_ni,
+  APB.Slave                    apb_i,
+  output logic           [3:0] gpio_output_o,
+  input  logic           [3:0] gpio_input_i,
+  input  logic   [NSource-1:0] intr_src_i,
+  output logic                 irq_valid_o,
+  input  logic                 irq_ready_i,
+  output logic      [SrcW-1:0] irq_id_o,
+  output logic           [7:0] irq_level_o,
+  output logic                 irq_shv_o,
+  output logic           [1:0] irq_priv_o,
+  output logic                 irq_kill_req_o,
+  input  logic                 irq_kill_ack_i,
+  output logic                 uart_tx_o,
+  input  logic                 uart_rx_i
 );
+
 
 // INCLUSIVE END ADDR
 localparam int unsigned GpioStartAddr   = 32'h0003_0000;
@@ -31,192 +42,221 @@ localparam int unsigned UartStartAddr   = 32'h0003_0100;
 localparam int unsigned UartEndAddr     = 32'h0003_01FF;
 localparam int unsigned MTimerStartAddr = 32'h0003_0200;
 localparam int unsigned MTimerEndAddr   = 32'h0003_0210;
+localparam int unsigned ClicStartAddr   = 32'h0005_0000;
+localparam int unsigned ClicEndAddr     = 32'h0005_FFFF;
 
-AXI_LITE #(
-  .AXI_ADDR_WIDTH ( ADDR_WIDTH ),
-  .AXI_DATA_WIDTH ( DATA_WIDTH )
-) in_lite_bus [2:0] ();
+localparam int unsigned NrApbPerip = 4;
 
-AXI_LITE #(
-  .AXI_ADDR_WIDTH ( ADDR_WIDTH ),
-  .AXI_DATA_WIDTH ( DATA_WIDTH )
-) out_lite_bus [2:0] ();
+logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
+logic                   uart_irq;
 
+logic             [1:0] demux_sel;
+logic     [NSource-1:0] intr_src;
+logic                   mtimer_irq;
 
-typedef logic [ADDR_WIDTH-1:0] addr_t;
-typedef logic [DATA_WIDTH-1:0] data_t;
-typedef logic [DATA_WIDTH/8-1:0] strb_t;
+logic                   periph_clk;
 
-addr_t       paddr;
-logic  [2:0] pprot;
-logic        psel;
-logic        penable;
-logic        pwrite;
-data_t       pwdata;
-strb_t       pstrb;
-logic        pready;
-data_t       prdata;
-logic        pslverr;
-
-logic [1:0] demux_ar_select;
-logic [1:0] demux_aw_select;
-
-//TODO: move common x2y boilerplate to rt_pkg.sv
-typedef struct packed {
-  int unsigned idx;
-  addr_t       start_addr;
-  addr_t       end_addr;
-} apb_rule_t;
-
-apb_rule_t addr_map = { /*idx:*/ 32'h0,
-                      /*start_addr:*/ UartStartAddr,
-                      /*end_addr:*/   UartEndAddr+4
-                      };
+APB #(
+  .ADDR_WIDTH (AddrWidth),
+  .DATA_WIDTH (DataWidth)
+) apb_out [NrApbPerip-1:0] (), apb_div ();
 
 
 always_comb
-begin : decode // TODO: Make enum for values
-  unique case (axi_lite_slv.aw_addr) inside
-    [GpioStartAddr:GpioEndAddr]: begin
-      demux_aw_select = 2'b00;
-    end
-    [UartStartAddr:UartEndAddr]: begin
-      demux_aw_select = 2'b01;
-    end
-    [MTimerStartAddr:MTimerEndAddr]: begin
-      demux_aw_select = 2'b10;
-    end
-    default: begin
-      // nothing
-    end
-  endcase
-  unique case (axi_lite_slv.ar_addr) inside
-    [GpioStartAddr:GpioEndAddr]: begin
-      demux_ar_select = 2'b00;
-    end
-    [UartStartAddr:UartEndAddr]: begin
-      demux_ar_select = 2'b01;
-    end
-    [MTimerStartAddr:MTimerEndAddr]: begin
-      demux_ar_select = 2'b10;
-    end
-    default: begin
-      // nothing
-    end
-endcase
-end
+  begin : irq_assign
+    intr_src = intr_src_i;
+    intr_src[17] = uart_irq; // supervisor software irq
+    intr_src[7] = mtimer_irq;
+    // supervisor external irq 9
+    // machine external irq 11
+    // platform defined 16-19
+    // nmi 31
+  end
 
-axi_lite_demux_intf #(
-  .AxiAddrWidth ( ADDR_WIDTH ),
-  .AxiDataWidth ( DATA_WIDTH ),
-  .NoMstPorts   ( 3          ),
-  .MaxTrans     ( 1          )
-) i_axi_demux (
-  .clk_i           ( clk_i           ),
-  .rst_ni          ( rst_ni          ),
-  .test_i          ( 1'b0            ),
-  .slv             ( axi_lite_slv    ),
-  .slv_aw_select_i ( demux_aw_select ),
-  .slv_ar_select_i ( demux_ar_select ),
-  .mst             ( in_lite_bus     )
+apb_cdc_intf #(
+  .APB_ADDR_WIDTH (AddrWidth),
+  .APB_DATA_WIDTH (DataWidth)
+) i_apb_cdc (
+  .src_pclk_i     (clk_i),
+  .src_preset_ni  (rst_ni),
+  .src            (apb_i),
+  .dst_pclk_i     (periph_clk),
+  .dst_preset_ni  (rst_ni),
+  .dst            (apb_div)
 );
 
-axi_lite_join_intf#() i_axi_join_gpio (
-  .in (  in_lite_bus[0] ),
-  .out( out_lite_bus[0] )
+`ifndef FPGA
+
+  clk_int_div_static #(
+    .DIV_VALUE (2),
+    .ENABLE_CLOCK_IN_RESET (1'b0)
+  ) i_clk_div (
+    .clk_i          (clk_i),
+    .rst_ni         (rst_ni),
+    .en_i           (1'b1),
+    .test_mode_en_i (1'b0),
+    .clk_o          (periph_clk)
+  );
+
+`else
+
+  configurable_clock_divider_fpga i_clk_div (
+    .clk_in       (clk_i),
+    .rst_n        (rst_ni),
+    .divider_conf (2),
+    .clk_out      (periph_clk)
+  );
+
+`endif
+
+
+apb_demux_intf #(
+  .APB_ADDR_WIDTH (AddrWidth),
+  .APB_DATA_WIDTH (DataWidth),
+  .NoMstPorts     (NrApbPerip)
+) i_apb_demux (
+  .slv      (apb_div),
+  .mst      (apb_out),
+  .select_i (demux_sel)
 );
 
-axi_lite_join_intf#() i_axi_join_uart (
-  .in (  in_lite_bus[1] ),
-  .out( out_lite_bus[1] )
+// 2x delay logi for irq_ready
+// TODO: make generic
+always_ff @(posedge(clk_i) or negedge(rst_ni))
+  begin : ready_delay
+    if (~rst_ni) begin
+      irq_ready_q       <= 0;
+      irq_ready_delay_q <= 0;
+    end else begin
+      irq_ready_q       <= irq_ready_i;
+      irq_ready_delay_q <= irq_ready_delay;
+    end
+  end
+
+assign irq_ready_delay = irq_ready_i | irq_ready_q;
+// end 2x delay
+
+
+always_comb
+  begin : decode // TODO: Make enum for values
+    unique case (apb_div.paddr) inside
+      [GpioStartAddr:GpioEndAddr]: begin
+        demux_sel = 2'b00;
+      end
+      [UartStartAddr:UartEndAddr]: begin
+        demux_sel = 2'b01;
+      end
+      [MTimerStartAddr:MTimerEndAddr]: begin
+        demux_sel = 2'b10;
+      end
+      [ClicStartAddr:ClicEndAddr]: begin
+        demux_sel = 2'b11;
+      end
+      default: begin
+        demux_sel = 2'b00;
+      end
+    endcase
+  end
+
+clic_apb #(
+  .N_SOURCE     (NSource),
+  .INTCTLBITS   (8)
+) i_clic (
+  .clk_i          (periph_clk),
+  .rst_ni         (rst_ni),
+  .penable_i      (apb_out[3].penable),
+  .pwrite_i       (apb_out[3].pwrite),
+  .paddr_i        (apb_out[3].paddr),
+  .psel_i         (apb_out[3].psel),
+  .pwdata_i       (apb_out[3].pwdata),
+  .prdata_o       (apb_out[3].prdata),
+  .pready_o       (apb_out[3].pready),
+  .pslverr_o      (apb_out[3].pslverr),
+  .intr_src_i     (intr_src), // 0-31 -> CLINT IRQS
+  .irq_valid_o    (irq_valid_o),
+  .irq_ready_i    (irq_ready_delay_q),
+  .irq_id_o       (irq_id_o),
+  .irq_level_o    (irq_level_o),
+  .irq_shv_o      (irq_shv_o),
+  .irq_priv_o     (irq_priv_o),
+  .irq_kill_req_o (irq_kill_req_o),
+  .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
 );
 
-axi_lite_join_intf#() i_axi_join_timer (
-  .in (  in_lite_bus[2] ),
-  .out( out_lite_bus[2] )
-);
-
-
-axi_lite_to_apb_intf #(
-  .AddrWidth   (ADDR_WIDTH),
-  .DataWidth   (DATA_WIDTH),
-  .NoRules     (1         ),
-  .NoApbSlaves (1         ),
-  .rule_t      (apb_rule_t)
-) i_lite_to_apb (
-  .clk_i     ( clk_i           ),
-  .rst_ni    ( rst_ni          ),
-  .slv       ( out_lite_bus[1] ),
-  .paddr_o   ( paddr           ),
-  .pprot_o   ( pprot           ),
-  .pselx_o   ( psel            ),
-  .penable_o ( penable         ),
-  .pwrite_o  ( pwrite          ),
-  .pwdata_o  ( pwdata          ),
-  .pstrb_o   ( pstrb           ),
-  .pready_i  ( pready          ),
-  .prdata_i  ( prdata          ),
-  .pslverr_i ( pslverr         ),
-  .addr_map_i( addr_map        )
-);
 
 rt_gpio #() i_gpio (
-  .rst_ni         ( rst_ni         ),
-  .clk_i          ( clk_i          ),
-  .fetch_enable_o ( fetch_enable_o ),
-  .gpio_input_i   ( gpio_input_i   ),
-  .gpio_output_o  ( gpio_output_o  ),
-  .cpu_rst_o      ( cpu_rst_o      ),
-  .cpu_boot_addr_o( cpu_boot_addr_o),
-  .axi_lite_s     ( out_lite_bus[0])
+  .rst_ni         (rst_ni),
+  .clk_i          (periph_clk),
+  .gpio_input_i   (gpio_input_i),
+  .gpio_output_o  (gpio_output_o),
+  .penable_i      (apb_out[0].penable),
+  .pwrite_i       (apb_out[0].pwrite),
+  .paddr_i        (apb_out[0].paddr),
+  .psel_i         (apb_out[0].psel),
+  .pwdata_i       (apb_out[0].pwdata),
+  .prdata_o       (apb_out[0].prdata),
+  .pready_o       (apb_out[0].pready),
+  .pslverr_o      (apb_out[0].pslverr)
 );
 
 `ifdef NOT_MOCK
 apb_uart i_apb_uart (
-  .CLK      ( clk_i   ),
-  .RSTN     ( rst_ni  ),
-  .PSEL     ( psel        ),
-  .PENABLE  ( penable     ),
-  .PWRITE   ( pwrite      ),
-  .PADDR    ( paddr[4:2]  ),
-  .PWDATA   ( pwdata      ),
-  .PRDATA   ( prdata      ),
-  .PREADY   ( pready      ),
-  .PSLVERR  ( pslverr     ),
-  .INT      ( uart_intr_o ),
-  .CTSN     ( 1'b0  ),
-  .DSRN     ( 1'b0  ),
-  .DCDN     ( 1'b0  ),
-  .RIN      ( 1'b0  ),
-  .RTSN     ( ),
-  .OUT1N    ( ),
-  .OUT2N    ( ),
-  .DTRN     ( ),
-  .SIN      ( uart_rx_i  ),
-  .SOUT     ( uart_tx_o  )
+  .CLK      (periph_clk),
+  .RSTN     (rst_ni),
+  .PSEL     (apb_out[1].psel),
+  .PENABLE  (apb_out[1].penable),
+  .PWRITE   (apb_out[1].pwrite),
+  .PADDR    (apb_out[1].paddr[4:2]),
+  .PWDATA   (apb_out[1].pwdata),
+  .PRDATA   (apb_out[1].prdata),
+  .PREADY   (apb_out[1].pready),
+  .PSLVERR  (apb_out[1].pslverr),
+  .INT      (uart_irq),
+  .CTSN     (1'b0),
+  .DSRN     (1'b0),
+  .DCDN     (1'b0),
+  .RIN      (1'b0),
+  .RTSN     (),
+  .OUT1N    (),
+  .OUT2N    (),
+  .DTRN     (),
+  .SIN      (uart_rx_i),
+  .SOUT     (uart_tx_o)
 );
 `else
 mock_uart i_apb_uart (
-  .clk_i      ( clk_i     ),
-  .rst_ni     ( rst_ni    ),
-  .penable_i  ( penable   ),
-  .pwrite_i   ( pwrite    ),
-  .paddr_i    ( paddr     ),
-  .psel_i     ( psel      ),
-  .pwdata_i   ( pwdata    ),
-  .prdata_o   ( prdata    ),
-  .pready_o   ( pready    ),
-  .pslverr_o  ( pslverr   )
+  .clk_i     (periph_clk),
+  .rst_ni    (rst_ni),
+  .penable_i (apb_out[1].penable),
+  .pwrite_i  (apb_out[1].pwrite),
+  .paddr_i   (apb_out[1].paddr),
+  .psel_i    (apb_out[1].psel),
+  .pwdata_i  (apb_out[1].pwdata),
+  .prdata_o  (apb_out[1].prdata),
+  .pready_o  (apb_out[1].pready),
+  .pslverr_o (apb_out[1].pslverr)
 );
 
+assign uart_irq  = 1'b0;   // to avoid X's cascading through CLIC
 assign uart_tx_o = 0;
 `endif
 
+
 rt_timer #() i_timer (
-  .clk_i       (clk_i),
+  .clk_i       (periph_clk),
   .rst_ni      (rst_ni),
-  .timer_irq_o (mtimer_irq_o),
-  .axi_lite_s  (out_lite_bus[2])
+  .timer_irq_o (mtimer_irq),
+  .penable_i   (apb_out[2].penable),
+  .pwrite_i    (apb_out[2].pwrite),
+  .paddr_i     (apb_out[2].paddr),
+  .psel_i      (apb_out[2].psel),
+  .pwdata_i    (apb_out[2].pwdata),
+  .prdata_o    (apb_out[2].prdata),
+  .pready_o    (apb_out[2].pready),
+  .pslverr_o   (apb_out[2].pslverr)
+
 );
+
+
 
 endmodule : rt_peripherals

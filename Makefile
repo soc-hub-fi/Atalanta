@@ -23,10 +23,12 @@ SHELL=bash
 # Repository targets
 ######################################################################
 
-repository_init: 
-	git fetch 
-	git submodule foreach 'git stash' #stash is to avoid override by accident
-	git submodule update --init --recursive
+repository_init:
+	bender update
+	@echo "Pulling vendored IPs"
+	@bender vendor init
+	@echo "Pulling Bender dependencies"
+	@bender update
 
 .PHONY: check-env
 check-env:
@@ -42,13 +44,25 @@ check-env:
 compile:
 	$(MAKE) -C vsim compile BUILD_DIR=$(BUILD_DIR)
 
+.PHONY: build_standalone
+build_standalone:
+	$(MAKE) -C vsim compile elaborate dut_sanity_check DEBUG=+define+STANDALONE BUILD_DIR=$(BUILD_DIR)
+
 .PHONY: compile_debug
 compile_debug:
 	$(MAKE) -C vsim compile DEBUG=+define+DEBUG RVFI=+define+RVFI BUILD_DIR=$(BUILD_DIR)
 
-.PHONY: compile_soc
-compile_soc:
-	$(MAKE) -C vsim compile SOC_CONNECTIVITY=+define+SOC_CONNECTIVITY BUILD_DIR=$(BUILD_DIR)
+.PHONY: compile_fpga_mem
+compile_fpga:
+	$(MAKE) -C vsim compile FPGA=+define+FPGA_MEM BUILD_DIR=$(BUILD_DIR)
+
+.PHONY: compile_synth_wrapper
+compile_synth_wrapper:
+	$(MAKE) -C vsim compile SYNTH_WRAPPER=+define+SYNTH_WRAPPER BUILD_DIR=$(BUILD_DIR)
+
+.PHONY: build_wrapper
+build_wrapper:
+	$(MAKE) compile_synth_wrapper elaborate
 
 .PHONY: elaborate
 elaborate:
@@ -64,7 +78,7 @@ elab_lec: check-env
 
 .PHONY: fpga
 fpga:
-	$(MAKE) -C fpga all FPGA_DIR=$(FPGA_DIR)
+	$(MAKE) -C fpga all FPGA_DIR=$(FPGA_DIR) && ./check_fpga_timing.sh
 
 ######################################################################
 # formal targets 
@@ -72,7 +86,7 @@ fpga:
 
 .PHONY: autocheck
 autocheck: check-env
-	$(MAKE) -C formal qverify_autocheck
+	$(MAKE) -C formal qverify_autocheck_compile DUT=rt_top
 
 .PHONY: xcheck
 xcheck: check-env
@@ -106,6 +120,14 @@ gui: check-env
 .PHONY: vsim_wave
 vsim_wave: check-env
 	$(MAKE) -C vsim wave
+
+#####################
+# C compile
+#####################
+.PHONY: smoke_compile
+smoke_compile:
+	./examples/smoke_tests/scripts/compile.py ./examples/smoke_tests/$(TEST).c --riscv-xlen 64
+
 
 #####################
 # Verilator
@@ -143,3 +165,4 @@ echo_success:
 .PHONY: clean
 clean:
 	rm -rf build
+	rm -rf .bender

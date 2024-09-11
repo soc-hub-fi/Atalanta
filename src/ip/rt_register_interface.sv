@@ -11,18 +11,13 @@ module rt_register_interface
    input  logic [DATA_WIDTH-1:0] wdata_i,
    output logic [DATA_WIDTH-1:0] rdata_o,
    input  logic                  write_enable_i,
-   output logic [          23:0] cpu_boot_addr_o,
-   //output logic [          31:0] mtvec_addr_o,
-   //output logic [          31:0] mtvt_addr_o,
-   output logic                  fetch_enable_o,
-   output logic                  cpu_rst_o,
    output logic [           3:0] gpio_output_o,
    input  logic [           3:0] gpio_input_i
 );
 
-localparam CPU_CTRL_ADDR = 3'b000;
-localparam GPIO_I_ADDR   = 3'b001;
-localparam GPIO_O_ADDR   = 3'b010;
+localparam int unsigned CPU_CTRL_ADDR = 3'b000;
+localparam int unsigned GPIO_I_ADDR   = 3'b001;
+localparam int unsigned GPIO_O_ADDR   = 3'b010;
 
 // field data FF registers
 logic        fetch_enable_reg;
@@ -37,14 +32,6 @@ always_ff @( posedge clk_i or negedge rst_ni )
 begin : write_read_registers
   if ( ~rst_ni )
    begin
-      fetch_enable_reg <= '1;
-      cpu_rst_reg      <= '1;
-      // Boot address differs depending on wheter IMEM is preloaded
-      `ifdef VERILATOR
-      cpu_boot_addr_reg <= 24'h0000_10; // Ibex boot addrs need to be 256-bit alligned
-      `else
-      cpu_boot_addr_reg <= 24'h0000_01; // Ibex boot addrs need to be 256-bit alligned
-      `endif
       gpio_output_reg  <= '0;
    end
    else if (write_enable_i) begin
@@ -106,9 +93,6 @@ always_comb begin : read_logic
       };
    end
 
-   //MTVEC_ADDR: rdata_o = mtvec_addr_reg;
-   //MTVT_ADDR: rdata_o = mtvt_addr_reg;
-
    default: begin
       rdata_o = '0;
    end
@@ -130,10 +114,7 @@ end : read_logic
 
 
 always_comb begin : drive_output
-   fetch_enable_o  = fetch_enable_reg;
    gpio_output_o   = gpio_output_reg;
-   cpu_rst_o       = cpu_rst_reg;
-   cpu_boot_addr_o = cpu_boot_addr_reg;
    //mtvec_addr_o    = mtvec_addr_reg;
    //mtvt_addr_o     = mtvt_addr_reg;
 end : drive_output
