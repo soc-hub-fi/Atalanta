@@ -86,7 +86,7 @@ TEST_PARAMS =   -G TestName=$(TEST) \
 
 
 LIBS = \
-	-L $(BUILD_DIR)/rt_ss_lib \
+	-L $(BUILD_DIR)/atalanta_lib \
 
 VOPT_OPTS = "-check_synthesis"
 VOPT_OPTS += "-pedanticerrors"
@@ -116,13 +116,13 @@ check_env:
 .PHONY: library_mapping
 library_mapping: check_env
 	cd $(BUILD_DIR)
-	vmap rt_ss_lib $(BUILD_DIR)/rt_ss_lib
+	vmap atalanta_lib $(BUILD_DIR)/atalanta_lib
 
 .PHONY: compile
 compile: check_env
-	vlib $(BUILD_DIR)/rt_ss_lib
-	vmap rt_ss_lib $(BUILD_DIR)/rt_ss_lib
-	vlog -sv -work rt_ss_lib $(VLOG_DEFINES) \
+	vlib $(BUILD_DIR)/atalanta_lib
+	vmap atalanta_lib $(BUILD_DIR)/atalanta_lib
+	vlog -sv -work atalanta_lib $(VLOG_DEFINES) \
 	$(INCLUDES) $(VLOG_SUPPRESS) $(LIBS) \
 	$(shell bender script flist -t simulation -t test) \
 	-l $(BUILD_DIR)/logs/compile/$(START_TIME)_verilog_vlog.log
@@ -142,7 +142,7 @@ elaborate: check_env library_mapping
 	$(VOPT_SUPPRESS) \
 	$(VSIM_SUPPRESS) \
 	$(LIBS) \
-	-work $(BUILD_DIR)/rt_ss_lib \
+	-work $(BUILD_DIR)/atalanta_lib \
 	$(DUT) \
 	-o $(DUT)_opt \
 	-l $(BUILD_DIR)/logs/opt/$(START_TIME)_$(DUT)_vopt.log
@@ -155,7 +155,7 @@ dut_sanity_check: check_env library_mapping elaborate
 	$(VOPT_SUPPRESS) \
 	$(VSIM_SUPPRESS) \
 	$(LIBS) \
-	-work $(BUILD_DIR)/rt_ss_lib \
+	-work $(BUILD_DIR)/atalanta_lib \
 	$(DUT)_opt \
 	-do "run 0; exit" \
 	-l $(BUILD_DIR)/logs/sim/$(DUT)_vsim.log
@@ -169,7 +169,7 @@ run_batch: check_env library_mapping elaborate
 	$(VOPT_SUPPRESS) \
 	$(VSIM_SUPPRESS) \
 	$(LIBS) \
-	-work $(BUILD_DIR)/rt_ss_lib \
+	-work $(BUILD_DIR)/atalanta_lib \
 	$(DUT)_opt \
 	-do 	"log -r /*; \
 			run -all; \
@@ -183,7 +183,7 @@ run_gui: check_env library_mapping elaborate
 	$(VOPT_SUPPRESS) \
 	$(VSIM_SUPPRESS) \
 	$(LIBS) \
-	-work $(BUILD_DIR)/rt_ss_lib \
+	-work $(BUILD_DIR)/atalanta_lib \
 	$(DUT)_opt \
 	-do "log -r /*;" \
 	-l $(BUILD_DIR)/logs/sim/$(DUT)_vsim.log
