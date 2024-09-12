@@ -29,13 +29,13 @@ logic [(RamAddrLen+2)-1:0] uncut_addr;
 assign uncut_addr = addr_i - BaseOffset;
 assign sram_addr  = uncut_addr[(RamAddrLen+2)-1:2];
 
-rt_handshake_fsm #(
+obi_handshake_fsm #(
 ) i_fsm (
   .clk_i        (clk_i),
   .rst_ni       (rst_ni),
-  .cpu_req_i    (req_i),
-  .cpu_gnt_o    (gnt_o),
-  .cpu_rvalid_o (rvalid_o)
+  .req_i    (req_i),
+  .gnt_o    (gnt_o),
+  .rvalid_o (rvalid_o)
 );
 
 sram #(

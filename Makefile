@@ -24,11 +24,10 @@ SHELL=bash
 ######################################################################
 
 repository_init:
-	bender update
-	@echo "Pulling vendored IPs"
-	@bender vendor init
 	@echo "Pulling Bender dependencies"
 	@bender update
+	@echo "Pulling vendored IPs"
+	@bender vendor init
 
 .PHONY: check-env
 check-env:
@@ -162,7 +161,14 @@ echo_success:
 # clean target 
 ######################################################################
 
-.PHONY: clean
-clean:
-	rm -rf build
+.PHONY: clean_ips
+clean_ips:
 	rm -rf .bender
+
+.PHONY: clean_build
+clean_build:
+	rm -rf build
+
+.PHONY: clean_all
+clean_all: clean_ips clean_build
+

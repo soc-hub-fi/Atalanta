@@ -16,11 +16,12 @@ dependencies:
 sources:
   files:
     - src/ip/obi_m2s_cut.sv
-    - src/ip/rt_handshake_fsm.sv
+    - src/ip/obi_handshake_fsm.sv
     - src/ip/ibex_axi_bridge.sv
     - src/ip/sram.sv
     - src/ip/rt_mem_axi_intf.sv
     - src/ip/rt_mem.sv
+    - src/ip/rt_bootrom.sv
     - src/ip/rt_debug.sv
     - src/ip/rt_gpio.sv
     - src/ip/timer_core.sv

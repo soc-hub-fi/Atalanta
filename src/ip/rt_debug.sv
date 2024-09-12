@@ -77,13 +77,13 @@ logic                         dmi_req_ready_s;
 logic                         dmi_resp_valid_s;
 logic                         dmi_resp_ready_s;
 
-rt_handshake_fsm #(
+obi_handshake_fsm #(
 ) i_fsm (
   .clk_i        (clk_i),
   .rst_ni       (rstn_i),
-  .cpu_req_i    (dbg_s_req_i),
-  .cpu_gnt_o    (dbg_s_gnt_o),
-  .cpu_rvalid_o (dbg_s_rvalid_o)
+  .req_i    (dbg_s_req_i),
+  .gnt_o    (dbg_s_gnt_o),
+  .rvalid_o (dbg_s_rvalid_o)
 );
 
 

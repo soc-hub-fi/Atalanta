@@ -39,7 +39,7 @@ module rt_core #(
 `endif
 
 localparam int unsigned NumM = 3 + CONNECTIVITY;
-localparam int unsigned NumS = 4;
+localparam int unsigned NumS = 5;
 localparam int unsigned NumRules = NumS;
 
 logic [NumInterrupts-1:0] core_irq_x;
@@ -53,7 +53,8 @@ typedef struct packed {
 } rule_t;
 
 localparam rule_t [NumRules-1:0] AddrMap = '{
-  '{idx: 32'd3, start_addr: 32'h0003_0000, end_addr: 32'hFFFF_FFFF}, // System
+  '{idx: 32'd4, start_addr: 32'h0003_0000, end_addr: 32'hFFFF_FFFF}, // System
+  '{idx: 32'd3, start_addr: 32'h0001_0000, end_addr: 32'h0001_1000}, // System
   '{idx: 32'd2, start_addr: DmemOffset, end_addr: DmemOffset+MemSize}, // DMEM
   '{idx: 32'd1, start_addr: ImemOffset, end_addr: ImemOffset+MemSize}, // IMEM
   '{idx: 32'd0, start_addr: 32'h0000_0000, end_addr: 32'h0000_1000}  // Debug
@@ -92,14 +93,14 @@ ibex_axi_bridge #(
 ) i_axim_intf (
   .clk_i      (clk_i),
   .rst_ni     (rst_ni),
-  .req_i      (sbr_bus[3].req),
-  .gnt_o      (sbr_bus[3].gnt),
-  .rvalid_o   (sbr_bus[3].rvalid),
-  .we_i       (sbr_bus[3].we),
-  .be_i       (sbr_bus[3].be),
-  .addr_i     (sbr_bus[3].addr),
-  .wdata_i    (sbr_bus[3].wdata),
-  .rdata_o    (sbr_bus[3].rdata),
+  .req_i      (sbr_bus[4].req),
+  .gnt_o      (sbr_bus[4].gnt),
+  .rvalid_o   (sbr_bus[4].rvalid),
+  .we_i       (sbr_bus[4].we),
+  .be_i       (sbr_bus[4].be),
+  .addr_i     (sbr_bus[4].addr),
+  .wdata_i    (sbr_bus[4].wdata),
+  .rdata_o    (sbr_bus[4].rdata),
   .err_o      (),
   .aw_addr_o  (axi_m.aw_addr),
   .aw_valid_o (axi_m.aw_valid),
@@ -173,6 +174,13 @@ rt_mem #(
   .addr_i   (dmem_slv.addr),
   .wdata_i  (dmem_slv.wdata),
   .rdata_o  (dmem_slv.rdata)
+);
+
+rt_bootrom #(
+) i_bootrom (
+  .clk_i,
+  .rst_ni,
+  .sbr_bus (sbr_bus[3])
 );
 
 `ifdef DEBUG
