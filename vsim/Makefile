@@ -120,6 +120,7 @@ library_mapping: check_env
 
 .PHONY: compile
 compile: check_env
+	echo $(PWD)
 	vlib $(BUILD_DIR)/atalanta_lib
 	vmap atalanta_lib $(BUILD_DIR)/atalanta_lib
 	vlog -sv -work atalanta_lib $(VLOG_DEFINES) \
