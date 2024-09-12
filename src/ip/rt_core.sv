@@ -54,7 +54,7 @@ typedef struct packed {
 
 localparam rule_t [NumRules-1:0] AddrMap = '{
   '{idx: 32'd4, start_addr: 32'h0003_0000, end_addr: 32'hFFFF_FFFF}, // System
-  '{idx: 32'd3, start_addr: 32'h0001_0000, end_addr: 32'h0001_1000}, // System
+  '{idx: 32'd3, start_addr: 32'h0001_0000, end_addr: 32'h0001_1000}, // Bootrom
   '{idx: 32'd2, start_addr: DmemOffset, end_addr: DmemOffset+MemSize}, // DMEM
   '{idx: 32'd1, start_addr: ImemOffset, end_addr: ImemOffset+MemSize}, // IMEM
   '{idx: 32'd0, start_addr: 32'h0000_0000, end_addr: 32'h0000_1000}  // Debug
@@ -226,7 +226,7 @@ ibex_top #(
 
     // Configuration
     .hart_id_i   (32'h0),
-    .boot_addr_i (32'h800),
+    .boot_addr_i (32'h0001_0000),
 
     // Instruction memory interface
     .instr_req_o        (mgr_bus[1].req ),
