@@ -40,6 +40,8 @@ set_max_delay -to   [get_ports jtag_td_o]  20.000;
 set_max_delay -from [get_ports jtag_tms_i] 20.000;
 set_max_delay -from [get_ports jtag_td_i]  20.000;
 
+create_generated_clock -source [get_pins i_rt_top/i_peripheral_subsystem/i_clk_div/i_bugce/I0] -divide_by 2 [get_pins i_rt_top/i_peripheral_subsystem/i_clk_div/i_bugce/O]
+
 # Prevent timing analysis between asynchronous clocks which have correctly implement CDC constructs in place
 set_clock_groups -asynchronous \
   -group [get_clocks -of_objects [get_pins i_top_clock/inst/mmcm_adv_inst/CLKOUT0]] \

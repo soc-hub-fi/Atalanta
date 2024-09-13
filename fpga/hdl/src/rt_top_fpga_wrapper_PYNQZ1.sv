@@ -33,7 +33,8 @@
 
 module rt_top_fpga_wrapper_PYNQZ1 #(
   parameter int unsigned AXI_ADDR_WIDTH = 32,
-  parameter int unsigned AXI_DATA_WIDTH = 32
+  parameter int unsigned AXI_DATA_WIDTH = 32,
+  parameter bit          IbexRve        = 1
 )(
   input  logic        clk_i,
   input  logic        rst_i,
@@ -66,7 +67,8 @@ module rt_top_fpga_wrapper_PYNQZ1 #(
   // RT-SS instance
   rt_top #(
     .AxiAddrWidth ( AXI_ADDR_WIDTH ),
-    .AxiDataWidth ( AXI_DATA_WIDTH )
+    .AxiDataWidth ( AXI_DATA_WIDTH ),
+    .IbexRve      ( IbexRve        )
   ) i_rt_top (
     .clk_i          ( top_clk       ),
     .rst_ni         ( rt_ss_rstn    ),

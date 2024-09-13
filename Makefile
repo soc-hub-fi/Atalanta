@@ -77,7 +77,7 @@ elab_lec: check-env
 
 .PHONY: fpga
 fpga:
-	$(MAKE) -C fpga all FPGA_DIR=$(FPGA_DIR) && ./check_fpga_timing.sh
+	$(MAKE) -C fpga all FPGA_DIR=$(FPGA_DIR) && ./scripts/check_fpga_timing.sh
 
 ######################################################################
 # formal targets 

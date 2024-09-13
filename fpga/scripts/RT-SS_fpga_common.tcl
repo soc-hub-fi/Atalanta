@@ -12,6 +12,51 @@ puts "\n---------------------------------------------------------";
 puts "RT-SS_fpga_common.tcl - Starting...";
 puts "---------------------------------------------------------\n";
 
+# Bender defines
+if [info exists ::env(COMMON_CELLS_DIR)] {
+    set COMMON_CELLS_DIR $::env(COMMON_CELLS_DIR)
+} else {
+    puts "ERROR - Variable COMMON_CELLS_DIR is not globally defined in Makefile!\n";
+    return 1;
+}
+
+if [info exists ::env(RTIBEX_DIR)] {
+    set RTIBEX_DIR $::env(RTIBEX_DIR)
+} else {
+    puts "ERROR - Variable RTIBEX_DIR is not globally defined in Makefile!\n";
+    return 1;
+}
+
+if [info exists ::env(AXI_DIR)] {
+    set AXI_DIR $::env(AXI_DIR)
+} else {
+    puts "ERROR - Variable AXI_DIR is not globally defined in Makefile!\n";
+    return 1;
+}
+
+if [info exists ::env(APB_DIR)] {
+    set APB_DIR $::env(APB_DIR)
+} else {
+    puts "ERROR - Variable APB_DIR is not globally defined in Makefile!\n";
+    return 1;
+}
+
+if [info exists ::env(OBI_DIR)] {
+    set OBI_DIR $::env(OBI_DIR)
+} else {
+    puts "ERROR - Variable OBI_DIR is not globally defined in Makefile!\n";
+    return 1;
+}
+
+if [info exists ::env(REGIF_DIR)] {
+    set REGIF_DIR $::env(REGIF_DIR)
+} else {
+    puts "ERROR - Variable REGIF_DIR is not globally defined in Makefile!\n";
+    return 1;
+}
+
+
+
 # check repo path has been defined
 if [info exists ::env(REPO_DIR)] {
     set REPO_DIR $::env(REPO_DIR);

@@ -2,9 +2,11 @@
 # Makefile for FPGA prototyping of RT-SS
 #
 # Author(s): Tom Szymkowiak <thomas.szymkowiak@tuni.fi>
-# Date     : 03-dec-2023
+#            Antti Nurmi <antti.nurmi@tuni.fi>
+# Date     : 13-sep-2024
 #
 # Description: Top Makefile to build the FPGA Prototype of the RT-SS
+#              AN: add Bender directories
 # ------------------------------------------------------------------------------
 
 ## global variables
@@ -15,6 +17,13 @@ export PROJECT_NAME     ?= $(SUBSYTEM)_fpga
 export FPGA_BOARD       ?= PYNQZ1
 export DUT_TOP_MODULE   ?= rt_top_fpga_wrapper_$(FPGA_BOARD)
 export TB_TOP_MODULE    ?= tb_rt_ss
+
+export COMMON_CELLS_DIR ?= $(shell bender path common_cells)
+export APB_DIR          ?= $(shell bender path apb)
+export AXI_DIR          ?= $(shell bender path axi)
+export RTIBEX_DIR       ?= $(shell bender path rt-ibex)
+export OBI_DIR          ?= $(shell bender path obi)
+export REGIF_DIR        ?= $(shell bender path register_interface)
 
 export FPGA_DIR          ?= $(PWD)
 export REPO_DIR          ?= $(realpath $(FPGA_DIR)/..)
@@ -28,7 +37,8 @@ export BOARD_FILES_DIR   ?= $(FPGA_DIR)/board_files
 
 # Project synthesis defines
 export FPGA_SYNTH_DEFINES ?= \
-	FPGA=1
+	FPGA=1 \
+	STANDALONE=1
 # Project simulation defines
 export FPGA_SIM_DEFINES ?= \
 	XSIM=1 \
@@ -36,10 +46,13 @@ export FPGA_SIM_DEFINES ?= \
 	VERILATOR=1 \
 	$(FPGA_BOARD)
 
+IBEX_USE_RVE ?= 1
+
 # Parameters for DUT
 export FPGA_DUT_PARAMS ?= \
 	AXI_ADDR_WIDTH=32 \
-	AXI_DATA_WIDTH=32
+	AXI_DATA_WIDTH=32 \
+	IbexRve=$(IBEX_USE_RVE)
 
 # Parameters for TB
 export FPGA_TB_PARAMS ?=
@@ -51,7 +64,12 @@ export FPGA_IP_LIST ?= \
 
 ## local variables
 
-BITSTREAM   ?= $(FPGA_PROJECT_DIR).bit
+ifeq ($(IBEX_USE_RVE), 1)
+	BITSTREAM   ?= $(FPGA_PROJECT_DIR)_rve.bit
+else
+	BITSTREAM   ?= $(FPGA_PROJECT_DIR)_rvi.bit
+endif
+
 # ILA probe file (if exists)
 PROBE_FILE  ?= $(FPGA_PROJECT_DIR).ltx
 FPGA_IP_XCI := $(foreach ip, $(FPGA_IP_LIST), $(FPGA_IP_BUILD_DIR)/$(ip)/$(ip).srcs)
@@ -62,13 +80,15 @@ all: clean_all top
 # initialise build directory
 .PHONY: init
 init:
-	@mkdir -p $(FPGA_BUILD_DIR)	
+	@mkdir -p $(FPGA_BUILD_DIR)
 
 
 # launch a Vivado project and move output products into the build directory
 #ToDo : Create logs directory which works in a similar way to SoCHub ASIC Flow
 .PHONY: top
 top: init clean_top all_ips
+	# this monstrosity generates the filelist and does some string manipulation to correct the paths
+	@bender script flist -t fpga -t xilinx | grep -oP 'atalanta/\K.+' | sed 's/^/..\/..\//' > $(FPGA_BUILD_DIR)/fpga_gen.list
 	@rm -f $(BITSTREAM) $(PROBE_FILE)
 	@echo "INFO: Building FPGA design for $(PROJECT_NAME)"
 	@mkdir -p $(FPGA_PROJECT_DIR)
@@ -78,7 +98,7 @@ top: init clean_top all_ips
 	@cp -f $(FPGA_PROJECT_DIR)/$(PROJECT_NAME).runs/impl_1/$(DUT_TOP_MODULE).bit $(BITSTREAM)
 ifneq ($(shell test -e $(FPGA_PROJECT_DIR)/$(PROJECT_NAME).runs/impl_1/$(DUT_TOP_MODULE).ltx), )
 	@cp -f $(FPGA_PROJECT_DIR)/$(PROJECT_NAME).runs/impl_1/$(DUT_TOP_MODULE).ltx $(PROBE_FILE)
-endif 
+endif
 
 
 # launch synthesis for all IPs in FPGA_IP_LIST
@@ -97,7 +117,7 @@ $(FPGA_IP_LIST):
 clean_top:
 	@echo "INFO: Deleting $(PROJECT_NAME) top build directory and artefacts..."
 	@rm -f $(BITSTREAM)
-	@rm -f $(PROBE_FILE) 
+	@rm -f $(PROBE_FILE)
 	@rm -rf $(FPGA_PROJECT_DIR)
 
 
