@@ -196,13 +196,13 @@ always_comb begin : gen_core_irq_x
 end
 
 if (CutObiDbg) begin : g_obi_cut_dbg
-  obi_m2s_cut #() i_dbg_mst_cut (
+  obi_cut_intf #() i_dbg_mst_cut (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
     .obi_s (dbg_mst),
     .obi_m (mgr_bus[0])
   );
-  obi_m2s_cut #() i_dbg_slv_cut (
+  obi_cut_intf #() i_dbg_slv_cut (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
     .obi_s (sbr_bus[0]),
@@ -214,13 +214,13 @@ end else begin : g_no_cut_dbg
 end
 
 if (CutObiMem) begin : g_obi_cut_mem
-  obi_m2s_cut #() i_imem_cut (
+  obi_cut_intf #() i_imem_cut (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
     .obi_s (sbr_bus[1]),
     .obi_m (imem_slv)
   );
-  obi_m2s_cut #() i_dmem_cut (
+  obi_cut_intf #() i_dmem_cut (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
     .obi_s (sbr_bus[2]),
