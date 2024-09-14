@@ -15,8 +15,15 @@ dependencies:
 
 sources:
   files:
+    - src/ip/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
+    - src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
+    - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
+    - src/ip/obi_handshake_fsm.sv
     - src/ip/rt_core.sv
+    - src/ip/rt_ibex_bootrom.sv
+    - src/ip/rt_memory_banks.sv
     - src/ip/rt_peripherals.sv
+    - src/ip/rt_debug.sv
     - src/ip/rt_top.sv
 
     - target: any(test, simulation)
@@ -33,3 +40,11 @@ sources:
       - fpga/hdl/src/prim_clock_gating.sv
       - fpga/hdl/src/rt_top_fpga_wrapper_PYNQZ1.sv
 
+vendor_package:
+  - name: safety_island
+    target_dir: src/ip/safety_island
+    upstream: { git: "https://github.com/pulp-platform/safety_island.git", rev: "584eb697195c44ef1b1cbd1f4b7accdf5192200a" }
+    include_from_upstream:
+      - "future/axi_obi/src/axi_to_obi.sv"
+      - "future/axi_obi/src/obi_to_axi.sv"
+      - "future/axi_obi/src/axi_to_detailed_mem_user.sv"

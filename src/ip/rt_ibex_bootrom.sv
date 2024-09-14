@@ -14,7 +14,7 @@ module rt_ibex_bootrom #(
 localparam int unsigned RomSize = 2;
 localparam int unsigned RamAw   = $clog2(RomSize);
 
-rt_handshake_fsm #(
+obi_handshake_fsm #(
 ) i_fsm (
   .clk_i   (clk_i),
   .rst_ni (rst_ni),
@@ -23,6 +23,7 @@ rt_handshake_fsm #(
   .cpu_rvalid_o (rvalid_o)
 );
 
+// TODO: make functional
 const logic [DATA_WIDTH-1:0] rom [RomSize] = {
     32'h0000006F,
     32'h0000006F};

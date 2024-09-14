@@ -1,3 +1,4 @@
 .bender/
 build/
+src/ip/safety_island
 vsim/modelsim.ini

@@ -120,7 +120,7 @@ apb_demux_intf #(
   .select_i (demux_sel)
 );
 
-// 2x delay logi for irq_ready
+// 2x delay logic for irq_ready
 // TODO: make generic
 always_ff @(posedge(clk_i) or negedge(rst_ni))
   begin : ready_delay
@@ -183,7 +183,7 @@ clic_apb #(
   .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
 );
 
-
+/*
 rt_gpio #() i_gpio (
   .rst_ni         (rst_ni),
   .clk_i          (periph_clk),
@@ -198,6 +198,7 @@ rt_gpio #() i_gpio (
   .pready_o       (apb_out[0].pready),
   .pslverr_o      (apb_out[0].pslverr)
 );
+*/
 
 `ifdef NOT_MOCK
 apb_uart i_apb_uart (
@@ -242,6 +243,7 @@ assign uart_tx_o = 0;
 `endif
 
 
+/*
 rt_timer #() i_timer (
   .clk_i       (periph_clk),
   .rst_ni      (rst_ni),
@@ -254,9 +256,8 @@ rt_timer #() i_timer (
   .prdata_o    (apb_out[2].prdata),
   .pready_o    (apb_out[2].pready),
   .pslverr_o   (apb_out[2].pslverr)
-
 );
-
+*/
 
 
 endmodule : rt_peripherals

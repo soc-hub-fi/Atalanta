@@ -64,62 +64,9 @@ OBI_BUS #() mgr_bus [NumM] (), sbr_bus [NumS] (), dbg_mst (), dbg_slv (), imem_s
 
 if (CONNECTIVITY) begin : gen_slv_connectivity
 
-  rt_mem_axi_intf #(
-    .MEM_AW (AddrWidth),
-    .MEM_DW (DataWidth),
-    .AXI_AW (AddrWidth),
-    .AXI_DW (DataWidth)
-  ) i_axis_intf (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-    .req_o      (mgr_bus[3].req),
-    .we_o       (mgr_bus[3].we),
-    .addr_o     (mgr_bus[3].addr),
-    .wdata_o    (mgr_bus[3].wdata),
-    .be_o       (mgr_bus[3].be),
-    .rdata_i    (mgr_bus[3].rdata),
-    .axi_lite_s (axi_s)
-  );
-
 end
 
 
-// TODO: replace with interface version
-ibex_axi_bridge #(
-  .IBEX_AW (AddrWidth),
-  .IBEX_DW (DataWidth),
-  .AXI_AW (AddrWidth),
-  .AXI_DW (DataWidth)
-) i_axim_intf (
-  .clk_i      (clk_i),
-  .rst_ni     (rst_ni),
-  .req_i      (sbr_bus[4].req),
-  .gnt_o      (sbr_bus[4].gnt),
-  .rvalid_o   (sbr_bus[4].rvalid),
-  .we_i       (sbr_bus[4].we),
-  .be_i       (sbr_bus[4].be),
-  .addr_i     (sbr_bus[4].addr),
-  .wdata_i    (sbr_bus[4].wdata),
-  .rdata_o    (sbr_bus[4].rdata),
-  .err_o      (),
-  .aw_addr_o  (axi_m.aw_addr),
-  .aw_valid_o (axi_m.aw_valid),
-  .aw_ready_i (axi_m.aw_ready),
-  .w_data_o   (axi_m.w_data),
-  .w_strb_o   (axi_m.w_strb),
-  .w_valid_o  (axi_m.w_valid),
-  .w_ready_i  (axi_m.w_ready),
-  .b_resp_i   (axi_m.b_resp),
-  .b_valid_i  (axi_m.b_valid),
-  .b_ready_o  (axi_m.b_ready),
-  .ar_addr_o  (axi_m.ar_addr),
-  .ar_valid_o (axi_m.ar_valid),
-  .ar_ready_i (axi_m.ar_ready),
-  .r_data_i   (axi_m.r_data),
-  .r_resp_i   (axi_m.r_resp),
-  .r_valid_i  (axi_m.r_valid),
-  .r_ready_o  (axi_m.r_ready)
-);
 
 
 obi_xbar_intf #(
@@ -140,43 +87,8 @@ obi_xbar_intf #(
   .default_idx_i    ('0)
 );
 
-rt_mem #(
-  .AddrWidth  (AddrWidth),
-  .DataWidth  (DataWidth),
-  .MemSize    (MemSize),
-  .BaseOffset (ImemOffset)
-) i_imem (
-  .clk_i    (clk_i),
-  .rst_ni   (rst_ni),
-  .req_i    (imem_slv.req),
-  .gnt_o    (imem_slv.gnt),
-  .rvalid_o (imem_slv.rvalid),
-  .we_i     (imem_slv.we),
-  .be_i     (imem_slv.be),
-  .addr_i   (imem_slv.addr),
-  .wdata_i  (imem_slv.wdata),
-  .rdata_o  (imem_slv.rdata)
-);
 
-rt_mem #(
-  .AddrWidth  (AddrWidth),
-  .DataWidth  (DataWidth),
-  .MemSize    (MemSize),
-  .BaseOffset (DmemOffset)
-) i_dmem (
-  .clk_i    (clk_i),
-  .rst_ni   (rst_ni),
-  .req_i    (dmem_slv.req),
-  .gnt_o    (dmem_slv.gnt),
-  .rvalid_o (dmem_slv.rvalid),
-  .we_i     (dmem_slv.we),
-  .be_i     (dmem_slv.be),
-  .addr_i   (dmem_slv.addr),
-  .wdata_i  (dmem_slv.wdata),
-  .rdata_o  (dmem_slv.rdata)
-);
-
-rt_bootrom #(
+rt_ibex_bootrom #(
 ) i_bootrom (
   .clk_i,
   .rst_ni,

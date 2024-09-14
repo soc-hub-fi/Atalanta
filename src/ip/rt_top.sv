@@ -35,7 +35,7 @@ module rt_top #(
 );
 
 localparam int unsigned NumM = 3;
-localparam int unsigned NumS = 5;
+localparam int unsigned NumS = 6;
 
 OBI_BUS #() mst_bus [NumM] (), slv_bus [NumS] ();
 
