@@ -1,44 +1,39 @@
-module rt_ibex_bootrom #(
-  parameter int unsigned ADDR_WIDTH = 32,
-  parameter int unsigned DATA_WIDTH = 32
-)(
-    input  logic clk_i,
-    input  logic rst_ni,
-    input  logic req_i,
-    output logic gnt_o,
-    output logic rvalid_o,
-    input  logic [ADDR_WIDTH-1:0] addr_i,
-    output logic [DATA_WIDTH-1:0] rdata_o
-);
+//TODO: get rid of this eventually and replace with a functional, compiled ROM
+// inspiration from https://github.com/pulp-platform/pulpissimo/tree/master/sw/bootcode
 
-localparam int unsigned RomSize = 2;
-localparam int unsigned RamAw   = $clog2(RomSize);
+module rt_ibex_bootrom #()(
+    input         logic clk_i,
+    input         logic rst_ni,
+    OBI_BUS.Subordinate sbr_bus
+  );
 
-obi_handshake_fsm #(
-) i_fsm (
-  .clk_i   (clk_i),
-  .rst_ni (rst_ni),
-  .cpu_req_i (req_i),
-  .cpu_gnt_o (gnt_o),
-  .cpu_rvalid_o (rvalid_o)
-);
+  localparam int unsigned RomSize = 2;
+  localparam int unsigned RomAddrWidth = $clog2(RomSize);
 
-// TODO: make functional
-const logic [DATA_WIDTH-1:0] rom [RomSize] = {
-    32'h0000006F,
-    32'h0000006F};
+  localparam logic [31:0] BootRom [RomSize] = {
+    32'h0000_006F,
+    32'h0000_006F
+  };
 
-logic [RamAw-1:0] addr;
+  logic [RomAddrWidth-1:0] RomAddr;
 
-always_ff @(posedge clk_i or negedge rst_ni)
-begin : addr_reg
-  if (~rst_ni)
-    addr <= '0;
-  else
-    if (req_i)
-      addr <= addr_i[(RamAw+2):2];
-end
+  obi_handshake_fsm i_fsm (
+    .clk_i,
+    .rst_ni,
+    .req_i    (sbr_bus.req),
+    .gnt_o    (sbr_bus.gnt),
+    .rvalid_o (sbr_bus.rvalid)
+  );
 
-assign rdata_o = rom[addr];
+  always_ff @(posedge clk_i or negedge rst_ni)
+    begin
+      if (~rst_ni)
+        RomAddr <= '0;
+      else
+        RomAddr <= sbr_bus.addr[RomAddrWidth-1:0];
+    end
 
-endmodule : rt_ibex_bootrom
+
+  assign sbr_bus.rdata = BootRom[RomAddr];
+
+  endmodule : rt_ibex_bootrom

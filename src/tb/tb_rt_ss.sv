@@ -114,11 +114,11 @@ if (Load == "READMEM") begin
   $display("[RT_TB] THIS IS NOT APPLICABLE TO SYNTHESIZED DESIGNS, NEVER RELY ONLY ON THIS MODE!");
 `ifndef FPGA_MEM
   `ifndef SYNTH_WRAPPER
-    $readmemh(ImemStim, i_dut.i_core_subsystem.i_imem.i_mem.ram);
-    $readmemh(DmemStim, i_dut.i_core_subsystem.i_dmem.i_mem.ram);
+    $readmemh(ImemStim, i_dut.i_core.i_imem.i_sram.sram);
+    $readmemh(DmemStim, i_dut.i_core.i_dmem.i_sram.sram);
   `else
-    $readmemh(ImemStim, i_dut.i_synth_wrapper.rt_top_unwrap.i_rt_top.i_core_subsystem.i_imem.i_mem.ram);
-    $readmemh(DmemStim, i_dut.i_synth_wrapper.rt_top_unwrap.i_rt_top.i_core_subsystem.i_dmem.i_mem.ram);
+    $readmemh(ImemStim, i_dut.i_synth_wrapper.rt_top_unwrap.i_rt_top.i_core.i_imem.i_sram.sram);
+    $readmemh(DmemStim, i_dut.i_synth_wrapper.rt_top_unwrap.i_rt_top.i_core.i_dmem.i_sram.sram);
   `endif
 `endif
 end else if (Load == "JTAG") begin

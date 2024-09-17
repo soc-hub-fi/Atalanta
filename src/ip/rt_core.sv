@@ -66,9 +66,6 @@ if (CONNECTIVITY) begin : gen_slv_connectivity
 
 end
 
-
-
-
 obi_xbar_intf #(
   .NumSbrPorts     (NumM),
   .NumMgrPorts     (NumS),
@@ -94,6 +91,9 @@ rt_ibex_bootrom #(
   .rst_ni,
   .sbr_bus (sbr_bus[3])
 );
+
+obi_sram_intf #() i_imem ();
+obi_sram_intf #() i_dmem ();
 
 `ifdef DEBUG
 ibex_top_tracing #(
