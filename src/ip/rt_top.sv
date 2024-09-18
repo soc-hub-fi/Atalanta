@@ -34,25 +34,18 @@ module rt_top #(
   input  logic [ClicIrqSrcs-1:0] intr_src_i
 );
 
-// TODO: move to pkg
-localparam int unsigned NumMemBanks = 2;
-localparam int unsigned NumM        = 3;
-localparam int unsigned NumS        = 6 + NumMemBanks;
-localparam int unsigned MemSize     = 32'h4000;
-localparam int unsigned ImemOffset  = 32'h1000;
-localparam int unsigned DmemOffset  = 32'h5000;
-
 APB #() peripheral_bus ();
 OBI_BUS #() axim_bus ();
 OBI_BUS #() axis_bus ();
 OBI_BUS #() dbgm_bus ();
 OBI_BUS #() dbgs_bus ();
-OBI_BUS #() memb_bus [NumMemBanks] ();
+OBI_BUS #() memb_bus [rt_pkg::NumMemBanks] ();
 
 rt_core #(
   .NumInterrupts (ClicIrqSrcs),
   .RVE           (IbexRve),
-  .XbarCfg       (rt_pkg::ObiXbarCfg)
+  .XbarCfg       (rt_pkg::ObiXbarCfg),
+  .NrMemBanks    (rt_pkg::NumMemBanks)
 ) i_core (
   .clk_i,
   .rst_ni,

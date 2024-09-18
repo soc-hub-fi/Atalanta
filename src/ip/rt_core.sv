@@ -2,16 +2,13 @@
 //`include "obi/assign.svh"
 
 module rt_core #(
-  parameter int unsigned AddrWidth     = 32,
-  parameter int unsigned DataWidth     = 32,
-  parameter int unsigned NumInterrupts = 64,
-  parameter bit          RVE           =  1,
-  parameter int unsigned ImemSize      = 32'h4000,
-  parameter int unsigned DmemSize      = 32'h4000,
-  parameter int unsigned ImemOffset    = 32'h1000,
-  parameter int unsigned DmemOffset    = 32'h5000,
-  parameter int unsigned NrMemBanks    = 2,
-  localparam int unsigned SrcW         = $clog2(NumInterrupts)
+  parameter int unsigned AddrWidth      = 32,
+  parameter int unsigned DataWidth      = 32,
+  parameter int unsigned NumInterrupts  = 64,
+  parameter bit          RVE            =  1,
+  parameter rt_pkg::xbar_cfg_t XbarCfg  = rt_pkg::ObiXbarCfg,
+  parameter int unsigned NrMemBanks     = 2,
+  localparam int unsigned SrcW          = $clog2(NumInterrupts)
 
   )(
   input  logic            clk_i,
@@ -32,13 +29,40 @@ module rt_core #(
   OBI_BUS.Subordinate     obis_axi,
   OBI_BUS.Subordinate     obis_debug
 );
+/*
+localparam int unsigned SramStart = XbarCfg.SramStart;
+localparam int unsigned SramEnd   = XbarCfg.SramEnd;
+localparam int unsigned SramSize  = rt_pkg::get_addr_size(SramEnd, SramStart);
+
+rt_pkg::rule_t [NrMemBanks] SramRules;
+
+for (genvar i=0; i<NrMemBanks; i++) begin : g_sram_rules
+  assign SramRules[i] = '{
+    idx: 32'd5+i,
+    start_addr : (XbarCfg.SramStart) + SramSize*(i*1/NrMemBanks),
+    end_addr   : (XbarCfg.SramStart) + SramSize*((i+1)*1/NrMemBanks)
+  };
+end
+
+rt_pkg::rule_t [XbarCfg.NumS-1:0] AddrMap = '{
+  SramRules,
+  rt_pkg::AxiRule,
+  rt_pkg::ApbRule,
+  rt_pkg::DmemRule,
+  rt_pkg::ImemRule,
+  rt_pkg::DbgRule,
+  rt_pkg::RomRule
+};
+*/
+
+OBI_BUS #() mgr_bus [rt_pkg::ObiXbarCfg.NumM] (), sbr_bus [rt_pkg::ObiXbarCfg.NumS] ();
 
 obi_xbar_intf #(
-  .NumSbrPorts     (NumM),
-  .NumMgrPorts     (NumS),
-  .NumMaxTrans     (3),
-  .NumAddrRules    (NumRules),
-  .addr_map_rule_t (rule_t),
+  .NumSbrPorts     (XbarCfg.NumM),
+  .NumMgrPorts     (XbarCfg.NumS),
+  .NumMaxTrans     (XbarCfg.MaxTrans),
+  .NumAddrRules    (XbarCfg.NumS),
+  .addr_map_rule_t (rt_pkg::rule_t),
   .UseIdForRouting (0)
 ) i_obi_xbar (
   .clk_i            (clk_i),

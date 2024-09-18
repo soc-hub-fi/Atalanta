@@ -15,6 +15,7 @@ dependencies:
 
 sources:
   files:
+    - src/ip/rt_pkg.sv
     - src/ip/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
     - src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
     - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
@@ -28,7 +29,6 @@ sources:
     - src/ip/rt_memory_banks.sv
     - src/ip/rt_peripherals.sv
     - src/ip/rt_debug.sv
-    - src/ip/rt_pkg.sv
     - src/ip/rt_top.sv
 
     - target: any(test, simulation)
