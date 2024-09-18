@@ -28,6 +28,7 @@ sources:
     - src/ip/rt_memory_banks.sv
     - src/ip/rt_peripherals.sv
     - src/ip/rt_debug.sv
+    - src/ip/rt_pkg.sv
     - src/ip/rt_top.sv
 
     - target: any(test, simulation)

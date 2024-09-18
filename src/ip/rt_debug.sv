@@ -26,7 +26,7 @@ module rt_debug #(
 
 ) (
   input  logic clk_i,
-  input  logic rstn_i,
+  input  logic rst_ni,
   // DEBUG
   input  logic jtag_tck_i,    // JTAG test clock pad
   input  logic jtag_tms_i,    // JTAG test mode select pad
@@ -36,23 +36,25 @@ module rt_debug #(
   output logic ndmreset_o,
   output logic debug_req_irq_o,
   // dbg_m
-  output logic                       dbg_m_req_o,
-  output logic     [DbgBusWidth-1:0] dbg_m_add_o,
-  output logic                       dbg_m_we_o,
-  output logic     [DbgBusWidth-1:0] dbg_m_wdata_o,
-  output logic [(DbgBusWidth/8)-1:0] dbg_m_be_o,
-  input  logic     [DbgBusWidth-1:0] dbg_m_rdata_i,
-  input  logic                       dbg_m_gnt_i,
-  input  logic                       dbg_m_valid_i,
+  OBI_BUS.Manager dbg_mst,
+  //output logic                       dbg_m_req_o,
+  //output logic     [DbgBusWidth-1:0] dbg_m_add_o,
+  //output logic                       dbg_m_we_o,
+  //output logic     [DbgBusWidth-1:0] dbg_m_wdata_o,
+  //output logic [(DbgBusWidth/8)-1:0] dbg_m_be_o,
+  //input  logic     [DbgBusWidth-1:0] dbg_m_rdata_i,
+  //input  logic                       dbg_m_gnt_i,
+  //input  logic                       dbg_m_valid_i,
   // dbg_s
-  input  logic                       dbg_s_req_i,
-  output logic                       dbg_s_gnt_o,
-  output logic                       dbg_s_rvalid_o,
-  input  logic                       dbg_s_we_i,
-  input  logic     [DbgBusWidth-1:0] dbg_s_addr_i,
-  input  logic     [DbgBusWidth-1:0] dbg_s_wdata_i,
-  input  logic [(DbgBusWidth/8)-1:0] dbg_s_be_i,
-  output logic     [DbgBusWidth-1:0] dbg_s_rdata_o
+  OBI_BUS.Subordinate dbg_slv
+  //input  logic                       dbg_s_req_i,
+  //output logic                       dbg_s_gnt_o,
+  //output logic                       dbg_s_rvalid_o,
+  //input  logic                       dbg_s_we_i,
+  //input  logic     [DbgBusWidth-1:0] dbg_s_addr_i,
+  //input  logic     [DbgBusWidth-1:0] dbg_s_wdata_i,
+  //input  logic [(DbgBusWidth/8)-1:0] dbg_s_be_i,
+  //output logic     [DbgBusWidth-1:0] dbg_s_rdata_o
 );
 
 /****** LOCAL VARIABLES AND CONSTANTS *****************************************/
@@ -78,12 +80,12 @@ logic                         dmi_resp_valid_s;
 logic                         dmi_resp_ready_s;
 
 obi_handshake_fsm #(
-) i_fsm (
-  .clk_i        (clk_i),
-  .rst_ni       (rstn_i),
-  .req_i    (dbg_s_req_i),
-  .gnt_o    (dbg_s_gnt_o),
-  .rvalid_o (dbg_s_rvalid_o)
+) i_handshake_ctrl (
+  .clk_i,
+  .rst_ni,
+  .req_i    (dbg_slv.req),
+  .gnt_o    (dbg_slv.gnt),
+  .rvalid_o (dbg_slv.rvalid)
 );
 
 
@@ -93,7 +95,7 @@ obi_handshake_fsm #(
     .IdcodeValue ( 32'hFEEDC0D3 )
   ) i_dmi_jtag (
     .clk_i            (clk_i           ),
-    .rst_ni           (rstn_i          ),
+    .rst_ni           (rst_ni          ),
     .testmode_i       ('0              ),
     .dmi_rst_no       (/*nc*/          ),
     .dmi_req_valid_o  (dmi_req_valid_s ),
@@ -117,35 +119,37 @@ obi_handshake_fsm #(
     .SelectableHarts ( {NrHarts{1'b1}} ),
     .ReadByteEnable  ( 1               ) // toggle new behavior to drive master_be_o during a read
   ) i_dm_top (
-    .clk_i            (clk_i           ),
-    .rst_ni           (rstn_i          ),
-    .testmode_i       ('0              ),
-    .ndmreset_o       (ndmreset_o      ),
-    .dmactive_o       (/*nc*/          ),
-    .debug_req_o      (debug_req_irq_o ),
-    .unavailable_i    ('0              ),
-    .hartinfo_i       (DebugHartInfo   ),
-    .slave_req_i      (dbg_s_req_i     ),
-    .slave_we_i       (dbg_s_we_i      ),
-    .slave_addr_i     (dbg_s_addr_i    ),
-    .slave_be_i       (dbg_s_be_i      ),
-    .slave_wdata_i    (dbg_s_wdata_i   ),
-    .slave_rdata_o    (dbg_s_rdata_o   ),
-    .master_req_o     (dbg_m_req_o     ),
-    .master_add_o     (dbg_m_add_o     ),
-    .master_we_o      (dbg_m_we_o      ),
-    .master_wdata_o   (dbg_m_wdata_o   ),
-    .master_be_o      (dbg_m_be_o      ),
-    .master_gnt_i     (dbg_m_gnt_i     ),
-    .master_r_valid_i (dbg_m_valid_i   ),
-    .master_r_rdata_i (dbg_m_rdata_i   ),
-    .dmi_rst_ni       (rstn_i          ),
-    .dmi_req_valid_i  (dmi_req_valid_s ),
-    .dmi_req_ready_o  (dmi_req_ready_s ),
-    .dmi_req_i        (dmi_req_s       ),
-    .dmi_resp_valid_o (dmi_resp_valid_s),
-    .dmi_resp_ready_i (dmi_resp_ready_s),
-    .dmi_resp_o       (dmi_resp_s      )
+    .clk_i                (clk_i           ),
+    .rst_ni               (rst_ni          ),
+    .testmode_i           ('0              ),
+    .ndmreset_o           (ndmreset_o      ),
+    .dmactive_o           (/*nc*/          ),
+    .debug_req_o          (debug_req_irq_o ),
+    .unavailable_i        ('0              ),
+    .hartinfo_i           (DebugHartInfo   ),
+    .slave_req_i          (dbg_slv.req     ),
+    .slave_we_i           (dbg_slv.we      ),
+    .slave_addr_i         (dbg_slv.addr    ),
+    .slave_be_i           (dbg_slv.be      ),
+    .slave_wdata_i        (dbg_slv.wdata   ),
+    .slave_rdata_o        (dbg_slv.rdata   ),
+    .master_req_o         (dbg_mst.req     ),
+    .master_add_o         (dbg_mst.addr    ),
+    .master_we_o          (dbg_mst.we      ),
+    .master_wdata_o       (dbg_mst.wdata   ),
+    .master_be_o          (dbg_mst.be      ),
+    .master_gnt_i         (dbg_mst.gnt     ),
+    .master_r_valid_i     (dbg_mst.rvalid  ),
+    .master_r_rdata_i     (dbg_mst.rdata   ),
+    .dmi_rst_ni           (rst_ni          ),
+    .dmi_req_valid_i      (dmi_req_valid_s ),
+    .dmi_req_ready_o      (dmi_req_ready_s ),
+    .dmi_req_i            (dmi_req_s       ),
+    .dmi_resp_valid_o     (dmi_resp_valid_s),
+    .dmi_resp_ready_i     (dmi_resp_ready_s),
+    .dmi_resp_o           (dmi_resp_s      ),
+    .master_r_other_err_i ('0),
+    .master_r_err_i       ('0)
   );
 
 endmodule

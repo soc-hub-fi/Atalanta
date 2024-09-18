@@ -34,12 +34,60 @@ module rt_top #(
   input  logic [ClicIrqSrcs-1:0] intr_src_i
 );
 
-localparam int unsigned NumM = 3;
-localparam int unsigned NumS = 6;
+// TODO: move to pkg
+localparam int unsigned NumMemBanks = 2;
+localparam int unsigned NumM        = 3;
+localparam int unsigned NumS        = 6 + NumMemBanks;
+localparam int unsigned MemSize     = 32'h4000;
+localparam int unsigned ImemOffset  = 32'h1000;
+localparam int unsigned DmemOffset  = 32'h5000;
 
-OBI_BUS #() mst_bus [NumM] (), slv_bus [NumS] ();
+APB #() peripheral_bus ();
+OBI_BUS #() axim_bus ();
+OBI_BUS #() axis_bus ();
+OBI_BUS #() dbgm_bus ();
+OBI_BUS #() dbgs_bus ();
+OBI_BUS #() memb_bus [NumMemBanks] ();
 
-rt_debug #() i_riscv_dbg ();
+rt_core #(
+  .NumInterrupts (ClicIrqSrcs),
+  .RVE           (IbexRve),
+  .XbarCfg       (rt_pkg::ObiXbarCfg)
+) i_core (
+  .clk_i,
+  .rst_ni,
+  .irq_valid_i     (),
+  .irq_ready_o     (),
+  .irq_id_i        (),
+  .irq_level_i     (),
+  .irq_shv_i       (),
+  .irq_priv_i      (),
+  .debug_req_i     (),
+  .apbm_peripheral (peripheral_bus),
+  .obim_memory     (memb_bus),
+  .obim_debug      (dbgs_bus),
+  .obim_axi        (axim_bus),
+  .obis_axi        (axis_bus),
+  .obis_debug      (dbgm_bus)
+);
+
+rt_peripherals #() i_peripherals ();
+
+rt_debug #(
+  .DmBaseAddr ('h0000)
+) i_riscv_dbg (
+  .clk_i,
+  .rst_ni,
+  .jtag_tck_i,
+  .jtag_tms_i,
+  .jtag_trst_ni,
+  .jtag_td_i,
+  .jtag_td_o,
+  .ndmreset_o      (),
+  .debug_req_irq_o (),
+  .dbg_mst         (dbgm_bus),
+  .dbg_slv         (dbgs_bus)
+);
 
 rt_memory_banks #() i_memory_banks ();
 
@@ -47,8 +95,5 @@ axi_to_obi_intf #() i_axi_to_obi ();
 
 obi_to_axi_intf #() i_obi_to_axi ();
 
-rt_core #() i_core ();
-
-rt_peripherals #() i_peripherals ();
 
 endmodule : rt_top
