@@ -12,16 +12,16 @@ module rt_peripherals #(
   parameter int unsigned AddrWidth = 32,
   parameter int unsigned DataWidth = 32,
   parameter int unsigned NSource   = 64,
-  parameter type         rule_t    = logic,
+  //parameter type         rule_t    = logic,
   localparam int         SrcW      = $clog2(NSource),
   localparam int         StrbWidth = (DataWidth / 8)
 )(
   input  logic                 clk_i,
   input  logic                 rst_ni,
   APB.Slave                    apb_i,
-  output logic           [3:0] gpio_output_o,
-  input  logic           [3:0] gpio_input_i,
-  input  logic   [NSource-1:0] intr_src_i,
+  output logic           [3:0] gpio_o,
+  input  logic           [3:0] gpio_i,
+  input  logic   [NSource-1:0] irq_src_i,
   output logic                 irq_valid_o,
   input  logic                 irq_ready_i,
   output logic      [SrcW-1:0] irq_id_o,
@@ -35,6 +35,7 @@ module rt_peripherals #(
 );
 
 
+/*
 // INCLUSIVE END ADDR
 localparam int unsigned GpioStartAddr   = 32'h0003_0000;
 localparam int unsigned GpioEndAddr     = 32'h0003_00FF;
@@ -198,7 +199,7 @@ rt_gpio #() i_gpio (
   .pready_o       (apb_out[0].pready),
   .pslverr_o      (apb_out[0].pslverr)
 );
-*/
+
 
 `ifdef NOT_MOCK
 apb_uart i_apb_uart (

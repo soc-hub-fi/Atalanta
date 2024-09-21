@@ -16,15 +16,15 @@ module rt_top #(
   localparam int unsigned StrbWidth   = (AxiDataWidth / 8)
 
 )(
-  input  logic               clk_i,
-  input  logic               rst_ni,
-  input  logic [3:0]         gpio_input_i,
-  output logic [3:0]         gpio_output_o,
-  input  logic               uart_rx_i,
-  output logic               uart_tx_o,
+  input  logic                   clk_i,
+  input  logic                   rst_ni,
+  input  logic [3:0]             gpio_input_i,
+  output logic [3:0]             gpio_output_o,
+  input  logic                   uart_rx_i,
+  output logic                   uart_tx_o,
 `ifndef STANDALONE
-  AXI_LITE.Slave             soc_slv,
-  AXI_LITE.Master            soc_mst,
+  AXI_BUS.Slave                 soc_slv,
+  AXI_BUS.Master                soc_mst,
 `endif
   input  logic                   jtag_tck_i,
   input  logic                   jtag_tms_i,
@@ -64,7 +64,24 @@ rt_core #(
   .obis_debug      (dbgm_bus)
 );
 
-rt_peripherals #() i_peripherals ();
+rt_peripherals #() i_peripherals (
+  .clk_i,
+  .rst_ni,
+  .apb_i          (peripheral_bus),
+  .uart_rx_i      (),
+  .uart_tx_o      (),
+  .irq_kill_req_o (),
+  .irq_kill_ack_i (),
+  .irq_priv_o     (),
+  .irq_shv_o      (),
+  .irq_level_o    (),
+  .irq_valid_o    (),
+  .irq_ready_i    (),
+  .irq_id_o       (),
+  .irq_src_i      (),
+  .gpio_i         (),
+  .gpio_o         ()
+);
 
 rt_debug #(
   .DmBaseAddr ('h0000)
@@ -84,7 +101,16 @@ rt_debug #(
 
 rt_memory_banks #() i_memory_banks ();
 
-axi_to_obi_intf #() i_axi_to_obi ();
+axi_to_obi_intf #(
+  .AxiIdWidth   (),
+  .AxiUserWidth (),
+  .MaxTrans     ()
+) i_axi_to_obi (
+  .clk_i,
+  .rst_ni,
+  .obi_out (axis_bus),
+  .axi_in  (soc_slv)
+);
 
 obi_to_axi_intf #() i_obi_to_axi ();
 

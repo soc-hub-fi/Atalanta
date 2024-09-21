@@ -66,13 +66,9 @@ logic [IrqWidth-1:0] intr_src;
 //    .AXI_DATA_WIDTH ( AxiDW )
 //  ) axi_slv_dv ( clk );
 //
-`ifdef SYNTH_WRAPPER
 AXI_BUS #(
   .AXI_ID_WIDTH   ( 9 ),
   .AXI_USER_WIDTH ( 4 ),
-`else
-AXI_LITE #(
-`endif
   .AXI_ADDR_WIDTH ( AxiAw ),
   .AXI_DATA_WIDTH ( AxiDW )
 ) soc_mst (), soc_slv ();

@@ -30,7 +30,7 @@ typedef struct packed {
 
 localparam int unsigned NumMemBanks = 2;
 localparam xbar_cfg_t   ObiXbarCfg = '{
-  NumM      : 3,
+  NumM      : 4,
   NumS      : 6 + NumMemBanks,
   MaxTrans  : 3,
   /// Subsystem Address Mapping
