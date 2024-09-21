@@ -1,3 +1,8 @@
+`include "obi/typedef.svh"
+`include "obi/assign.svh"
+`include "axi/typedef.svh"
+`include "axi/assign.svh"
+
 module axi_to_obi_intf #(
   parameter obi_pkg::obi_cfg_t ObiCfg  = obi_pkg::ObiDefaultConfig,
   parameter int unsigned  AxiIdWidth   = 0,
@@ -51,10 +56,10 @@ axi_resp_t slv_resp; //, mst_resp;
 //`AXI_ASSIGN_TO_RESP(mst_resp, mst)
 
 axi_to_obi #(
-  .ObiCfg,
-  .AxiIdWidth,
-  .AxiUserWidth,
-  .MaxTrans,
+  .ObiCfg        (ObiCfg),
+  .AxiIdWidth    (AxiIdWidth),
+  .AxiUserWidth  (AxiUserWidth),
+  .MaxTrans      (MaxTrans),
   .obi_req_t     (mgr_port_obi_req_t),
   .obi_rsp_t     (mgr_port_obi_rsp_t),
   .obi_a_chan_t  (mgr_port_obi_a_chan_t),
