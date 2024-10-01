@@ -34,6 +34,11 @@ module rt_peripherals #(
   input  logic                 uart_rx_i
 );
 
+assign irq_valid_o = 0;
+assign irq_id_o = 0;
+assign irq_level_o = 0;
+assign irq_priv_o = 0;
+
 
 /*
 // INCLUSIVE END ADDR

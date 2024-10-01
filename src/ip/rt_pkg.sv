@@ -58,12 +58,13 @@ typedef struct packed {
 
 //localparam rule_t SramRules [NumMemBanks] = '{idx: 32'd5, start_addr: ObiXbarCfg.AxiStart,  end_addr: ObiXbarCfg.AxiEnd  };
 
+localparam rule_t SramRule = '{idx: 32'd6, start_addr: ObiXbarCfg.SramStart,  end_addr: ObiXbarCfg.SramEnd  };
 localparam rule_t AxiRule  = '{idx: 32'd5, start_addr: ObiXbarCfg.AxiStart,  end_addr: ObiXbarCfg.AxiEnd  };
 localparam rule_t ApbRule  = '{idx: 32'd4, start_addr: ObiXbarCfg.ApbStart,  end_addr: ObiXbarCfg.ApbEnd  };
 localparam rule_t DmemRule = '{idx: 32'd3, start_addr: ObiXbarCfg.DmemStart, end_addr: ObiXbarCfg.DmemEnd };
 localparam rule_t ImemRule = '{idx: 32'd2, start_addr: ObiXbarCfg.ImemStart, end_addr: ObiXbarCfg.ImemEnd };
-localparam rule_t DbgRule  = '{idx: 32'd1, start_addr: ObiXbarCfg.DbgStart,  end_addr: ObiXbarCfg.DbgEnd  };
-localparam rule_t RomRule  = '{idx: 32'd0, start_addr: ObiXbarCfg.RomStart,  end_addr: ObiXbarCfg.RomEnd  };
+localparam rule_t RomRule  = '{idx: 32'd1, start_addr: ObiXbarCfg.RomStart,  end_addr: ObiXbarCfg.RomEnd  };
+localparam rule_t DbgRule  = '{idx: 32'd0, start_addr: ObiXbarCfg.DbgStart,  end_addr: ObiXbarCfg.DbgEnd  };
 
 //localparam rule_t [ObiXbarCfg.NumS-1:0] AddrMap = '{
 //  '{idx: 32'd6, start_addr: ObiXbarCfg.AxiStart,   end_addr: ObiXbarCfg.AxiEnd  },
