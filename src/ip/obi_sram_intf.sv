@@ -8,6 +8,10 @@ module obi_sram_intf #(
   OBI_BUS.Subordinate sbr_bus
 );
 
+logic [AddrWidth-1:0] sram_addr;
+
+assign sram_addr = sbr_bus.addr[AddrWidth-1:0] >> 2;
+
 obi_handshake_fsm i_fsm (
   .clk_i,
   .rst_ni,
@@ -31,7 +35,7 @@ tc_sram #(
   .req_i   (sbr_bus.req),
   .we_i    (sbr_bus.we),
   .be_i    (sbr_bus.be),
-  .addr_i  (sbr_bus.addr[AddrWidth-1:0]),
+  .addr_i  (sram_addr),
   .wdata_i (sbr_bus.wdata),
   .rdata_o (sbr_bus.rdata)
 );
