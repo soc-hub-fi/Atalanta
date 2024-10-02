@@ -151,7 +151,7 @@ ibex_top #(
 
   // Configuration
   .hart_id_i   (32'h0),
-  .boot_addr_i (32'h0000_0000),
+  .boot_addr_i (rt_pkg::ObiXbarCfg.RomStart),
 
   // Instruction memory interface
   .instr_req_o        (mgr_bus[1].req ),

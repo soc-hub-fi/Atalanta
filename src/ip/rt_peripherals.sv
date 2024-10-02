@@ -36,6 +36,7 @@ module rt_peripherals #(
 
 assign irq_valid_o = 0;
 assign irq_id_o = 0;
+assign irq_shv_o = 0;
 assign irq_level_o = 0;
 assign irq_priv_o = 0;
 
