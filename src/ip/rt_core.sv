@@ -69,15 +69,14 @@ OBI_BUS #() mgr_bus [rt_pkg::ObiXbarCfg.NumM] (), sbr_bus [rt_pkg::ObiXbarCfg.Nu
 
 `OBI_ASSIGN(obim_debug, sbr_bus[0], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 `OBI_ASSIGN(obim_rom, sbr_bus[1], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-`OBI_ASSIGN(obim_axi, sbr_bus[4], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-// APB #5
+`OBI_ASSIGN(obim_axi, sbr_bus[5], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 
 for (genvar i = 0; i < NrMemBanks; i++) begin : g_mem_banks
   `OBI_ASSIGN(obim_memory[i], sbr_bus[6+i], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 end : g_mem_banks
 
-assign sbr_bus[5].gnt    = 0;
-assign sbr_bus[5].rvalid = 0;
+//assign sbr_bus[4].gnt    = 0;
+//assign sbr_bus[4].rvalid = 0;
 
 obi_xbar_intf #(
   .NumSbrPorts     (XbarCfg.NumM),
@@ -106,6 +105,13 @@ obi_sram_intf #() i_dmem (
   .clk_i,
   .rst_ni,
   .sbr_bus (sbr_bus[3])
+);
+
+obi_to_apb_intf #() i_obi_to_apb (
+  .clk_i,
+  .rst_ni,
+  .obi_i (sbr_bus[4]),
+  .apb_o (apbm_peripheral)
 );
 
 `ifndef SYNTHESIS
@@ -221,9 +227,6 @@ for (genvar i = 0; i < rt_pkg::ObiXbarCfg.NumM; i++) begin : g_tieoff
   assign sbr_bus[i].rvalidpar  = 0;
   assign sbr_bus[i].rready     = 0;
   assign sbr_bus[i].rreadypar  = 0;
-  //assign sbr_bus[i].rid        = 0;
-  //assign sbr_bus[i].err        = 0;
-  //assign sbr_bus[i].r_optional = 0;
 end : g_tieoff
 
 // IMEM tieoff

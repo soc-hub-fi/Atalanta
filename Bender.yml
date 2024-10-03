@@ -21,6 +21,7 @@ sources:
     - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
     - src/ip/axi_to_obi_intf.sv
     - src/ip/obi_to_axi_intf.sv
+    - src/ip/obi_to_apb_intf.sv
     - src/ip/obi_handshake_fsm.sv
     - src/ip/obi_cut_intf.sv
     - src/ip/obi_sram_intf.sv

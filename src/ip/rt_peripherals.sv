@@ -41,7 +41,7 @@ assign irq_level_o = 0;
 assign irq_priv_o = 0;
 
 
-/*
+
 // INCLUSIVE END ADDR
 localparam int unsigned GpioStartAddr   = 32'h0003_0000;
 localparam int unsigned GpioEndAddr     = 32'h0003_00FF;
@@ -54,7 +54,8 @@ localparam int unsigned ClicEndAddr     = 32'h0005_FFFF;
 
 localparam int unsigned NrApbPerip = 4;
 
-logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
+
+//logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
 logic                   uart_irq;
 
 logic             [1:0] demux_sel;
@@ -67,7 +68,7 @@ APB #(
   .ADDR_WIDTH (AddrWidth),
   .DATA_WIDTH (DataWidth)
 ) apb_out [NrApbPerip-1:0] (), apb_div ();
-
+/*
 
 always_comb
   begin : irq_assign
@@ -79,7 +80,7 @@ always_comb
     // platform defined 16-19
     // nmi 31
   end
-
+*/
 apb_cdc_intf #(
   .APB_ADDR_WIDTH (AddrWidth),
   .APB_DATA_WIDTH (DataWidth)
@@ -126,7 +127,7 @@ apb_demux_intf #(
   .mst      (apb_out),
   .select_i (demux_sel)
 );
-
+/*
 // 2x delay logic for irq_ready
 // TODO: make generic
 always_ff @(posedge(clk_i) or negedge(rst_ni))
@@ -143,7 +144,7 @@ always_ff @(posedge(clk_i) or negedge(rst_ni))
 assign irq_ready_delay = irq_ready_i | irq_ready_q;
 // end 2x delay
 
-
+*/
 always_comb
   begin : decode // TODO: Make enum for values
     unique case (apb_div.paddr) inside
@@ -164,7 +165,7 @@ always_comb
       end
     endcase
   end
-
+/*
 clic_apb #(
   .N_SOURCE     (NSource),
   .INTCTLBITS   (8)
@@ -206,7 +207,7 @@ rt_gpio #() i_gpio (
   .pslverr_o      (apb_out[0].pslverr)
 );
 
-
+*/
 `ifdef NOT_MOCK
 apb_uart i_apb_uart (
   .CLK      (periph_clk),
