@@ -108,7 +108,7 @@ obi_sram_intf #() i_dmem (
   .sbr_bus (sbr_bus[3])
 );
 
-`ifdef DEBUG
+`ifndef SYNTHESIS
 ibex_top_tracing #(
 `else
 ibex_top #(

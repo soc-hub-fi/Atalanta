@@ -13,16 +13,6 @@ DUT = tb_rt_ss
 
 BENDER ?= bender
 
-# library specific OPTS etc can be appended in actual library target
-
-#COMMON_CELLS_INC_DIRS = +incdir+../ips/bow-common-ips/ips/pulp-common-cells/include/ \
-						+incdir+../ips/rt-ibex/vendor/lowrisc_ip/ip/prim/rtl/ \
-						+incdir+../ips/register_interface/include \
-						+incdir+../ips/apb/include \
-						+incdir+../ips/obi/include \
-						+incdir+../ips/rt-ibex/vendor/lowrisc_ip/dv/sv/dv_utils/
-#AXI_INC_DIRS = $(COMMON_CELLS_INC_DIRS) +incdir+../ips/bow-common-ips/ips/axi/include/
-
 COMMON_CELLS_DIR ?= $(shell $(BENDER) path common_cells)
 OBI_DIR          ?= $(shell $(BENDER) path obi)
 AXI_DIR          ?= $(shell $(BENDER) path axi)
@@ -42,11 +32,12 @@ INCLUDES ?= \
 
 SOC_CONNECTIVITY =
 DEBUG =
-RVFI =
 FPGA = 
 SYNTH_WRAPPER =
 
-VLOG_DEFINES = $(SOC_CONNECTIVITY) $(DEBUG) $(RVFI) $(FPGA) $(SYNTH_WRAPPER)
+VLOG_DEFINES = $(SOC_CONNECTIVITY) $(DEBUG) $(FPGA) $(SYNTH_WRAPPER)
+
+VLOG_DEFINES += +define+RVFI=1
 
 # if using synthesisable memory models
 ifdef SYNTH_MEM
