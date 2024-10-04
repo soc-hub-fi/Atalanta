@@ -15,14 +15,14 @@ module obi_to_apb_intf #(
 );
 
   // APB phase FSM
-  typedef enum logic {SETUP, ACCESS} state_e;
+  typedef enum logic [1:0] {SETUP, ACCESS, HANDSHAKE} state_e;
   state_e state_d, state_q;
 
   // Feed these through.
   assign apb_o.paddr  = obi_i.addr;
   assign apb_o.pwrite = obi_i.we;
   assign apb_o.pwdata = obi_i.wdata;
-  assign apb_o.psel   = obi_i.rvalid;
+  assign apb_o.psel   = obi_i.req;
   assign apb_o.pstrb  = obi_i.be;
 
   assign obi_i.err    = apb_o.pslverr;
@@ -44,7 +44,11 @@ module obi_to_apb_intf #(
       ACCESS: begin
         apb_o.penable = 1'b1;
         obi_i.gnt   = apb_o.pready;
-        if (apb_o.pready) state_d = SETUP;
+        if (apb_o.pready) state_d = HANDSHAKE;
+      end
+      HANDSHAKE: begin
+        obi_i.rvalid = 1'b1;
+        state_d = (obi_i.req) ? ACCESS : SETUP;
       end
       // We should never reach this state.
       default: state_d = SETUP;

@@ -125,7 +125,7 @@ vsim_wave: check-env
 #####################
 .PHONY: smoke_compile
 smoke_compile:
-	./examples/smoke_tests/scripts/compile.py ./examples/smoke_tests/$(TEST).c --riscv-xlen 32
+	./examples/smoke_tests/scripts/compile.py ./examples/smoke_tests/$(TEST).c --riscv-xlen 64
 
 
 #####################

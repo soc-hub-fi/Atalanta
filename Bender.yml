@@ -25,6 +25,7 @@ sources:
     - src/ip/obi_handshake_fsm.sv
     - src/ip/obi_cut_intf.sv
     - src/ip/obi_sram_intf.sv
+    - src/ip/mock_uart.sv
     - src/ip/rt_core.sv
     - src/ip/rt_ibex_bootrom.sv
     - src/ip/rt_memory_banks.sv
