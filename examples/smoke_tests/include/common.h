@@ -5,12 +5,11 @@
 
 
 #include <stdint.h>
-
-#include "uart.h"
+#include "uart_interrupt.h"
 
 #define LED_REG_ADDR (0x30008)
 #define GPIO_REG_ADDR 0x00030008
-#define SHARED_VAR_ADDR (0x2F00)
+#define SHARED_VAR_ADDR (0x5000)
 
 
 #define assert(expression)                                         \
@@ -31,6 +30,8 @@ void delay(uint16_t iters){
 void init(){
     *((uint32_t*)(LED_REG_ADDR)) = 0x00000000;   // TO AVOID RESETTING BETWEEN TESTS 
     *((uint32_t*)(LED_REG_ADDR)) = 0x00000100;   // LED1 SET
+    *((uint32_t *)(SHARED_VAR_ADDR))  = 0x00000000; //count the number of times the interrupt handler gets executed
+
 
     asm("nop");
 }

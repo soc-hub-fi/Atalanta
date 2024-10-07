@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "include/clic.h"
 #include "include/csr_utils.h"
+#include "include/uart_interrupt.h"
 
 #define OUTPUT_REG_ADDR    0x00030008
 #define TIMER_BASE_ADDR    0x00030200
@@ -11,7 +12,15 @@
 #define MTIMECMP_HIGH_ADDR (TIMER_BASE_ADDR + 12)
 #define MTIME_CTRL_ADDR    (TIMER_BASE_ADDR + 16)
 
+#define COMMON_ADDR 0x7000
+
 int main() {
+
+  init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
+  //Init OUTPUT_REG_ADDR 
+
+  *(uint32_t*)(COMMON_ADDR) = 0xFF;
+
 
   // init CLIC
   *(uint32_t*)(CLIC_BASE_ADDR) = 8;
@@ -43,16 +52,14 @@ int main() {
 
   csr_write(CSR_MINTTHRESH, 0x00);
 
-  // delay
-  for (int it=0; it<100; it++){
-    volatile uint32_t dummy_load = *(uint32_t*)(MTIMECMP_LOW_ADDR);
-    uint32_t reg = 2 / dummy_load;
-    reg *= 7;
-  }
 
-  //terminate test
-  //*(uint32_t*)(OUTPUT_REG_ADDR) = 1;
+
   while (1)
-    ;
-  
+    if (*(uint32_t*)(COMMON_ADDR) == 0xFE) break;
+
+  print_uart("Timer test [PASSED]\n");
+
+  while (1)
+    ; // keep test from returning
+
 }

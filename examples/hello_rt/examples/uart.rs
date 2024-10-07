@@ -9,8 +9,8 @@
 #![no_main]
 #![no_std]
 
-use hello_rt::{asm_delay, mmap::LED_ADDR, uart::*, write_u32, CPU_FREQ};
-use riscv_rt::entry;
+use bsp::mmap::LED_ADDR;
+use bsp::{asm_delay, rt::entry, uart::*, write_u32, CPU_FREQ};
 
 #[entry]
 fn main() -> ! {

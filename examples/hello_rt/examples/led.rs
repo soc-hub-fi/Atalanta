@@ -2,8 +2,7 @@
 #![no_main]
 #![no_std]
 
-use hello_rt::{asm_delay, led::*, NOPS_PER_SEC};
-use riscv_rt::entry;
+use bsp::{asm_delay, led::*, rt::entry, NOPS_PER_SEC};
 
 #[inline(never)]
 fn blinky() {

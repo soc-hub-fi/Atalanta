@@ -1,7 +1,5 @@
 #![no_std]
 
-pub use mmap;
-
 use core::arch::{asm, global_asm};
 use core::panic::PanicInfo;
 use core::ptr;

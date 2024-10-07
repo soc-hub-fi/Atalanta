@@ -2,10 +2,10 @@ _hart_stack_size = 0x400;
 
 MEMORY
 {
-  /* Instruction memory : 0x1000 = 4 KiB */
-  IMEM (rx ): ORIGIN = 0x1000, LENGTH = 0x1000
-  /* Data memory        : 0x1000 = 4 KiB */
-  DMEM (rwx): ORIGIN = 0x2000, LENGTH = 0x1000
+  /* Instruction memory : 0x4000 = 16 KiB */
+  IMEM (rx ): ORIGIN = 0x1000, LENGTH = 0x4000
+  /* Data memory        : 0x4000 = 16 KiB */
+  DMEM (rwx): ORIGIN = 0x5000, LENGTH = 0x4000
 }
 
 REGION_ALIAS("REGION_STACK", DMEM);

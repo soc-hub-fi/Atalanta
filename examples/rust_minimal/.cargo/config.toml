@@ -11,3 +11,36 @@ rustflags = [
     "link-arg=-nostartfiles",
 ]
 runner = "riscv32-unknown-elf-gdb -q -x ../../fpga/utils/connect-and-load.gdb"
+
+[target.riscv32em-unknown-none-elf]
+rustflags = [
+    "-C",
+    "linker=riscv32-unknown-elf-gcc",
+    "-C",
+    "link-arg=-Wl,-Tlink.x",
+    "-C",
+    "link-arg=-nostartfiles",
+]
+runner = "riscv32-unknown-elf-gdb -q -x ../../fpga/utils/connect-and-load.gdb"
+
+[target.riscv32imc-unknown-none-elf]
+rustflags = [
+    "-C",
+    "linker=riscv32-unknown-elf-gcc",
+    "-C",
+    "link-arg=-Wl,-Tlink.x",
+    "-C",
+    "link-arg=-nostartfiles",
+]
+runner = "riscv32-unknown-elf-gdb -q -x ../../fpga/utils/connect-and-load.gdb"
+
+[target.riscv32im-unknown-none-elf]
+rustflags = [
+    "-C",
+    "linker=riscv32-unknown-elf-gcc",
+    "-C",
+    "link-arg=-Wl,-Tlink.x",
+    "-C",
+    "link-arg=-nostartfiles",
+]
+runner = "riscv32-unknown-elf-gdb -q -x ../../fpga/utils/connect-and-load.gdb"
