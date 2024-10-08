@@ -5,7 +5,7 @@ package:
     - "Abdesattar Kalache <abdesattar.kalache@tuni.fi>"
 
 dependencies:
-  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "b5c90011b6e6f6a8004207208a4e046907335505" }
+  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: experimental/uarch_opt }
   clic: { git: "https://github.com/pulp-platform/clic.git", version: 2.0.0 }
   riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1}
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
