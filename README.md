@@ -33,7 +33,7 @@ If you use our work, please consider citing it as
 
 ## Simulation with Questa
 
-RTL simulation is tested with QuestaSim-64 10.7g.
+RTL simulation is tested with QuestaSim-64 10.7g
 
 To compile the design for `vsim`, use
 

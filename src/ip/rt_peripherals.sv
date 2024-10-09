@@ -14,13 +14,14 @@ module rt_peripherals #(
   parameter int unsigned NSource   = 64,
   //parameter type         rule_t    = logic,
   localparam int         SrcW      = $clog2(NSource),
-  localparam int         StrbWidth = (DataWidth / 8)
+  localparam int         StrbWidth = (DataWidth / 8),
+  localparam int         GpioPadNum= 4
 )(
   input  logic                 clk_i,
   input  logic                 rst_ni,
   APB.Slave                    apb_i,
-  output logic           [3:0] gpio_o,
-  input  logic           [3:0] gpio_i,
+  output logic           [GpioPadNum-1:0] gpio_o,
+  input  logic           [GpioPadNum-1:0] gpio_i,
   input  logic   [NSource-1:0] irq_src_i,
   output logic                 irq_valid_o,
   input  logic                 irq_ready_i,
@@ -181,23 +182,30 @@ clic_apb #(
   .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
 );
 
-/*
-rt_gpio #() i_gpio (
-  .rst_ni         (rst_ni),
-  .clk_i          (periph_clk),
-  .gpio_input_i   (gpio_input_i),
-  .gpio_output_o  (gpio_output_o),
-  .penable_i      (apb_out[0].penable),
-  .pwrite_i       (apb_out[0].pwrite),
-  .paddr_i        (apb_out[0].paddr),
-  .psel_i         (apb_out[0].psel),
-  .pwdata_i       (apb_out[0].pwdata),
-  .prdata_o       (apb_out[0].prdata),
-  .pready_o       (apb_out[0].pready),
-  .pslverr_o      (apb_out[0].pslverr)
-);
 
 */
+
+apb_gpio #(
+  .APB_ADDR_WIDTH (AddrWidth),
+  .PAD_NUM        (GpioPadNum)
+) i_gpio (
+  .HRESETn        (rst_ni),
+  .HCLK           (periph_clk),
+  .gpio_in        (gpio_input_i),
+  .gpio_out       (gpio_output_o),
+  .PENABLE        (apb_out[0].penable),
+  .PWRITE         (apb_out[0].pwrite),
+  .PADDR          (apb_out[0].paddr),
+  .PSEL           (apb_out[0].psel),
+  .PWDATA         (apb_out[0].pwdata),
+  .PRDATA         (apb_out[0].prdata),
+  .PREADY         (apb_out[0].pready),
+  .PSLVERR        (apb_out[0].pslverr),
+  .interrupt      ()
+);
+
+
+
 `ifdef NOT_MOCK
 apb_uart i_apb_uart (
   .CLK      (periph_clk),
@@ -241,7 +249,7 @@ assign uart_tx_o = 0;
 `endif
 
 
-/*
+
 rt_timer #() i_timer (
   .clk_i       (periph_clk),
   .rst_ni      (rst_ni),
@@ -255,7 +263,6 @@ rt_timer #() i_timer (
   .pready_o    (apb_out[2].pready),
   .pslverr_o   (apb_out[2].pslverr)
 );
-*/
 
 
 endmodule : rt_peripherals

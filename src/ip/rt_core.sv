@@ -127,7 +127,7 @@ ibex_top #(
   .RV32E            (RVE),
   .RV32M            (ibex_pkg::RV32MFast),
   .RV32B            (ibex_pkg::RV32BNone),
-  .WritebackStage   (1'b0),
+  .WritebackStage   (1'b1),
 `ifdef FPGA          //ASIC Implementation
   .RegFile          (ibex_pkg::RegFileFPGA),
 `else                 // FPGA Implementation
@@ -146,7 +146,8 @@ ibex_top #(
   .RndCnstLfsrPerm  (ibex_pkg::RndCnstLfsrPermDefault),
   .DbgTriggerEn     (0),
   .DmHaltAddr       (dm::HaltAddress),
-  .DmExceptionAddr  (dm::ExceptionAddress)
+  .DmExceptionAddr  (dm::ExceptionAddress),
+  .BranchTargetALU  (1'b1)
 ) i_cpu (
   // Clock and reset
   .clk_i       (clk_i),
