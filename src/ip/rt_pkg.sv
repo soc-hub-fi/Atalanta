@@ -45,7 +45,7 @@ localparam xbar_cfg_t   ObiXbarCfg = '{
   SramStart : 32'h0002_0000,
   SramEnd   : 32'h0003_0000,
   ApbStart  : 32'h0003_0000,
-  ApbEnd    : 32'h0003_1000,
+  ApbEnd    : 32'h0006_0000,
   AxiStart  : 32'hFFFF_0000,
   AxiEnd    : 32'hFFFF_FFFF
 };
