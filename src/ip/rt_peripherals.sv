@@ -197,8 +197,7 @@ clic_apb #(
 
 apb_gpio #(
   .APB_ADDR_WIDTH (AddrWidth),
-  .PAD_NUM        (GpioPadNum),
-  .NBIT_PADCFG    (4)
+  .PAD_NUM        (GpioPadNum)
 ) i_gpio (
   .HRESETn        (rst_ni),
   .HCLK           (periph_clk),
@@ -208,7 +207,7 @@ apb_gpio #(
   .PWRITE         (apb_out[0].pwrite),
   .PADDR          (apb_out[0].paddr),
   .PSEL           (apb_out[0].psel),
-  .pwdata_i       (apb_out[0].pwdata),
+  .PWDATA         (apb_out[0].pwdata),
   .PRDATA         (apb_out[0].prdata),
   .PREADY         (apb_out[0].pready),
   .PSLVERR        (apb_out[0].pslverr),
@@ -260,7 +259,7 @@ assign uart_tx_o = 0;
 `endif
 
 
-/*
+
 rt_timer #() i_timer (
   .clk_i       (periph_clk),
   .rst_ni      (rst_ni),
@@ -274,7 +273,6 @@ rt_timer #() i_timer (
   .pready_o    (apb_out[2].pready),
   .pslverr_o   (apb_out[2].pslverr)
 );
-*/
 
 
 endmodule : rt_peripherals
