@@ -21,8 +21,6 @@ module rt_peripherals #(
   input  logic                 clk_i,
   input  logic                 rst_ni,
   APB.Slave                    apb_i,
-  output logic           [GpioPadNum-1:0] gpio_o,
-  input  logic           [GpioPadNum-1:0] gpio_i,
   input  logic   [NSource-1:0] irq_src_i,
   output logic                 irq_valid_o,
   input  logic                 irq_ready_i,
@@ -32,8 +30,20 @@ module rt_peripherals #(
   output logic           [1:0] irq_priv_o,
   output logic                 irq_kill_req_o,
   input  logic                 irq_kill_ack_i,
+
+  // GPIO Interface 
+  output logic  [GpioPadNum-1:0] gpio_o,
+  input  logic  [GpioPadNum-1:0] gpio_i,
+
+  // UART Interface
   output logic                 uart_tx_o,
-  input  logic                 uart_rx_i
+  input  logic                 uart_rx_i,
+
+  // SPI master interface 
+  input  logic           [3:0] spi_sdi_i,
+  output logic           [3:0] spi_sdo_o,
+  output logic           [3:0] spi_csn_o,
+  output logic                 spi_clk_o
 );
 
 /////////////////////
@@ -44,7 +54,9 @@ typedef enum integer {
   MtimerIrqId = 7,
   UartIrqId   = 17,
   GpioIrqId   = 18,
-  ApbTimerIrqIdStart = 20  // apb_timer interrupt can have multiple irq lines (2 per timer group)
+  SpiRxTxIrqId= 19,
+  SpiEotIrqId = 20,
+  ApbTimerIrqIdStart = 21  // apb_timer interrupt can have multiple irq lines (2 per timer group)
 } clic_int_ids_e;
 
 // INCLUSIVE END ADDR
@@ -56,6 +68,8 @@ localparam int unsigned MTimerStartAddr   = 32'h0003_0200;
 localparam int unsigned MTimerEndAddr     = 32'h0003_0210;
 localparam int unsigned ApbTimerStartAddr = 32'h0003_0300;
 localparam int unsigned ApbTimerEndAddr   = 32'h0003_03FF;
+localparam int unsigned ApbSpiMasterStartAddr = 32'h0003_0400;
+localparam int unsigned ApbSpiMasterEndAddr   = 32'h0003_04FF;
 localparam int unsigned ClicStartAddr     = 32'h0005_0000;
 localparam int unsigned ClicEndAddr       = 32'h0005_FFFF;
 
@@ -71,6 +85,7 @@ logic [NSource-1:0]         intr_src;
 logic                       mtimer_irq;
 logic                       gpio_irq;
 logic [2*TimerGroupSize-1:0]apb_timer_irq;
+logic [1:0]                 spi_irqs;
 
 
 logic                   periph_clk;
@@ -86,6 +101,8 @@ always_comb
     intr_src[UartIrqId] = uart_irq; // supervisor software irq
     intr_src[GpioIrqId] = gpio_irq;
     intr_src[MtimerIrqId] = mtimer_irq;
+    intr_src[SpiRxTxIrqId] = spi_irqs[0];
+    intr_src[SpiEotIrqId]  = spi_irqs[1];
     intr_src[ApbTimerIrqIdStart+2*TimerGroupSize-1:ApbTimerIrqIdStart] = apb_timer_irq;
     // supervisor external irq 9
     // machine external irq 11
@@ -172,8 +189,11 @@ always_comb
       [ApbTimerStartAddr:ApbTimerEndAddr]: begin
         demux_sel = 3'b011;
       end
-      [ClicStartAddr:ClicEndAddr]: begin
+      [ApbSpiMasterStartAddr:ApbSpiMasterEndAddr]: begin
         demux_sel = 3'b100;
+      end
+      [ClicStartAddr:ClicEndAddr]: begin
+        demux_sel = 3'b101;
       end
       default: begin
         demux_sel = 3'b000;
@@ -281,20 +301,54 @@ apb_timer #(
 );
 
 
+apb_spi_master #(
+  .APB_ADDR_WIDTH      (AddrWidth),
+  .BUFFER_DEPTH        (10)
+) i_apb_spi_master1(
+  .HCLK           (periph_clk),
+  .HRESETn        (rst_ni),
+  .PENABLE        (apb_out[4].penable),
+  .PWRITE         (apb_out[4].pwrite),
+  .PADDR          (apb_out[4].paddr),
+  .PSEL           (apb_out[4].psel),
+  .PWDATA         (apb_out[4].pwdata),
+  .PRDATA         (apb_out[4].prdata),
+  .PREADY         (apb_out[4].pready),
+  .PSLVERR        (apb_out[4].pslverr),
+  .events_o       (spi_irqs),
+
+  // Interface: spi_master
+  .spi_sdi0       (spi_sdi_i[0]),
+  .spi_sdi1       (spi_sdi_i[1]),
+  .spi_sdi2       (spi_sdi_i[2]),
+  .spi_sdi3       (spi_sdi_i[3]),
+  .spi_clk        (spi_clk_o),
+  .spi_csn0       (spi_csn_o[0]),
+  .spi_csn1       (spi_csn_o[1]),
+  .spi_csn2       (spi_csn_o[2]),
+  .spi_csn3       (spi_csn_o[3]),
+  .spi_mode       (),
+  .spi_sdo0       (spi_sdo_o[0]),
+  .spi_sdo1       (spi_sdo_o[1]),
+  .spi_sdo2       (spi_sdo_o[2]),
+  .spi_sdo3       (spi_sdo_o[3])
+  );
+
+
 clic_apb #(
   .N_SOURCE     (NSource),
   .INTCTLBITS   (8)
 ) i_clic (
   .clk_i          (periph_clk),
   .rst_ni         (rst_ni),
-  .penable_i      (apb_out[4].penable),
-  .pwrite_i       (apb_out[4].pwrite),
-  .paddr_i        (apb_out[4].paddr),
-  .psel_i         (apb_out[4].psel),
-  .pwdata_i       (apb_out[4].pwdata),
-  .prdata_o       (apb_out[4].prdata),
-  .pready_o       (apb_out[4].pready),
-  .pslverr_o      (apb_out[4].pslverr),
+  .penable_i      (apb_out[5].penable),
+  .pwrite_i       (apb_out[5].pwrite),
+  .paddr_i        (apb_out[5].paddr),
+  .psel_i         (apb_out[5].psel),
+  .pwdata_i       (apb_out[5].pwdata),
+  .prdata_o       (apb_out[5].prdata),
+  .pready_o       (apb_out[5].pready),
+  .pslverr_o      (apb_out[5].pslverr),
   .intr_src_i     (intr_src), // 0-31 -> CLINT IRQS
   .irq_valid_o    (irq_valid_o),
   .irq_ready_i    (irq_ready_delay_q),
