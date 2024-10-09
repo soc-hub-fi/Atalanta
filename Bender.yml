@@ -58,3 +58,19 @@ vendor_package:
       - "future/axi_obi/src/axi_to_obi.sv"
       - "future/axi_obi/src/obi_to_axi.sv"
       - "future/axi_obi/src/axi_to_detailed_mem_user.sv"
+  - name: apb_spi_master 
+    target_dir: src/ip/apb_spi_master
+    upstream: { git: "https://github.com/pulp-platform/apb_spi_master", rev: "3fce81084b15870f4bd9da7806cf950774f9672e"}
+    include_from_upstream: 
+      - "apb_spi_master.sv"
+      - "spi_master_apb_if.sv"
+  - name: axi_spi_master 
+    target_dir: src/ip/axi_spi_master
+    upstream: { git: "https://github.com/pulp-platform/axi_spi_master", rev: "ee219078353a76e468674c25675f5b7fe5f51127" }
+    include_from_upstream: 
+      - "spi_master_clkgen.sv"
+      - "spi_master_controller.sv"
+      - "spi_master_fifo.sv"
+      - "spi_master_rx.sv"
+      - "spi_master_tx.sv"
+
