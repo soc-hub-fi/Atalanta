@@ -9,13 +9,14 @@
 `endif
 
 module rt_peripherals #(
-  parameter int unsigned AddrWidth = 32,
-  parameter int unsigned DataWidth = 32,
-  parameter int unsigned NSource   = 64,
+  parameter int unsigned AddrWidth      = 32,
+  parameter int unsigned DataWidth      = 32,
+  parameter int unsigned NSource        = 64,
   //parameter type         rule_t    = logic,
-  localparam int         SrcW      = $clog2(NSource),
-  localparam int         StrbWidth = (DataWidth / 8),
-  localparam int         GpioPadNum= 4
+  localparam int         SrcW           = $clog2(NSource),
+  localparam int         StrbWidth      = (DataWidth / 8),
+  localparam int         GpioPadNum     = 4,
+  localparam int         TimerGroupSize = 2
 )(
   input  logic                 clk_i,
   input  logic                 rst_ni,
@@ -35,24 +36,42 @@ module rt_peripherals #(
   input  logic                 uart_rx_i
 );
 
-// INCLUSIVE END ADDR
-localparam int unsigned GpioStartAddr   = 32'h0003_0000;
-localparam int unsigned GpioEndAddr     = 32'h0003_00FF;
-localparam int unsigned UartStartAddr   = 32'h0003_0100;
-localparam int unsigned UartEndAddr     = 32'h0003_01FF;
-localparam int unsigned MTimerStartAddr = 32'h0003_0200;
-localparam int unsigned MTimerEndAddr   = 32'h0003_0210;
-localparam int unsigned ClicStartAddr   = 32'h0005_0000;
-localparam int unsigned ClicEndAddr     = 32'h0005_FFFF;
+/////////////////////
+// CLIC IRQS Enums //
+/////////////////////
 
-localparam int unsigned NrApbPerip = 4;
+typedef enum integer {
+  MtimerIrqId = 7,
+  UartIrqId   = 17,
+  GpioIrqId   = 18,
+  ApbTimerIrqIdStart = 20  // apb_timer interrupt can have multiple irq lines (2 per timer group)
+} clic_int_ids_e;
+
+// INCLUSIVE END ADDR
+localparam int unsigned GpioStartAddr     = 32'h0003_0000;
+localparam int unsigned GpioEndAddr       = 32'h0003_00FF;
+localparam int unsigned UartStartAddr     = 32'h0003_0100;
+localparam int unsigned UartEndAddr       = 32'h0003_01FF;
+localparam int unsigned MTimerStartAddr   = 32'h0003_0200;
+localparam int unsigned MTimerEndAddr     = 32'h0003_0210;
+localparam int unsigned ApbTimerStartAddr = 32'h0003_0300;
+localparam int unsigned ApbTimerEndAddr   = 32'h0003_03FF;
+localparam int unsigned ClicStartAddr     = 32'h0005_0000;
+localparam int unsigned ClicEndAddr       = 32'h0005_FFFF;
+
+
+localparam int unsigned NrApbPerip      = 5;
+localparam int unsigned PeripDemuxWidth = $clog2(NrApbPerip);
 
 logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
 logic                   uart_irq;
 
-logic             [1:0] demux_sel;
-logic     [NSource-1:0] intr_src;
-logic                   mtimer_irq;
+logic [PeripDemuxWidth-1:0] demux_sel;
+logic [NSource-1:0]         intr_src;
+logic                       mtimer_irq;
+logic                       gpio_irq;
+logic [2*TimerGroupSize-1:0]apb_timer_irq;
+
 
 logic                   periph_clk;
 
@@ -64,8 +83,10 @@ APB #(
 always_comb
   begin : irq_assign
     intr_src = irq_src_i;
-    intr_src[17] = uart_irq; // supervisor software irq
-    intr_src[7] = mtimer_irq;
+    intr_src[UartIrqId] = uart_irq; // supervisor software irq
+    intr_src[GpioIrqId] = gpio_irq;
+    intr_src[MtimerIrqId] = mtimer_irq;
+    intr_src[ApbTimerIrqIdStart+2*TimerGroupSize-1:ApbTimerIrqIdStart] = apb_timer_irq;
     // supervisor external irq 9
     // machine external irq 11
     // platform defined 16-19
@@ -140,50 +161,27 @@ always_comb
   begin : decode // TODO: Make enum for values
     unique case (apb_div.paddr) inside
       [GpioStartAddr:GpioEndAddr]: begin
-        demux_sel = 2'b00;
+        demux_sel = 3'b000;
       end
       [UartStartAddr:UartEndAddr]: begin
-        demux_sel = 2'b01;
+        demux_sel = 3'b001;
       end
       [MTimerStartAddr:MTimerEndAddr]: begin
-        demux_sel = 2'b10;
+        demux_sel = 3'b010;
+      end
+      [ApbTimerStartAddr:ApbTimerEndAddr]: begin
+        demux_sel = 3'b011;
       end
       [ClicStartAddr:ClicEndAddr]: begin
-        demux_sel = 2'b11;
+        demux_sel = 3'b100;
       end
       default: begin
-        demux_sel = 2'b00;
+        demux_sel = 3'b000;
       end
     endcase
   end
 
-clic_apb #(
-  .N_SOURCE     (NSource),
-  .INTCTLBITS   (8)
-) i_clic (
-  .clk_i          (periph_clk),
-  .rst_ni         (rst_ni),
-  .penable_i      (apb_out[3].penable),
-  .pwrite_i       (apb_out[3].pwrite),
-  .paddr_i        (apb_out[3].paddr),
-  .psel_i         (apb_out[3].psel),
-  .pwdata_i       (apb_out[3].pwdata),
-  .prdata_o       (apb_out[3].prdata),
-  .pready_o       (apb_out[3].pready),
-  .pslverr_o      (apb_out[3].pslverr),
-  .intr_src_i     (intr_src), // 0-31 -> CLINT IRQS
-  .irq_valid_o    (irq_valid_o),
-  .irq_ready_i    (irq_ready_delay_q),
-  .irq_id_o       (irq_id_o),
-  .irq_level_o    (irq_level_o),
-  .irq_shv_o      (irq_shv_o),
-  .irq_priv_o     (irq_priv_o),
-  .irq_kill_req_o (irq_kill_req_o),
-  .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
-);
 
-
-*/
 
 apb_gpio #(
   .APB_ADDR_WIDTH (AddrWidth),
@@ -191,8 +189,8 @@ apb_gpio #(
 ) i_gpio (
   .HRESETn        (rst_ni),
   .HCLK           (periph_clk),
-  .gpio_in        (gpio_input_i),
-  .gpio_out       (gpio_output_o),
+  .gpio_in        (gpio_i),
+  .gpio_out       (gpio_o),
   .PENABLE        (apb_out[0].penable),
   .PWRITE         (apb_out[0].pwrite),
   .PADDR          (apb_out[0].paddr),
@@ -201,7 +199,7 @@ apb_gpio #(
   .PRDATA         (apb_out[0].prdata),
   .PREADY         (apb_out[0].pready),
   .PSLVERR        (apb_out[0].pslverr),
-  .interrupt      ()
+  .interrupt      (gpio_irq)
 );
 
 
@@ -250,19 +248,64 @@ assign uart_tx_o = 0;
 
 
 
-rt_timer #() i_timer (
-  .clk_i       (periph_clk),
-  .rst_ni      (rst_ni),
-  .timer_irq_o (mtimer_irq),
-  .penable_i   (apb_out[2].penable),
-  .pwrite_i    (apb_out[2].pwrite),
-  .paddr_i     (apb_out[2].paddr),
-  .psel_i      (apb_out[2].psel),
-  .pwdata_i    (apb_out[2].pwdata),
-  .prdata_o    (apb_out[2].prdata),
-  .pready_o    (apb_out[2].pready),
-  .pslverr_o   (apb_out[2].pslverr)
+// rt_timer #() i_timer (
+//   .clk_i       (periph_clk),
+//   .rst_ni      (rst_ni),
+//   .timer_irq_o (mtimer_irq),
+//   .penable_i   (apb_out[2].penable),
+//   .pwrite_i    (apb_out[2].pwrite),
+//   .paddr_i     (apb_out[2].paddr),
+//   .psel_i      (apb_out[2].psel),
+//   .pwdata_i    (apb_out[2].pwdata),
+//   .prdata_o    (apb_out[2].prdata),
+//   .pready_o    (apb_out[2].pready),
+//   .pslverr_o   (apb_out[2].pslverr)
+// );
+
+
+apb_timer #(
+  .APB_ADDR_WIDTH(AddrWidth),
+  .TIMER_CNT(TimerGroupSize)
+) i_apb_timer (
+  .HCLK           (periph_clk),
+  .HRESETn        (rst_ni),
+  .PENABLE        (apb_out[3].penable),
+  .PWRITE         (apb_out[3].pwrite),
+  .PADDR          (apb_out[3].paddr),
+  .PSEL           (apb_out[3].psel),
+  .PWDATA         (apb_out[3].pwdata),
+  .PRDATA         (apb_out[3].prdata),
+  .PREADY         (apb_out[3].pready),
+  .PSLVERR        (apb_out[3].pslverr),
+  .irq_o          (apb_timer_irq)
 );
+
+
+clic_apb #(
+  .N_SOURCE     (NSource),
+  .INTCTLBITS   (8)
+) i_clic (
+  .clk_i          (periph_clk),
+  .rst_ni         (rst_ni),
+  .penable_i      (apb_out[4].penable),
+  .pwrite_i       (apb_out[4].pwrite),
+  .paddr_i        (apb_out[4].paddr),
+  .psel_i         (apb_out[4].psel),
+  .pwdata_i       (apb_out[4].pwdata),
+  .prdata_o       (apb_out[4].prdata),
+  .pready_o       (apb_out[4].pready),
+  .pslverr_o      (apb_out[4].pslverr),
+  .intr_src_i     (intr_src), // 0-31 -> CLINT IRQS
+  .irq_valid_o    (irq_valid_o),
+  .irq_ready_i    (irq_ready_delay_q),
+  .irq_id_o       (irq_id_o),
+  .irq_level_o    (irq_level_o),
+  .irq_shv_o      (irq_shv_o),
+  .irq_priv_o     (irq_priv_o),
+  .irq_kill_req_o (irq_kill_req_o),
+  .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
+);
+
 
 
 endmodule : rt_peripherals
