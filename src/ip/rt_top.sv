@@ -15,24 +15,39 @@ module rt_top #(
   parameter bit          IbexRve      = 1,
   // Derived parameters
   localparam int SrcW                 = $clog2(ClicIrqSrcs),
-  localparam int unsigned StrbWidth   = (AxiDataWidth / 8)
+  localparam int unsigned StrbWidth   = (AxiDataWidth / 8),
+  localparam int unsigned GpioPadNum  = 4,
+  localparam int unsigned TimerGroupSize = 2
 
 )(
   input  logic                   clk_i,
   input  logic                   rst_ni,
-  input  logic [3:0]             gpio_input_i,
-  output logic [3:0]             gpio_output_o,
+
+  // GPIO interface 
+  input  logic [GpioPadNum-1:0]  gpio_input_i,
+  output logic [GpioPadNum-1:0]  gpio_output_o,
+
+  // UART interface
   input  logic                   uart_rx_i,
   output logic                   uart_tx_o,
-`ifndef STANDALONE
-  AXI_BUS.Slave                 soc_slv,
-  AXI_BUS.Master                soc_mst,
-`endif
+
+  // SPI master interface 
+  input  logic           [3:0]   spi_sdi_i,
+  output logic           [3:0]   spi_sdo_o,
+  output logic           [3:0]   spi_csn_o,
+  output logic                   spi_clk_o,
+
+  // JTAG interface 
   input  logic                   jtag_tck_i,
   input  logic                   jtag_tms_i,
   input  logic                   jtag_trst_ni,
   input  logic                   jtag_td_i,
   output logic                   jtag_td_o,
+
+  `ifndef STANDALONE
+  AXI_BUS.Slave                  soc_slv,
+  AXI_BUS.Master                 soc_mst,
+`endif
   input  logic [ClicIrqSrcs-1:0] intr_src_i
 );
 
@@ -95,7 +110,13 @@ rt_ibex_bootrom #() i_rom (
   .sbr_bus (rom_bus)
 );
 
-rt_peripherals #() i_peripherals (
+
+
+rt_peripherals #(
+  .NSource(ClicIrqSrcs),
+  .GpioPadNum(GpioPadNum),
+  .TimerGroupSize(TimerGroupSize)
+) i_peripherals (
   .clk_i,
   .rst_ni,
   .apb_i          (peripheral_bus),
@@ -110,8 +131,14 @@ rt_peripherals #() i_peripherals (
   .irq_ready_i    (irq_ready),
   .irq_id_o       (irq_id_o),
   .irq_src_i      (intr_src_i),
-  .gpio_i         (),
-  .gpio_o         ()
+
+  .gpio_i         (gpio_input_i),
+  .gpio_o         (gpio_output_o), 
+
+  .spi_sdi_i      (spi_sdi_i),
+  .spi_sdo_o      (spi_sdo_o),
+  .spi_csn_o      (spi_csn_o),
+  .spi_clk_o      (spi_clk_o)
 );
 
 rt_debug #(
