@@ -130,6 +130,8 @@ rt_debug #(
   .dbg_slv         (dbgs_bus)
 );
 
+assign axis_bus.req = 0;
+
 // rt_memory_banks #() i_memory_banks ();
 
 // axi_to_obi_intf #(

@@ -1,4 +1,4 @@
-`define FULL_UART 1
+//`define FULL_UART 1
 
 `ifdef SYNTHESIS
   `define NOT_MOCK
@@ -182,9 +182,6 @@ clic_apb #(
   .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
 );
 
-
-*/
-
 apb_gpio #(
   .APB_ADDR_WIDTH (AddrWidth),
   .PAD_NUM        (GpioPadNum)
@@ -203,8 +200,6 @@ apb_gpio #(
   .PSLVERR        (apb_out[0].pslverr),
   .interrupt      ()
 );
-
-
 
 `ifdef NOT_MOCK
 apb_uart i_apb_uart (
@@ -249,7 +244,7 @@ assign uart_tx_o = 0;
 `endif
 
 
-
+/*
 rt_timer #() i_timer (
   .clk_i       (periph_clk),
   .rst_ni      (rst_ni),
@@ -263,6 +258,6 @@ rt_timer #() i_timer (
   .pready_o    (apb_out[2].pready),
   .pslverr_o   (apb_out[2].pslverr)
 );
-
+*/
 
 endmodule : rt_peripherals
