@@ -29,7 +29,7 @@ assign rst_no = rst_n;
 JTAG_DV jtag (jtag_tck_o);
 
 localparam dm::sbcs_t JtagInitSbcs = dm::sbcs_t'{
-  sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 3, default: '0};
+  sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 1, default: '0};
 
 typedef jtag_test::riscv_dbg #(
   .IrLength ( 5 ),
@@ -161,7 +161,7 @@ endtask
 
 // Load a binary
 task automatic jtag_elf_preload(input string binary, output word entry);
-  longint sec_addr, sec_len;
+  word sec_addr, sec_len;
   $display("[JTAG] Preloading ELF binary: %s", binary);
   if (read_elf(binary))
     $fatal(1, "[JTAG] Failed to load ELF!");
@@ -170,14 +170,11 @@ task automatic jtag_elf_preload(input string binary, output word entry);
     $display("[JTAG] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
     if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[JTAG] Failed to read ELF section!");
     jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
-    // Write address as 64-bit double
-    jtag_write(dm::SBAddress1, sec_addr[63:32]);
     jtag_write(dm::SBAddress0, sec_addr[31:0]);
     for (longint i = 0; i <= sec_len ; i += 8) begin
       bit checkpoint = (i != 0 && i % 512 == 0);
       if (checkpoint)
         $display("[JTAG] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
-      jtag_write(dm::SBData1, {bf[i+7], bf[i+6], bf[i+5], bf[i+4]});
       jtag_write(dm::SBData0, {bf[i+3], bf[i+2], bf[i+1], bf[i]}, checkpoint, checkpoint);
     end
   end
