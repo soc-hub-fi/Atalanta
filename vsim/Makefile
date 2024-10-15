@@ -50,38 +50,27 @@ endif
 
 # Test params
 TEST      ?= nop_loop
-jtag_test ?= 0
-SW_TEST   ?= 0
-IMEM_STIM ?= "../stims/nop_loop.hex"
-DMEM_STIM ?= "../stims/nop_loop.hex"
+
 IBEX_USE_RVE  ?= 1
 
-ifeq ($(TEST), jtag_test)
-	jtag_test = 1
-else
-	SW_TEST = 1
-	IMEM_STIM = "../stims/$(TEST)_imem.hex"
-	DMEM_STIM = "../stims/$(TEST)_dmem.hex"
-endif
+ELF_PATH ?= "../examples/smoke_tests/build/$(TEST).elf"
 
 LOAD ?= READMEM
 
 
 TEST_PARAMS =   -G TestName=$(TEST) \
-				-G ImemStim=$(IMEM_STIM) \
-				-G DmemStim=$(DMEM_STIM) \
-				-G JtagTest=$(jtag_test) \
+				-G ElfPath=$(ELF_PATH) \
 				-G IbexRve=$(IBEX_USE_RVE) \
-				-G Load=$(LOAD) \
-				-G SoftwareTest=$(SW_TEST)
+				-G Load=$(LOAD)
+
 
 
 LIBS = \
 	-L $(BUILD_DIR)/atalanta_lib \
 
-VOPT_OPTS = "-check_synthesis"
 VOPT_OPTS += "-pedanticerrors"
-VOPT_OPTS += "+acc=npr"
+VOPT_OPTS += "+acc"
+VOPT_OPTS += "-access=rw+/."
 #Prints out information where elaboration picks up the module
 VOPT_OPTS += "-libverbose=prlib"
 
@@ -94,7 +83,8 @@ VCOM_SUPPRESS =
 VOPT_SUPPRESS = -suppress vopt-2577 \
 				-suppress vopt-13262
 VSIM_SUPPRESS = -suppress vsim-8360 \
-				-suppress vsim-8386
+				-suppress vsim-8386 \
+				-suppress vsim-12130
 
 
 PHONY: check_env
@@ -117,6 +107,7 @@ compile: check_env
 	vlog -sv -work atalanta_lib $(VLOG_DEFINES) \
 	$(INCLUDES) $(VLOG_SUPPRESS) $(LIBS) \
 	$(shell bender script flist -t simulation -t test) \
+	-ccflags '-std=c++11' \
 	-l $(BUILD_DIR)/logs/compile/$(START_TIME)_verilog_vlog.log
 
 .PHONY: compile_tieoff

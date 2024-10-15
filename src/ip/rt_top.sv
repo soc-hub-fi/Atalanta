@@ -24,10 +24,8 @@ module rt_top #(
   output logic [3:0]             gpio_output_o,
   input  logic                   uart_rx_i,
   output logic                   uart_tx_o,
-`ifndef STANDALONE
-  AXI_BUS.Slave                 soc_slv,
-  AXI_BUS.Master                soc_mst,
-`endif
+  AXI_BUS.Slave                  soc_slv,
+  AXI_BUS.Master                 soc_mst,
   input  logic                   jtag_tck_i,
   input  logic                   jtag_tms_i,
   input  logic                   jtag_trst_ni,

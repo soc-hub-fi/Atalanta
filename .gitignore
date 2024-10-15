@@ -1,4 +1,9 @@
 .bender/
 build/
 src/ip/safety_island
+src/tb/cheshire
 vsim/modelsim.ini
+transcript
+vsim/wave.wlf
+vsim/*.log
+stims/

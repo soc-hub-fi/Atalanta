@@ -168,6 +168,7 @@ clean_ips:
 .PHONY: clean_build
 clean_build:
 	rm -rf build
+	git clean vsim/ -f
 
 .PHONY: clean_all
 clean_all: clean_ips clean_build

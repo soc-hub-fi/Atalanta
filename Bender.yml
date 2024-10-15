@@ -38,9 +38,10 @@ sources:
 
     - target: any(test, simulation)
       files:
+        - src/tb/cheshire/target/sim/src/elfloader.cpp
         - src/tb/riscv_pkg.sv
         - src/tb/uart.sv
-        - src/tb/rt_jtag_pkg.sv
+        - src/tb/vip_rt_top.sv
         - src/tb/tb_rt_ss.sv
 
     - target: any(fpga, xilinx)
@@ -58,3 +59,10 @@ vendor_package:
       - "future/axi_obi/src/axi_to_obi.sv"
       - "future/axi_obi/src/obi_to_axi.sv"
       - "future/axi_obi/src/axi_to_detailed_mem_user.sv"
+
+  - name: cheshire
+    target_dir: src/tb/cheshire
+    upstream: { git: "https://github.com/pulp-platform/cheshire.git", rev: "99dd957cfcbcb9b750b9cf00f20b0444c5a05101"}
+    include_from_upstream:
+      - "target/sim/src/elfloader.cpp"
+

@@ -81,7 +81,16 @@ function automatic int unsigned get_addr_size (
   int unsigned end_addr
 );
   return (end_addr - start_addr);
-
 endfunction
+
+// Default JTAG ID code type
+typedef struct packed {
+  bit [ 3:0]  version;
+  bit [15:0]  part_num;
+  bit [10:0]  manufacturer;
+  bit         _one;
+} jtag_idcode_t;
+
+localparam int unsigned DbgIdCode = 32'hFEEDC0D3;
 
 endpackage : rt_pkg
