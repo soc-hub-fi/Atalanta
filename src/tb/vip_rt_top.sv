@@ -29,7 +29,7 @@ assign rst_no = rst_n;
 JTAG_DV jtag (jtag_tck_o);
 
 localparam dm::sbcs_t JtagInitSbcs = dm::sbcs_t'{
-  sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 1, default: '0};
+  sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 2, default: '0};
 
 typedef jtag_test::riscv_dbg #(
   .IrLength ( 5 ),
@@ -172,7 +172,7 @@ task automatic jtag_elf_preload(input string binary, output word entry);
     if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[JTAG] Failed to read ELF section!");
     jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
     jtag_write(dm::SBAddress0, sec_addr[31:0]);
-    for (longint i = 0; i <= sec_len ; i += 8) begin
+    for (longint i = 0; i <= sec_len ; i += 4) begin
       bit checkpoint = (i != 0 && i % 512 == 0);
       if (checkpoint)
         $display("[JTAG] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));

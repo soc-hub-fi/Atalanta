@@ -98,6 +98,7 @@ void init_uart(uint32_t freq, uint32_t baud)
     
 }
 
+/*
 void write_serial(char a)
 {
 
@@ -109,6 +110,20 @@ void write_serial(char a)
     
     write_reg_u8(UART_INTERRUPT_ENABLE, 0x02); // Enable interrupt for uart only after pushing new character 
 
+}
+*/
+
+
+int is_transmit_empty()
+{
+    return read_reg_u8(UART_LINE_STATUS) & 0x20;
+}
+
+void write_serial(char a)
+{
+    while (is_transmit_empty() == 0) {};
+
+    write_reg_u8(UART_THR, a);
 }
 
 uint8_t bin_to_hex_table[16] = {
