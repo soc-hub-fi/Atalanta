@@ -120,7 +120,7 @@ task automatic jtag_init;
   while (~dmcontrol.dmactive);
   // Activate, wait for system bus
   jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
-  $display("[JTAG] Initialization [PASSED]");
+  $display("[JTAG] Initialization done");
 endtask
 
 task automatic jtag_read_reg32(
@@ -213,12 +213,8 @@ endtask
 task automatic jtag_elf_run(input string binary);
   word entry;
   jtag_elf_halt_load(binary, entry);
-  $display("Entry is %h", entry);
   // Repoint execution
   write_reg_abstract_cmd(dm::CSR_DPC, rt_pkg::ObiXbarCfg.ImemStart);
-  //jtag_write(dm::Data1, 32'h12345678);//entry);
-  //jtag_write(dm::Data0, 32'hABCDEFAB);//entry);
-  //jtag_write(dm::Command, {8'h0, 1'b0, 3'h2, 1'b0, 32'h0033_07b1}, 0, 1);
   // Resume hart 0
   jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
   $display("[JTAG] Resumed hart 0 from 0x%h", entry);

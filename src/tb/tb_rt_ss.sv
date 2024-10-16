@@ -12,7 +12,7 @@ localparam int unsigned AxiDw = 32;
 localparam int unsigned AxiIw = 9;
 localparam int unsigned AxiUw = 4;
 
-localparam time             RunTime       = 100us;
+localparam time             RunTime       = 1ms;
 localparam time             ClockPerSys   = 10ns;
 localparam time             ClockPerJtag  = 30ns;
 localparam longint unsigned RstClkCycles  = 347;
