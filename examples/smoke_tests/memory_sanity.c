@@ -5,21 +5,81 @@
 #define OUTPUT_REG_ADDR    0x00030008
 #define TIMER_BASE_ADDR    0x00030200
 
-uint32_t write_readback(uint32_t addr, uint32_t value, char verbose){
+// (pseudo)random data generation
+uint32_t lfsr = 0xCAFEFACEu;
+uint32_t bit;
+uint32_t rand(){
+  bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
+  return lfsr =  (lfsr >> 1) | (bit << 31);
+}
+
+uint32_t get_rand_addr(uint32_t range_start, uint32_t range_end){
+  uint32_t size = range_end - range_start;
+  return (rand()%size) + range_start;
+}
+
+uint32_t error_count = 0;
+
+uint32_t write_readback_word(uint32_t addr, uint32_t value, char verbose){
   volatile uint32_t result = 0;
   // TODO: add prints
+  if (verbose){
+    print_uart("Writing value ");
+    print_uart_int(value);
+    print_uart(" to address ");
+    print_uart_int(addr);
+    print_uart("\n");
+  }
   *(uint32_t*)(addr) = value;
   result = *(uint32_t*)(addr);
+  if (verbose){
+    print_uart("Read back ");
+    print_uart_int(result);
+    print_uart("\n");
+  }
+  if(result != value) {
+    print_uart("ERROR: readback unsuccessful\n wrote ");
+    print_uart_int(value);
+    print_uart(", read ");
+    print_uart_int(result);
+    print_uart("\n");
+    error_count++;
+  }
+  return result;
+}
+
+uint16_t write_readback_half(uint16_t addr, uint16_t value, char verbose){
+  volatile uint16_t result = 0;
+  // TODO: add prints
+  *(uint16_t*)(addr) = value;
+  result = *(uint16_t*)(addr);
+  return result;
+}
+
+uint8_t write_readback_byte(uint8_t addr, uint8_t value, char verbose){
+  volatile uint8_t result = 0;
+  // TODO: add prints
+  *(uint8_t*)(addr) = value;
+  result = *(uint8_t*)(addr);
   return result;
 }
 
 int main() {  
   init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
   print_uart("[UART] Starting memory_sanity test\n");
+
   print_uart("[UART] Performing alligned memory accesses\n");
+  for (int it=0; it<100; it++){
+    write_readback_word(get_rand_addr(0x5000, 0x9000), rand(), 0);
+  }
+
   print_uart("[UART] Performing unaligned memory accesses\n");
 
-  while (1)
-    ; // keep test from returning
+  print_uart("[UART] Test complete, error count: ");
+  print_uart_int(error_count);
+  print_uart("\n");
+
+  //while (1)
+  //  ; // keep test from returning
 
 }

@@ -20,11 +20,16 @@
 
 reset_handler:
   la x2, stack 
-  //addi gp, x0, SHARED_VAR_ADDR_IMM   
-  //slli gp, gp, 4    // Reconstruct the address of shared_var and assign it to global pointer 
-  //sw x0, 0(gp)      // Initialize the shared variable 
+  la ra, exitStatus
   j main
 
+  .global exitStatus
+exitStatus:
+  li t0, 0x00000380
+  li t1, 0x80000000
+  or a0, a0, t1
+  sw a0, 0(t0)
+  wfi
 
   .global changeStack
 changeStack:

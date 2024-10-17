@@ -220,16 +220,20 @@ task automatic jtag_elf_run(input string binary);
   $display("[JTAG] Resumed hart 0 from 0x%h", entry);
 endtask
 
-/*
+
 
 // Wait for termination signal and get return code
-task automatic jtag_wait_for_eoc(output word exit_code);
-  jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
-  exit_code >>= 1;
-  if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
-  else $display("[JTAG] SUCCESS");
+task automatic jtag_wait_for_eoc();
+  word exit_code;
+  //jtag_read_reg32(32'h380, exit_code);
+  jtag_dbg.read_dmi_exp_backoff(dm::Data0, exit_code);
+  $display("EXIT CODE: %h", exit_code);
+  //jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
+  //exit_code >>= 1;
+  //if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
+  //else $display("[JTAG] SUCCESS");
 endtask
-*/
+
 
 
 /// Sanity tests

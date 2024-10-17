@@ -96,12 +96,16 @@ obi_xbar_intf #(
   .default_idx_i    ('0)
 );
 
-obi_sram_intf #() i_imem (
+obi_sram_intf #(
+  .NumWords (rt_pkg::ImemSizeBytes / 4)
+) i_imem (
   .clk_i,
   .rst_ni,
   .sbr_bus (sbr_bus[2])
 );
-obi_sram_intf #() i_dmem (
+obi_sram_intf #(
+  .NumWords (rt_pkg::DmemSizeBytes / 4)
+) i_dmem (
   .clk_i,
   .rst_ni,
   .sbr_bus (sbr_bus[3])

@@ -91,6 +91,8 @@ typedef struct packed {
   bit         _one;
 } jtag_idcode_t;
 
-localparam int unsigned DbgIdCode = 32'hFEEDC0D3;
+localparam int unsigned DbgIdCode      = 32'hFEEDC0D3;
+localparam int unsigned ImemSizeBytes  = get_addr_size(ObiXbarCfg.ImemStart, ObiXbarCfg.ImemEnd);
+localparam int unsigned DmemSizeBytes  = get_addr_size(ObiXbarCfg.DmemStart, ObiXbarCfg.DmemEnd);
 
 endpackage : rt_pkg
