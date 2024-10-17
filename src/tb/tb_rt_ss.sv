@@ -44,13 +44,9 @@ initial begin : tb_process
   end else begin
     // sw test
     vip.jtag_elf_run(ElfPath);
+    vip.jtag_wait_for_eoc();
   end
 
-  vip.jtag_wait_for_eoc();
-
-  #RunTime;
-
-  vip.jtag_wait_for_eoc();
 
   $display("[TB]: ending simulation");
   $finish();

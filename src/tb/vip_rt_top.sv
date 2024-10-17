@@ -186,12 +186,6 @@ endtask
 // Halt the core and preload a binary
 task automatic jtag_elf_halt_load(input string binary, output word entry);
   dm::dmstatus_t status;
-  // Wait until bootrom initialized LLC
-  //if (DutCfg.LlcNotBypass) begin
-  //  word regval;
-  //  $display("[JTAG] Wait for LLC configuration");
-  //  jtag_poll_bit0(AmLlc + axi_llc_reg_pkg::AXI_LLC_CFG_SPM_LOW_OFFSET, regval, 20);
-  //end
   // Halt hart 0
   jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
   do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
@@ -224,14 +218,13 @@ endtask
 
 // Wait for termination signal and get return code
 task automatic jtag_wait_for_eoc();
-  word exit_code;
-  //jtag_read_reg32(32'h380, exit_code);
-  jtag_dbg.read_dmi_exp_backoff(dm::Data0, exit_code);
+  word exit_code = 0;
+  while (exit_code[31] != 1) begin
+    jtag_dbg.read_dmi_exp_backoff(dm::Data0, exit_code);
+  end
+
   $display("EXIT CODE: %h", exit_code);
-  //jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
-  //exit_code >>= 1;
-  //if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
-  //else $display("[JTAG] SUCCESS");
+
 endtask
 
 
