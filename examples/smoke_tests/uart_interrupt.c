@@ -9,7 +9,7 @@ int main() {
   init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
   print_uart("[UART] Hello from UART!\n");
   print_uart("[UART] UART_INTERRUPT_TEST [PASSED]\n");
-  while (1)
+  //while (1)
     ; // keep test from returning
 
 }

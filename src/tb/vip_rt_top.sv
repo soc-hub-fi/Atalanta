@@ -19,7 +19,9 @@ module vip_rt_top #(
   output logic   jtag_tms_o,
   output logic   jtag_trst_no,
   output logic   jtag_tdi_o,
-  input  logic   jtag_tdo_i
+  input  logic   jtag_tdo_i,
+  output logic   uart_dut_rx_o,
+  input  logic   uart_dut_tx_i
 );
 
 import "DPI-C" function byte read_elf(input string filename);
@@ -113,6 +115,17 @@ clk_rst_gen #(
   .clk_o  (jtag_tck_o),
   .rst_no ()
 );
+
+uart_bus #(
+  .BAUD_RATE( 3000000 ),
+  .PARITY_EN(    0 )
+) i_uart (
+  // Note invertion of signals from dut->uart
+  .rx    ( uart_dut_tx_i ),
+  .tx    ( uart_dut_rx_o ),
+  .rx_en ( 1'b1    )
+);
+
 
 //sim_timeout #(
 //  .Cycles (TimeoutCycles),
@@ -288,6 +301,8 @@ task automatic jtag_wait_for_eoc();
   while (exit_code[31] != 1) begin
     jtag_dbg.read_dmi_exp_backoff(dm::Data0, exit_code);
   end
+
+  #10us;
 
   if (exit_code[0] == 1'b0)
     $display("[TB] Program returned EXIT_SUCCESS");

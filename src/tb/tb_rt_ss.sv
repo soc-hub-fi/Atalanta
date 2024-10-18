@@ -12,7 +12,7 @@ localparam int unsigned AxiDw = 32;
 localparam int unsigned AxiIw = 9;
 localparam int unsigned AxiUw = 4;
 
-localparam time             RunTime       = 1ms;
+localparam time             ExtraRunTime  = 10us;
 localparam time             ClockPerSys   = 10ns;
 localparam time             ClockPerJtag  = 30ns;
 localparam longint unsigned RstClkCycles  = 347;
@@ -22,7 +22,7 @@ localparam longint unsigned TimeoutCycles = 32000;
 logic clk, rst_n;
 logic jtag_tck, jtag_tms, jtag_trst_n, jtag_tdi,jtag_tdo;
 logic [IrqNr-1:0] irqs;
-
+logic uart_tx, uart_rx;
 
 initial begin : tb_process
 
@@ -52,6 +52,7 @@ initial begin : tb_process
     vip.jtag_wait_for_eoc();
   end
 
+  #ExtraRunTime;
   $display("[TB] ending simulation");
   $finish();
 
@@ -65,8 +66,7 @@ AXI_BUS #(
 ) dut_mst (), dut_slv ();
 
 assign irqs = '0;
-assign uart_rx = '0;
-assign uart_tx = '0;
+
 
 vip_rt_top #(
   .ClkPerSys     (ClockPerSys),
@@ -86,7 +86,9 @@ vip_rt_top #(
   .jtag_tms_o   (jtag_tms),
   .jtag_trst_no (jtag_trst_n),
   .jtag_tdi_o   (jtag_tdi),
-  .jtag_tdo_i   (jtag_tdo)
+  .jtag_tdo_i   (jtag_tdo),
+  .uart_dut_rx_o(uart_rx),
+  .uart_dut_tx_i(uart_tx)
 );
 
 `ifdef SYNTH_WRAPPER

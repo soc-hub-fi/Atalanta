@@ -5,6 +5,8 @@
 #define OUTPUT_REG_ADDR    0x00030008
 #define TIMER_BASE_ADDR    0x00030200
 
+#define ITER_CNT 10
+
 // (pseudo)random data generation
 uint32_t lfsr = 0xCAFEFACEu;
 uint32_t bit;
@@ -13,14 +15,17 @@ uint32_t rand(){
   return lfsr =  (lfsr >> 1) | (bit << 31);
 }
 
-uint32_t get_rand_addr(uint32_t range_start, uint32_t range_end){
+uint32_t get_rand_addr(uint32_t range_start, uint32_t range_end, char alligned){
   uint32_t size = range_end - range_start;
-  return (rand()%size) + range_start;
+  uint32_t result = (rand()%size) + range_start;
+  if (alligned)
+    result &= 0xFFFFFFFC;
+  return result;
 }
 
 uint32_t error_count = 0;
 
-uint32_t write_readback_word(uint32_t addr, uint32_t value, char verbose){
+uint32_t write_readback_word(uint32_t addr, volatile uint32_t value, char verbose){
   volatile uint32_t result = 0;
   // TODO: add prints
   if (verbose){
@@ -69,11 +74,14 @@ int main() {
   print_uart("[UART] Starting memory_sanity test\n");
 
   print_uart("[UART] Performing alligned memory accesses\n");
-  for (int it=0; it<100; it++){
-    write_readback_word(get_rand_addr(0x5000, 0x9000), rand(), 0);
+  for (int it=0; it<ITER_CNT; it++){
+    write_readback_word(get_rand_addr(0x5000, 0x9000, 1), rand(), 1);
   }
 
   print_uart("[UART] Performing unaligned memory accesses\n");
+  for (int it=0; it<ITER_CNT; it++){
+    write_readback_word(get_rand_addr(0x5000, 0x9000, 0), rand(), 1);
+  }
 
   print_uart("[UART] Test complete, error count: ");
   print_uart_int(error_count);

@@ -22,10 +22,11 @@ interface uart_bus
 
     input  logic rx_en
   );
-  timeunit      1ps;
-  timeprecision 1ps;
+  //timeunit      1ps;
+  //timeprecision 1ps;
 
-  localparam BIT_PERIOD = (1000000000/BAUD_RATE*1000);
+  //localparam BIT_PERIOD = (1000000000/BAUD_RATE*1000);
+  localparam time UartBaudPeriod = 1000ns*1000*1000/BAUD_RATE;
 
   logic [7:0]       character;
   logic [256*8-1:0] stringa;
@@ -44,16 +45,16 @@ interface uart_bus
     if (rx_en)
     begin
       @(negedge rx);
-      #(BIT_PERIOD/2) ;
+      #(UartBaudPeriod/2) ;
       for (int i=0;i<=7;i++)
       begin
-        #BIT_PERIOD character[i] = rx;
+        #UartBaudPeriod character[i] = rx;
       end
 
       if(PARITY_EN == 1)
       begin
         // check parity
-        #BIT_PERIOD parity = rx;
+        #UartBaudPeriod parity = rx;
 
         for (int i=7;i>=0;i--)
         begin
@@ -67,8 +68,8 @@ interface uart_bus
       end
 
       // STOP BIT
-      #BIT_PERIOD;
-      $display("%h",character);
+      #UartBaudPeriod;
+      //$display("%h",character);
       //$fwrite(file, "%c", character);
       stringa[(255-charnum)*8 +: 8] = character;
       if (character == 8'h0A || charnum == 254) // line feed or max. chars reached
@@ -78,7 +79,7 @@ interface uart_bus
         else
           stringa[(255-charnum-1)*8 +: 8] = 8'h0; // null terminate string
 
-        $write("RX string: %s\n",stringa);
+        $write("%s\n",stringa);
         charnum = 0;
         stringa = "";
       end
@@ -102,14 +103,14 @@ interface uart_bus
     tx = 1'b0;
 
     for (i = 0; i < 8; i++) begin
-      #(BIT_PERIOD);
+      #(UartBaudPeriod);
       tx = c[i];
       $display("[UART] Sent %x at time %t",c[i],$time);
     end
 
     // stop bit
-    #(BIT_PERIOD);
+    #(UartBaudPeriod);
     tx = 1'b1;
-    #(BIT_PERIOD);
+    #(UartBaudPeriod);
   endtask
 endinterface

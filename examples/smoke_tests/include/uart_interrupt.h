@@ -6,6 +6,8 @@
 #include "circular_buffer.h"
 #include "clic.h"
 
+#define NO_CIRCULAR_BUFFER 1
+
 #define UART_BASE 0x00030100
 
 #define UART_RBR UART_BASE + 0
@@ -98,32 +100,24 @@ void init_uart(uint32_t freq, uint32_t baud)
     
 }
 
-/*
-void write_serial(char a)
-{
-
-    while(circular_buffer_full(&tx_buffer)); // poll if buffer is full 
-    
-    write_reg_u8(UART_INTERRUPT_ENABLE, 0x00); // disable all interrupts
-
-    circular_buffer_push(&tx_buffer, a);
-    
-    write_reg_u8(UART_INTERRUPT_ENABLE, 0x02); // Enable interrupt for uart only after pushing new character 
-
-}
-*/
-
 
 int is_transmit_empty()
 {
     return read_reg_u8(UART_LINE_STATUS) & 0x20;
 }
 
+
 void write_serial(char a)
 {
-    while (is_transmit_empty() == 0) {};
-
-    write_reg_u8(UART_THR, a);
+    if(NO_CIRCULAR_BUFFER){
+        while (is_transmit_empty() == 0) {};
+        write_reg_u8(UART_THR, a);
+    } else {
+        while(circular_buffer_full(&tx_buffer)); // poll if buffer is full 
+        write_reg_u8(UART_INTERRUPT_ENABLE, 0x00); // disable all interrupts
+        circular_buffer_push(&tx_buffer, a);
+        write_reg_u8(UART_INTERRUPT_ENABLE, 0x02); // Enable interrupt for uart only after pushing new character 
+    }
 }
 
 uint8_t bin_to_hex_table[16] = {
