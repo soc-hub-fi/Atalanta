@@ -304,7 +304,7 @@ task automatic jtag_wait_for_eoc();
 
   #10us;
 
-  if (exit_code[0] == 1'b0)
+  if (exit_code[30:0] == 31'b0)
     $display("[TB] Program returned EXIT_SUCCESS");
   else
     $display("[TB] Program execution [FAILED]!");
