@@ -2,8 +2,8 @@
 
 #include "include/common.h"
 #include "include/clic.h"
-#include "include/uart.h"
 #include "include/csr_utils.h"
+#include "include/uart.h"
 
 
 #define N_SOURCE 64
@@ -221,6 +221,8 @@ void clic_perf(){
 
 
 int main(){
+    
+    init_uart(20000000, 9600); // 50 MHz for simulation, 40 MHz for FPGA
     init();
 
     //exhaustive();
@@ -228,10 +230,19 @@ int main(){
 
     //clic_perf();
 
-    if(*((uint32_t *)(SHARED_VAR_ADDR)) == 0)
+    uint16_t count = *((uint32_t *)(SHARED_VAR_ADDR));
+    if(count == 0)
         test_failed();
 
     test_complete();
-    while(1);
+
+    uint16_t gpio = *(uint32_t*)(GPIO_REG_ADDR);
+    if (gpio == 0x101){
+        print_uart("CLIC tests [PASSED]\n");
+    }else  {
+        print_uart("CLIC tests [FAILED]\n");
+    }
+    while (1)
+        ; // keep test from returning
 
 }

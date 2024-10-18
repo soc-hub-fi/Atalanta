@@ -24,7 +24,7 @@ parameter string DmemStim = "../stims/nop_loop.hex";
 
 localparam string RfInit = "../stims/rf_init.hex";
 localparam string MemInit = "../stims/mem_init.hex";
-localparam time TimeOut    = 2.5ms;
+localparam time TimeOut    = 3.5ms;
 
 localparam int unsigned AxiAw    = 32;
 localparam int unsigned AxiDW    = 32;

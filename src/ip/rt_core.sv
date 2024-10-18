@@ -196,7 +196,7 @@ ibex_top #(
     .RV32E            (RVE),
     .RV32M            (ibex_pkg::RV32MFast),
     .RV32B            (ibex_pkg::RV32BNone),
-    .WritebackStage   (1'b0),
+    .WritebackStage   (1'b1),
 `ifdef FPGA          //ASIC Implementation
     .RegFile          (ibex_pkg::RegFileFPGA),
 `else                 // FPGA Implementation

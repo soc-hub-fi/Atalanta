@@ -18,32 +18,24 @@ checksum = "361a90feb7004eca4019fb28352a9465666b24f840f5c3cddf0ff13920590b89"
 name = "hello-rt"
 version = "0.1.0"
 dependencies = [
- "memory_map",
- "riscv",
- "riscv-peripheral",
- "riscv-rt",
+ "rt_ss_bsp",
  "ufmt",
- "ufmt-write",
 ]
 
 [[package]]
-name = "memory_map"
-version = "0.1.0"
-
-[[package]]
 name = "proc-macro2"
-version = "1.0.78"
+version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2422ad645d89c99f8f3e6b88a9fdeca7fabeac836b1002371c4367c8f984aae"
+checksum = "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77"
 dependencies = [
  "unicode-ident",
 ]
 
 [[package]]
 name = "quote"
-version = "1.0.35"
+version = "1.0.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "291ec9ab5efd934aaf503a6466c5d5251535d108ee747472c3977cc5acc868ef"
+checksum = "0fa76aaf39101c457836aec0ce2316dbdc3ab723cdda1c6bd4e6ad4208acaca7"
 dependencies = [
  "proc-macro2",
 ]
@@ -51,7 +43,7 @@ dependencies = [
 [[package]]
 name = "riscv"
 version = "0.11.1"
-source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#e9655e429bec59bbb5ef867f4994a20c9d8314cd"
+source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#de734f3e3e36eaa8c657d1f09dd9e9b74e4973f8"
 dependencies = [
  "critical-section",
  "embedded-hal",
@@ -60,12 +52,12 @@ dependencies = [
 [[package]]
 name = "riscv-pac"
 version = "0.1.1"
-source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#e9655e429bec59bbb5ef867f4994a20c9d8314cd"
+source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#de734f3e3e36eaa8c657d1f09dd9e9b74e4973f8"
 
 [[package]]
 name = "riscv-peripheral"
 version = "0.1.0"
-source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#e9655e429bec59bbb5ef867f4994a20c9d8314cd"
+source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#de734f3e3e36eaa8c657d1f09dd9e9b74e4973f8"
 dependencies = [
  "embedded-hal",
  "riscv",
@@ -75,7 +67,7 @@ dependencies = [
 [[package]]
 name = "riscv-rt"
 version = "0.13.0"
-source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#e9655e429bec59bbb5ef867f4994a20c9d8314cd"
+source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#de734f3e3e36eaa8c657d1f09dd9e9b74e4973f8"
 dependencies = [
  "riscv",
  "riscv-rt-macros",
@@ -84,7 +76,28 @@ dependencies = [
 [[package]]
 name = "riscv-rt-macros"
 version = "0.2.1"
-source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#e9655e429bec59bbb5ef867f4994a20c9d8314cd"
+source = "git+https://github.com/hegza/riscv?branch=feat/rt-ibex#de734f3e3e36eaa8c657d1f09dd9e9b74e4973f8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "rt_ss_bsp"
+version = "0.1.0"
+dependencies = [
+ "riscv",
+ "riscv-pac",
+ "riscv-peripheral",
+ "riscv-rt",
+ "rt_ss_bsp_macros",
+ "ufmt",
+]
+
+[[package]]
+name = "rt_ss_bsp_macros"
+version = "0.1.0"
 dependencies = [
  "proc-macro2",
  "quote",

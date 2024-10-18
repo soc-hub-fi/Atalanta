@@ -6,13 +6,8 @@
 #![no_main]
 #![no_std]
 
-use hello_rt::{
-    clic::*,
-    led::{led_on, Led},
-    print_example_name, sprintln, tb,
-    uart::init_uart,
-};
-use riscv_rt::entry;
+use bsp::{print_example_name, riscv, rt::entry, sprintln, tb, uart::init_uart};
+use hello_rt::clic::*;
 
 // 3 == MSI
 const IRQ_ID: u32 = 3;
@@ -22,7 +17,7 @@ static mut LAST_IRQ: Option<u32> = None;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(hello_rt::CPU_FREQ, 9600);
+    init_uart(bsp::CPU_FREQ, 9600);
     print_example_name!();
 
     // Set level bits to 8
@@ -40,9 +35,7 @@ fn main() -> ! {
         assert!(IRQ_ID == irq);
         tear_irq(IRQ_ID);
 
-        // Write to led address to signal test success in CI
-        led_on(Led::Ld0);
-        tb::signal_ok(true)
+        tb::signal_pass(true)
     }
     // If execution gets here in spite of pending the IRQ, we have failed
     else {
@@ -55,7 +48,7 @@ fn setup_irq(id: u32) {
     // Positive edge triggering
     set_trig(id, ClicTrig::Edge);
     enable_vectoring(id);
-    set_priority(id, 0x88);
+    set_level(id, 0x88);
     enable_int(id);
 }
 

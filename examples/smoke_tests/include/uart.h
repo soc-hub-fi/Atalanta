@@ -29,7 +29,7 @@ uint8_t read_reg_u8(uintptr_t addr)
 
 int is_transmit_empty()
 {
-    return read_reg_u8(UART_LINE_STATUS) & 0x20;
+    return read_reg_u8(UART_LINE_STATUS) & 0x20;  
 }
 
 void write_serial(char a)
@@ -87,7 +87,7 @@ void print_uart_int(uint32_t addr)
         write_serial(hex[1]);
     }
 }
-
+/*
 void print_uart_addr(uint64_t addr)
 {
     int i;
@@ -100,7 +100,7 @@ void print_uart_addr(uint64_t addr)
         write_serial(hex[1]);
     }
 }
-
+*/
 void print_uart_byte(uint8_t byte)
 {
     uint8_t hex[2];

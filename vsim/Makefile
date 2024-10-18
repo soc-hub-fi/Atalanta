@@ -61,16 +61,16 @@ endif
 TEST      ?= nop_loop
 jtag_test ?= 0
 SW_TEST   ?= 0
-IMEM_STIM ?= "../stims/nop_loop.hex"
-DMEM_STIM ?= "../stims/nop_loop.hex"
+IMEM_STIM ?= "../ips/atalanta/stims/nop_loop.hex"
+DMEM_STIM ?= "../ips/atalanta/stims/nop_loop.hex"
 IBEX_USE_RVE  ?= 1
 
 ifeq ($(TEST), jtag_test)
 	jtag_test = 1
 else
 	SW_TEST = 1
-	IMEM_STIM = "../stims/$(TEST)_imem.hex"
-	DMEM_STIM = "../stims/$(TEST)_dmem.hex"
+	IMEM_STIM = "../ips/atalanta/stims/$(TEST)_imem.hex"
+	DMEM_STIM = "../ips/atalanta/stims/$(TEST)_dmem.hex"
 endif
 
 LOAD ?= READMEM

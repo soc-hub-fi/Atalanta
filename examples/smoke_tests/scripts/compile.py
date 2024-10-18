@@ -12,8 +12,8 @@ OUT_DIR = f"{BUILD_ROOT}/build/"
 CRT0_PATH = f"{BUILD_ROOT}/common/crt0.S"
 LINK_SCRIPT_PATH = f"{BUILD_ROOT}/common/link.ld"
 
-ARCH_FLAGS = f"-march=rv32emc_zicsr -mabi=ilp32e"
-CFLAGS = f"-O0 -ffunction-sections -fdata-sections"
+ARCH_FLAGS = f"-march=rv32emc -mabi=ilp32e"
+CFLAGS = f"-O0 -ffunction-sections -fdata-sections -g -c"
 LDFLAGS = f"-T{LINK_SCRIPT_PATH} -nostartfiles"
 
 def make_little(word):
@@ -104,14 +104,14 @@ def main():
 
         if not os.path.isfile(section_file):
             print(f"section={section} not available, generating dummy {out_stim}")
-            run_cmd(f"> {out_stim}")
+            run_cmd(f"echo 00000000 > {out_stim}")
             return
 
         xxd_path = f"{section_file}.xxd"
         run_cmd(f"python3 {BUILD_ROOT}/scripts/xxd.py {section_file} > {xxd_path}")
 
         # Generate stim
-        with open(xxd_path, "r") as xxdfile, open(out_stim, "w" ) as stimfile:
+        with open(xxd_path, "r") as xxdfile, open(out_stim, "a" ) as stimfile:
             dump_lines = []
             big_words = []
             little_words = []
@@ -133,13 +133,24 @@ def main():
                 i += 2
                 stimfile.write(stim_line)
 
-    # Place .text into a stim file for imem
-    imem_stim = f"stims/{fstem}_imem.hex"
-    section_to_stim(elf_path, ".text", imem_stim)
 
-    # Place .rodata into a stim file for dmem
+    # Place .text into a stim file for imem
+    sections =[".text"] 
+    imem_stim = f"stims/{fstem}_imem.hex"
+    with open(imem_stim, 'w'):
+        pass
+    
+    for section in sections:
+        section_to_stim(elf_path, section, imem_stim)
+
+    # Place .data and .sdata into a stim file for dmem
+    sections =[".data",".sdata"]                  
     dmem_stim = f"stims/{fstem}_dmem.hex"
-    section_to_stim(elf_path, ".rodata", dmem_stim)
+    with open(dmem_stim, 'w'):
+        pass
+    
+    for section in sections:
+        section_to_stim(elf_path, section, dmem_stim)
 
     print(f"Test compilation complete, output hex in {imem_stim}, {dmem_stim}")
     if (fext == ".c"):

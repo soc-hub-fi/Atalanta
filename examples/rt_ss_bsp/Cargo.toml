@@ -1,0 +1,33 @@
+[package]
+name = "rt_ss_bsp"
+authors = ["Henri Lunnikivi <henri.lunnikivi@tuni.fi>"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rt_ss_bsp_macros = { path = "macros" }
+riscv-rt = { git = "https://github.com/hegza/riscv", branch = "feat/rt-ibex", version = "0.13", features = [
+    "single-hart",
+    "v-trap",
+], optional = true }
+riscv = { git = "https://github.com/hegza/riscv", branch = "feat/rt-ibex", version = "0.11", features = [
+    "clic",
+    "critical-section-single-hart",
+] }
+riscv-peripheral = { git = "https://github.com/hegza/riscv", branch = "feat/rt-ibex", version = "0.1.0" }
+ufmt = { version = "0.2.0", optional = true }
+riscv-pac = { git = "https://github.com/hegza/riscv", branch = "feat/rt-ibex", version = "0.1.1" }
+
+[features]
+# Use this feature when using cosimulators such as QuestaSim
+rtl-tb = []
+# Use this feature when deploying on FPGA
+fpga = []
+rt = ["dep:riscv-rt", "panic"]
+panic = []
+ufmt = ["dep:ufmt"]
+clic-smclic = []
+# CLIC selective hardware vectoring extension
+clic-smclicshv = []
+
+default = ["fpga"]

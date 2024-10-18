@@ -1,16 +1,6 @@
-use super::mmap::*;
-use super::*;
-
-/// CLIC peripheral
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct _CLIC;
-
-unsafe impl riscv_peripheral::clic::Clic for _CLIC {
-    const BASE: usize = CLIC_BASE_ADDR;
-}
-
-#[allow(private_interfaces)]
-pub type CLIC = riscv_peripheral::clic::CLIC<_CLIC>;
+//! Ad-hoc CLIC impl based on the respective C code
+use bsp::mmap::*;
+use bsp::*;
 
 /* CLIC interrupt id control */
 pub const CLIC_NBITS: usize = 8;
@@ -69,10 +59,10 @@ pub fn pend_int(id: u32) {
 }
 
 #[inline]
-pub fn set_priority(id: u32, prio: u32) {
+pub fn set_level(id: u32, level: u32) {
     modify_u32(
         CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id),
-        prio,
+        level,
         CLIC_CLICINTCTL_CTL_MASK as u32,
         CLIC_CLICINTCTL_CTL_OFFSET,
     );

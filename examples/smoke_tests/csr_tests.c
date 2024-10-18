@@ -28,15 +28,13 @@
 #include <stdint.h>
 
 #include "include/common.h"
+#include "include/clic.h"
 #include "include/csr_utils.h"
 #include "include/uart.h"
-
-
 
 //#define LED_REG_ADDR (0x00030008)
 #define CLIC_BASE (0x00050000)
 #define CLIC 1
-
 
 
 // static inline void init(){
@@ -334,15 +332,9 @@ void main(){
         __mip__
     };
 
+
     init();
 
-    #ifdef UART_PRINTS
-    init_uart(100000000, 9600);
-    print_uart("Initializing UART.... \n");
-
-
-    print_uart("Launching RT-Ibex Control and Status Registers Tests \n");
-    #endif
 
     uint32_t ret __attribute__((aligned(4))) = 0;
 
@@ -354,10 +346,17 @@ void main(){
         }
     }
     
-
-    asm("nop");
     test_complete();
-    asm("nop");
+    init_uart(20000000, 9600);
+
+    if (*(uint32_t*)(GPIO_REG_ADDR) == 0x101){
+        print_uart("[PASSED]\n");
+    }else{
+        print_uart("[FAILED]\n");
+
+    }
+    // Code size is tight, optimizing affects the test and failing is inplicit
+    // print_uart("[FAILED]\n");
 
     while(1){}
 }
