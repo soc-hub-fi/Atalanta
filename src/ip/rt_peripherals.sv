@@ -243,9 +243,9 @@ assign uart_irq  = 1'b0;   // to avoid X's cascading through CLIC
 assign uart_tx_o = 0;
 `endif
 
+// TODO: add generic apb timer peripheral
 
-/*
-rt_timer #() i_timer (
+apb_mtimer #() i_mtimer (
   .clk_i       (periph_clk),
   .rst_ni      (rst_ni),
   .timer_irq_o (mtimer_irq),
@@ -258,6 +258,6 @@ rt_timer #() i_timer (
   .pready_o    (apb_out[2].pready),
   .pslverr_o   (apb_out[2].pslverr)
 );
-*/
+
 
 endmodule : rt_peripherals
