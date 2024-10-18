@@ -205,6 +205,27 @@ task automatic jtag_write_reg32(
   end
 endtask
 
+// Load binary with $readmemh()
+task automatic readmem_elf_preload(input string binary);
+  word sec_addr, sec_len;
+  $display("[WARNING]: READMEM is not valid for real chips, NEVER rely only on this loading mode");
+  $fatal(1, "[ERROR]: READMEM mode currently not supported, exiting");
+  if (read_elf(binary))
+    $fatal(1, "[READMEM] Failed to load ELF!");
+  while (get_section(sec_addr, sec_len)) begin
+    byte bf[] = new [sec_len];
+    $display("[READMEM] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
+    if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[READMEM] Failed to read ELF section!");
+    //jtag_write(dm::SBCS, JtagInitSbcs, 1, 1);
+    //jtag_write(dm::SBAddress0, sec_addr[31:0]);
+    for (longint i = 0; i <= sec_len ; i += 4) begin
+      bit checkpoint = (i != 0 && i % 512 == 0);
+      if (checkpoint)
+        $display("[READMEM] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+    end
+  end
+endtask
+
 // Load a binary
 task automatic jtag_elf_preload(input string binary, output word entry);
   word sec_addr, sec_len;
@@ -268,7 +289,10 @@ task automatic jtag_wait_for_eoc();
     jtag_dbg.read_dmi_exp_backoff(dm::Data0, exit_code);
   end
 
-  $display("EXIT CODE: %h", exit_code);
+  if (exit_code[0] == 1'b0)
+    $display("[TB] Program returned EXIT_SUCCESS");
+  else
+    $display("[TB] Program execution [FAILED]!");
 
 endtask
 

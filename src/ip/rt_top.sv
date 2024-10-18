@@ -128,20 +128,18 @@ rt_debug #(
   .dbg_slv         (dbgs_bus)
 );
 
-assign axis_bus.req = 0;
-
 // rt_memory_banks #() i_memory_banks ();
 
-// axi_to_obi_intf #(
-//   .AxiIdWidth   (AxiIdWidth),
-//   .AxiUserWidth (AxiUserWidth),
-//   .MaxTrans     (MaxTrans)
-// ) i_axi_to_obi (
-//   .clk_i,
-//   .rst_ni,
-//   .obi_out (axis_bus),
-//   .axi_in  (soc_slv)
-// );
+axi_to_obi_intf #(
+  .AxiIdWidth   (AxiIdWidth),
+  .AxiUserWidth (AxiUserWidth),
+  .MaxTrans     (MaxTrans)
+) i_axi_to_obi (
+  .clk_i,
+  .rst_ni,
+  .obi_out (axis_bus),
+  .axi_in  (soc_slv)
+);
 
 // obi_to_axi_intf #() i_obi_to_axi ();
 

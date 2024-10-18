@@ -26,15 +26,15 @@ logic [IrqNr-1:0] irqs;
 
 initial begin : tb_process
 
-  $display("[TB]: Starting testbench");
+  $display("[TB] Starting testbench");
 
   if (TestName == "") begin
-    $display("[TB]: No tests specified, terminating simulation");
+    $display("[TB] No tests specified, terminating simulation");
     $finish();
   end
 
-  $display("[TB]: Test: %s", TestName);
-  $display("[TB]: Load: %s", Load);
+  $display("[TB] Test: %s", TestName);
+  $display("[TB] Load: %s", Load);
 
   vip.wait_for_reset();
   vip.jtag_init();
@@ -43,12 +43,16 @@ initial begin : tb_process
     vip.run_dbg_mem_test();
   end else begin
     // sw test
-    vip.jtag_elf_run(ElfPath);
+    if (Load == "JTAG")
+      vip.jtag_elf_run(ElfPath);
+    else if (Load == "READMEM")
+      vip.readmem_elf_preload(ElfPath);
+    else
+      $fatal(1, "ERROR: unsupported LOAD, exiting");
     vip.jtag_wait_for_eoc();
   end
 
-
-  $display("[TB]: ending simulation");
+  $display("[TB] ending simulation");
   $finish();
 
 end : tb_process

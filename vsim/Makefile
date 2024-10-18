@@ -55,7 +55,7 @@ IBEX_USE_RVE  ?= 1
 
 ELF_PATH ?= "../examples/smoke_tests/build/$(TEST).elf"
 
-LOAD ?= READMEM
+LOAD ?= JTAG
 
 
 TEST_PARAMS =   -G TestName=$(TEST) \

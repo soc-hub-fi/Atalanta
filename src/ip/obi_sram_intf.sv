@@ -30,6 +30,7 @@ obi_handshake_fsm i_fsm (
 tc_sram #(
   .NumWords  (NumWords),
   .DataWidth (DataWidth),
+  .SimInit   ("random"),
   .NumPorts  (1),
   .Latency   (Latency)
 ) i_sram (
