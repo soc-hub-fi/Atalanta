@@ -68,10 +68,16 @@ vip_rt_top #(
   .ClkPerSys     (ClockPerSys),
   .ClkPerJtag    (ClockPerJtag),
   .RstClkCycles  (RstClkCycles),
-  .TimeoutCycles (TimeoutCycles)
+  .TimeoutCycles (TimeoutCycles),
+  .AxiAw         (AxiAw),
+  .AxiDw         (AxiDw),
+  .AxiIw         (AxiIw),
+  .AxiUw         (AxiUw)
 ) vip (
   .clk_o        (clk),
   .rst_no       (rst_n),
+  .axi_mst      (dut_slv),
+  .axi_slv      (dut_mst),
   .jtag_tck_o   (jtag_tck),
   .jtag_tms_o   (jtag_tms),
   .jtag_trst_no (jtag_trst_n),

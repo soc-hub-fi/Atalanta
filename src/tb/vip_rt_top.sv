@@ -1,16 +1,25 @@
+`include "axi/assign.svh"
+`include "axi/typedef.svh"
+
 module vip_rt_top #(
-  parameter time             ClkPerSys   = 0ns,
-  parameter time             ClkPerJtag  = 0ns,
+  parameter time             ClkPerSys     = 0ns,
+  parameter time             ClkPerJtag    = 0ns,
   parameter longint unsigned RstClkCycles  = 0,
-  parameter longint unsigned TimeoutCycles = 0
+  parameter longint unsigned TimeoutCycles = 0,
+  parameter  int unsigned    AxiAw         = 32,
+  parameter  int unsigned    AxiDw         = 32,
+  parameter  int unsigned    AxiIw         = 9,
+  parameter  int unsigned    AxiUw         = 4
 )(
-  output logic clk_o,
-  output logic rst_no,
-  output logic jtag_tck_o,
-  output logic jtag_tms_o,
-  output logic jtag_trst_no,
-  output logic jtag_tdi_o,
-  input  logic jtag_tdo_i
+  output logic   clk_o,
+  output logic   rst_no,
+  AXI_BUS.Master axi_mst,
+  AXI_BUS.Slave  axi_slv,
+  output logic   jtag_tck_o,
+  output logic   jtag_tms_o,
+  output logic   jtag_trst_no,
+  output logic   jtag_tdi_o,
+  input  logic   jtag_tdo_i
 );
 
 import "DPI-C" function byte read_elf(input string filename);
@@ -21,12 +30,47 @@ import "DPI-C" context function byte read_section(input longint address, inout b
 localparam real TAppl = 0.1;
 localparam real TTest = 0.9;
 
+typedef axi_test::axi_rand_master #(
+  // AXI interface parameters
+  .AW ( AxiAw ),
+  .DW ( AxiDw ),
+  .IW ( AxiIw ),
+  .UW ( AxiUw ),
+  // Stimuli application and test time
+  .TA ( TAppl ),
+  .TT ( TTest ),
+  // Maximum number of read and write transactions in flight
+  .MAX_READ_TXNS  ( 20 ),
+  .MAX_WRITE_TXNS ( 20 ),
+  .AXI_EXCLS      ( 0 ),
+  .AXI_ATOPS      ( 0 ),
+  .UNIQUE_IDS     ( 0 )
+) axi_rand_master_t;
+
 logic clk, rst_n;
 
 assign clk_o = clk;
 assign rst_no = rst_n;
 
 JTAG_DV jtag (jtag_tck_o);
+
+AXI_BUS_DV #(
+  .AXI_ADDR_WIDTH ( AxiAw ),
+  .AXI_DATA_WIDTH ( AxiDw ),
+  .AXI_ID_WIDTH   ( AxiIw ),
+  .AXI_USER_WIDTH ( AxiUw )
+) axi_master_dv (clk_o);
+
+AXI_BUS_DV #(
+  .AXI_ADDR_WIDTH ( AxiAw ),
+  .AXI_DATA_WIDTH ( AxiDw ),
+  .AXI_ID_WIDTH   ( AxiIw ),
+  .AXI_USER_WIDTH ( AxiUw )
+) axi_slave_dv (clk_o);
+
+`AXI_ASSIGN(axi_mst, axi_master_dv)
+
+axi_rand_master_t axi_drv = new(axi_master_dv);
 
 localparam dm::sbcs_t JtagInitSbcs = dm::sbcs_t'{
   sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 2, default: '0};
@@ -51,6 +95,7 @@ assign jtag.tdo     = jtag_tdo_i;
 initial begin
   @(negedge rst_n);
   jtag_dbg.reset_master();
+  axi_drv.reset();
 end
 
 clk_rst_gen #(
