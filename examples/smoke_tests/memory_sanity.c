@@ -139,6 +139,8 @@ int main() {
   print_uart("[UART] Test complete, error count: ");
   print_uart_int(error_count);
   print_uart("\n");
+  if (error_count == 0)
+    print_uart("[PASSED]\n");
 
   return error_count;
 
