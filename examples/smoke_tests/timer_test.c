@@ -59,7 +59,4 @@ int main() {
 
   print_uart("Timer test [PASSED]\n");
 
-  while (1)
-    ; // keep test from returning
-
 }

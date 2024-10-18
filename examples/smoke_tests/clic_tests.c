@@ -241,7 +241,5 @@ int main(){
     }else  {
         print_uart("CLIC tests [FAILED]\n");
     }
-    while (1)
-        ; // keep test from returning
 
 }

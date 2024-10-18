@@ -354,8 +354,4 @@ void main(){
         print_uart("[FAILED]\n");
 
     }
-    // Code size is tight, optimizing affects the test and failing is inplicit
-    // print_uart("[FAILED]\n");
-
-    while(1){}
 }
