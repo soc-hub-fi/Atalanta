@@ -1,4 +1,4 @@
-//`define FULL_UART 1
+`define FULL_UART 1
 
 `ifdef SYNTHESIS
   `define NOT_MOCK

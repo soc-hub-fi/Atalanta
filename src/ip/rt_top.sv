@@ -106,7 +106,7 @@ rt_peripherals #() i_peripherals (
   .irq_level_o    (irq_level),
   .irq_valid_o    (irq_valid),
   .irq_ready_i    (irq_ready),
-  .irq_id_o       (irq_id_o),
+  .irq_id_o       (irq_id),
   .irq_src_i      (intr_src_i),
   .gpio_i         (),
   .gpio_o         ()

@@ -6,7 +6,7 @@
 #include "circular_buffer.h"
 #include "clic.h"
 
-#define NO_CIRCULAR_BUFFER 1
+#define NO_CIRCULAR_BUFFER 0
 
 #define UART_BASE 0x00030100
 
