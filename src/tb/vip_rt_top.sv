@@ -308,6 +308,7 @@ task automatic jtag_wait_for_eoc();
     $display("[TB] Program returned EXIT_SUCCESS");
   else
     $display("[TB] Program execution [FAILED]!");
+    $fatal(1,"[TB] Program execution unsuccessful");
 
 endtask
 
