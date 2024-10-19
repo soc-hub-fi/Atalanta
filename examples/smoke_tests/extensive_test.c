@@ -129,19 +129,23 @@ int main(){
     print_uart("\n");
     
     if(count != 0x2D){
-        test_failed();
+        print_uart("[UART] Test [FAILED]\n");
+        return 1;
+    } else {
+        print_uart("[UART] Test [PASSED]\n");
+        return 0;
     }
 
-    test_complete();
+   //test_complete();
 
-    uint16_t gpio = *(uint32_t*)(GPIO_REG_ADDR);
-    if (gpio == 0x101){
-        print_uart("vectored_clic [PASSED]\n");
-    }else{
-        print_uart("vectored_clic [FAILED]\n");
-    }
-    while (1)
-        ; // keep test from returning
+    //uint16_t gpio = *(uint32_t*)(GPIO_REG_ADDR);
+    //if (gpio == 0x101){
+    //    print_uart("vectored_clic [PASSED]\n");
+    //}else{
+    //    print_uart("vectored_clic [FAILED]\n");
+    //}
+    //while (1)
+    //    ; // keep test from returning
 
 }
 

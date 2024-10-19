@@ -239,6 +239,8 @@ int main(){
     if(count == 0){
         res = 1;
         print_uart("[UART] Test [FAILED]");
+    } else {
+        print_uart("[UART] Test [PASSED]");
     }
     
     return res;

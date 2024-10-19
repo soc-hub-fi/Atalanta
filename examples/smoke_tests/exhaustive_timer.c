@@ -82,19 +82,22 @@ int main(){
 
         
 
-        if(count!= 0xF) 
-            test_failed();
-
-        test_complete();
-
-        uint16_t gpio = *(uint32_t*)(GPIO_REG_ADDR);
-        if (gpio == 0x101){
-            print_uart("nested_timer [PASSED]\n");
-        }else{
-            print_uart("nested_timer [FAILED]\n");
+        if(count!= 0xF){
+            print_uart("[UART] Test [FAILED]\n");
+            return 1;
+        } else {
+            print_uart("[UART] Test [PASSED]\n");
+            return 0;
         }
-        while (1)
-            ; // keep test from returning
+
+        //uint16_t gpio = *(uint32_t*)(GPIO_REG_ADDR);
+        //if (gpio == 0x101){
+        //    print_uart("nested_timer [PASSED]\n");
+        //}else{
+        //    print_uart("nested_timer [FAILED]\n");
+        //}
+        //while (1)
+        //    ; // keep test from returning
 
 }
 
