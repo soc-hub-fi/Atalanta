@@ -23,7 +23,7 @@ obi_handshake_fsm i_fsm (
   .rvalid_o (sbr_bus.rvalid)
 );
 
-`ifdef FPGA
+`ifdef FPGA_MEM
   $fatal("FPGA memories not yet supported, exiting");
 `else
 
