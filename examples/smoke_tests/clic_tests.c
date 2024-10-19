@@ -229,17 +229,18 @@ int main(){
 
     //clic_perf();
 
+    uint8_t res = 0;
     uint16_t count = *((uint32_t *)(SHARED_VAR_ADDR));
-    if(count == 0)
-        test_failed();
 
-    test_complete();
+    print_uart("[UART] Shared variable value is ");
+    print_uart_int(count);
+    print_uart("\n");
 
-    uint16_t gpio = *(uint32_t*)(GPIO_REG_ADDR);
-    if (gpio == 0x101){
-        print_uart("CLIC tests [PASSED]\n");
-    }else  {
-        print_uart("CLIC tests [FAILED]\n");
+    if(count == 0){
+        res = 1;
+        print_uart("[UART] Test [FAILED]");
     }
+    
+    return res;
 
 }

@@ -2,7 +2,7 @@
 /*Change it if necessary...*/
 /*Make sure it's 16-bytes aligned*/
 #define VTABLE_ADDR 0x0
-#define SHARED_VAR_ADDR 0x2F00
+#define SHARED_VAR_ADDR 0x5F00
 #define GPIO_OUTPUT_ADDR 0x00030008
 #define MTIME_CTRL_ADDR  0x00030210
 #define MTIMECMP_LOW_ADDR 0x00030208
