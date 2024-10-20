@@ -28,6 +28,7 @@ sources:
     - src/ip/obi_handshake_fsm.sv
     - src/ip/obi_cut_intf.sv
     - src/ip/obi_sram_intf.sv
+    - fpga/hdl/src/xilinx_sp_BRAM.sv
     - src/ip/mock_uart.sv
     - src/ip/rt_core.sv
     - src/ip/timer_core.sv
@@ -49,7 +50,6 @@ sources:
     - target: any(fpga, xilinx)
       files:
       - fpga/hdl/src/configurable_clock_divider_fpga.sv
-      - fpga/hdl/src/xilinx_sp_BRAM.sv
       - fpga/hdl/src/prim_clock_gating.sv
       - fpga/hdl/src/rt_top_fpga_wrapper_PYNQZ1.sv
 

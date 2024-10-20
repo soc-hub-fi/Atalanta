@@ -23,8 +23,25 @@ obi_handshake_fsm i_fsm (
   .rvalid_o (sbr_bus.rvalid)
 );
 
-`ifdef FPGA
-  $fatal("FPGA memories not yet supported, exiting");
+`ifdef FPGA_MEM
+  //$fatal("FPGA memories not yet supported, exiting");
+logic [3:0] bw_ena;
+
+assign bw_ena = (sbr_bus.we) ? (4'b1111 & sbr_bus.be) : 4'b0;
+
+xilinx_sp_BRAM #(
+  .RAM_DEPTH (1024)
+) i_sram (
+  .addra  (sram_addr),
+  .dina   (sbr_bus.wdata),
+  .clka   (clk_i),
+  .wea    (bw_ena),
+  .ena    (1'b1),
+  .rsta   (rst_ni),
+  .regcea (1'b0),
+  .douta  (sbr_bus.rdata)
+);
+
 `else
 
 tc_sram #(
