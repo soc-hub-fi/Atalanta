@@ -30,7 +30,7 @@ logic [3:0] bw_ena;
 assign bw_ena = (sbr_bus.we) ? (4'b1111 & sbr_bus.be) : 4'b0;
 
 xilinx_sp_BRAM #(
-  .RAM_DEPTH (1024)
+  .RAM_DEPTH (NumWords)
 ) i_sram (
   .addra  (sram_addr),
   .dina   (sbr_bus.wdata),
