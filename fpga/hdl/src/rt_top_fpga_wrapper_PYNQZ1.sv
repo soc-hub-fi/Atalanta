@@ -123,7 +123,6 @@ module rt_top_fpga_wrapper_PYNQZ1 #(
   assign mst_bus.ar_prot   = '0;
   assign mst_bus.ar_qos    = '0;
   assign mst_bus.ar_region = '0;
-  assign mst_bus.ar_atop   = '0;
   assign mst_bus.ar_user   = '0;
   assign mst_bus.ar_valid  = '0;
 
