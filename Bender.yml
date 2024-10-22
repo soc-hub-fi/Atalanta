@@ -20,7 +20,8 @@ sources:
   files:
     - src/ip/rt_pkg.sv
     - src/ip/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
-    - src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
+    #- src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
+    - src/ip/axi_to_obi.sv
     - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
     - src/ip/axi_to_obi_intf.sv
     - src/ip/obi_to_axi_intf.sv
@@ -58,7 +59,7 @@ vendor_package:
     target_dir: src/ip/safety_island
     upstream: { git: "https://github.com/pulp-platform/safety_island.git", rev: "584eb697195c44ef1b1cbd1f4b7accdf5192200a" }
     include_from_upstream:
-      - "future/axi_obi/src/axi_to_obi.sv"
+      #- "future/axi_obi/src/axi_to_obi.sv"
       - "future/axi_obi/src/obi_to_axi.sv"
       - "future/axi_obi/src/axi_to_detailed_mem_user.sv"
 
