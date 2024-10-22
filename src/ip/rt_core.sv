@@ -50,7 +50,7 @@ end
 rt_pkg::rule_t EmptyRule  = '{idx: 32'd0, start_addr: 32'hFFFF_FFF0,  end_addr: 32'hFFFF_FFFF };
 
 rt_pkg::rule_t [XbarCfg.NumS-1:0] AddrMap = '{
-  rt_pkg::SramRule,
+  //rt_pkg::SramRule,
   rt_pkg::SramRule,
   rt_pkg::AxiRule,
   rt_pkg::ApbRule,
@@ -64,15 +64,24 @@ logic [NumInterrupts-1:0] core_irq_x;
 
 OBI_BUS #() mgr_bus [rt_pkg::ObiXbarCfg.NumM] (), sbr_bus [rt_pkg::ObiXbarCfg.NumS] ();
 
-`OBI_ASSIGN(mgr_bus[0], obis_debug, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-`OBI_ASSIGN(mgr_bus[3], obis_axi, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+//`OBI_ASSIGN(mgr_bus[0], obis_debug, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+obi_cut_intf i_dbg_mgr_cut (.clk_i, .rst_ni, .obi_s(obis_debug), .obi_m(mgr_bus[0]));
 
-`OBI_ASSIGN(obim_debug, sbr_bus[0], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-`OBI_ASSIGN(obim_rom, sbr_bus[1], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-`OBI_ASSIGN(obim_axi, sbr_bus[5], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+//`OBI_ASSIGN(mgr_bus[3], obis_axi, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+obi_cut_intf i_axi_mgr_cut (.clk_i, .rst_ni, .obi_s(obis_axi), .obi_m(mgr_bus[3]));
+
+
+//`OBI_ASSIGN(obim_debug, sbr_bus[0], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+//`OBI_ASSIGN(obim_rom, sbr_bus[1], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+//`OBI_ASSIGN(obim_axi, sbr_bus[5], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+
+obi_cut_intf i_dbg_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[0]), .obi_m(obim_debug));
+obi_cut_intf i_rom_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[1]), .obi_m(obim_rom));
+obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[5]), .obi_m(obim_axi));
 
 for (genvar i = 0; i < NrMemBanks; i++) begin : g_mem_banks
-  `OBI_ASSIGN(obim_memory[i], sbr_bus[6+i], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+  //`OBI_ASSIGN(obim_memory[i], sbr_bus[6+i], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+  obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[6+i]), .obi_m(obim_memory[i]));
 end : g_mem_banks
 
 //assign sbr_bus[4].gnt    = 0;
