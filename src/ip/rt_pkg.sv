@@ -28,7 +28,7 @@ typedef struct packed {
 } xbar_cfg_t;
 
 
-localparam int unsigned NumMemBanks = 2;
+localparam int unsigned NumMemBanks = 1;
 localparam xbar_cfg_t   ObiXbarCfg = '{
   NumM      : 4,
   NumS      : 6 + NumMemBanks,

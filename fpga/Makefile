@@ -38,11 +38,13 @@ export BOARD_FILES_DIR   ?= $(FPGA_DIR)/board_files
 # Project synthesis defines
 export FPGA_SYNTH_DEFINES ?= \
 	FPGA=1 \
+	FPGA_MEM=1 \
 	STANDALONE=1
 # Project simulation defines
 export FPGA_SIM_DEFINES ?= \
 	XSIM=1 \
 	FPGA=1 \
+	FPGA_MEM=1 \
 	VERILATOR=1 \
 	$(FPGA_BOARD)
 

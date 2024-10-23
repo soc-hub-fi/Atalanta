@@ -81,8 +81,8 @@ rt_core #(
 
 assign memb_bus[0].gnt    = 0;
 assign memb_bus[0].rvalid = 0;
-assign memb_bus[1].gnt    = 0;
-assign memb_bus[1].rvalid = 0;
+//assign memb_bus[1].gnt    = 0;
+//assign memb_bus[1].rvalid = 0;
 
 assign axim_bus.gnt    = 0;
 assign axim_bus.rvalid = 0;

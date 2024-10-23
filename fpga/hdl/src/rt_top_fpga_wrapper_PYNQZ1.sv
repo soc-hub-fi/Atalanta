@@ -56,6 +56,13 @@ module rt_top_fpga_wrapper_PYNQZ1 #(
   // use locked to provide active-low synchronous reset
   assign rt_ss_rstn = locked;
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
+    .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
+    .AXI_ID_WIDTH   (9),
+    .AXI_USER_WIDTH (4)
+  ) mst_bus(), slv_bus ();
+
   // top clock instance
   top_clock i_top_clock (
     .reset    ( rst_i    ), // input reset
@@ -77,10 +84,66 @@ module rt_top_fpga_wrapper_PYNQZ1 #(
     .jtag_trst_ni   ( jtag_trst_ni  ),
     .jtag_td_i      ( jtag_td_i     ),
     .jtag_td_o      ( jtag_td_o     ),
+    .soc_mst        ( mst_bus       ),
+    .soc_slv        ( slv_bus       ),
     .uart_rx_i      ( uart_rx_i     ),
     .uart_tx_o      ( uart_tx_o     ),
     .gpio_input_i   ( gpio_input_i  ),
     .gpio_output_o  ( gpio_output_o )
   );
+
+  // Tieoff interfaces
+  assign mst_bus.aw_id     = '0;
+  assign mst_bus.aw_len    = '0;
+  assign mst_bus.aw_size   = '0;
+  assign mst_bus.aw_burst  = '0;
+  assign mst_bus.aw_lock   = '0;
+  assign mst_bus.aw_cache  = '0;
+  assign mst_bus.aw_prot   = '0;
+  assign mst_bus.aw_qos    = '0;
+  assign mst_bus.aw_region = '0;
+  assign mst_bus.aw_atop   = '0;
+  assign mst_bus.aw_user   = '0;
+  assign mst_bus.aw_valid  = '0;
+
+  assign mst_bus.w_data  = '0;
+  assign mst_bus.w_strb  = '0;
+  assign mst_bus.w_last  = '0;
+  assign mst_bus.w_user  = '0;
+  assign mst_bus.w_valid = '0;
+
+  assign mst_bus.b_ready = '0;
+
+  assign mst_bus.ar_id     = '0;
+  assign mst_bus.ar_len    = '0;
+  assign mst_bus.ar_size   = '0;
+  assign mst_bus.ar_burst  = '0;
+  assign mst_bus.ar_lock   = '0;
+  assign mst_bus.ar_cache  = '0;
+  assign mst_bus.ar_prot   = '0;
+  assign mst_bus.ar_qos    = '0;
+  assign mst_bus.ar_region = '0;
+  assign mst_bus.ar_user   = '0;
+  assign mst_bus.ar_valid  = '0;
+
+  assign mst_bus.r_ready   = '0;
+
+  assign slv_bus.aw_ready  = '0;
+  assign slv_bus.w_ready   = '0;
+
+  assign slv_bus.b_id      = '0;
+  assign slv_bus.b_resp    = '0;
+  assign slv_bus.b_user    = '0;
+  assign slv_bus.b_valid   = '0;
+
+  assign slv_bus.ar_ready  = '0;
+
+  assign slv_bus.r_id      = '0;
+  assign slv_bus.r_data    = '0;
+  assign slv_bus.r_resp    = '0;
+  assign slv_bus.r_last    = '0;
+  assign slv_bus.r_user    = '0;
+  assign slv_bus.r_valid   = '0;
+
 
 endmodule
