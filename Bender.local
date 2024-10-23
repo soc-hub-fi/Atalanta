@@ -1,0 +1,2 @@
+overrides:
+  axi: { git: https://github.com/pulp-platform/axi.git , rev: "bfee21757bf090ec8e358456314b0b0fd3c90809" }
