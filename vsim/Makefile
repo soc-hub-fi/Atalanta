@@ -13,31 +13,13 @@ DUT = tb_rt_ss
 
 BENDER ?= bender
 
-# These need to be defined at top level
-ifndef COMMON_CELLS_DIR
-$(error COMMON_CELLS_DIR not set)
-endif
-
-ifndef OBI_DIR
-$(error OBI_DIR not set)
-endif
-
-ifndef AXI_DIR
-$(error AXI_DIR not set)
-endif
-
-ifndef APB_DIR
-$(error APB_DIR not set)
-endif
-
-ifndef RT_IBEX_DIR
-$(error RT_IBEX_DIR not set)
-endif
-
-ifndef COMMON_CELLS_DIR
-$(error COMMON_CELLS_DIR not set)
-endif
-
+COMMON_CELLS_DIR ?= $(shell $(BENDER) path common_cells)
+OBI_DIR          ?= $(shell $(BENDER) path obi)
+AXI_DIR          ?= $(shell $(BENDER) path axi)
+APB_DIR          ?= $(shell $(BENDER) path apb)
+RT_IBEX_DIR      ?= $(shell $(BENDER) path rt-ibex)
+REGIF_DIR        ?= $(shell $(BENDER) path register_interface)
+SIM_SRC_FILES    ?= $(shell $(BENDER) script flist -t simulation -t test) 
 
 INCLUDES ?= \
 	+incdir+$(COMMON_CELLS_DIR)/include \
@@ -48,12 +30,9 @@ INCLUDES ?= \
 	+incdir+$(RT_IBEX_DIR)/vendor/lowrisc_ip/dv/sv/dv_utils \
 	+incdir+$(RT_IBEX_DIR)/vendor/lowrisc_ip/ip/prim/rtl
 
-
-SOC_CONNECTIVITY =
-DEBUG =
 SYNTH_WRAPPER =
 
-VLOG_DEFINES = $(SOC_CONNECTIVITY) $(DEBUG) $(SYNTH_WRAPPER)
+VLOG_DEFINES = $(SYNTH_WRAPPER)
 
 VLOG_DEFINES += +define+RVFI=1
 
@@ -128,7 +107,7 @@ compile: check_env
 	vmap atalanta_lib $(BUILD_DIR)/atalanta_lib
 	vlog -sv -work atalanta_lib $(VLOG_DEFINES) \
 	$(INCLUDES) $(VLOG_SUPPRESS) $(LIBS) \
-	$(shell bender script flist -t simulation -t test) \
+	$(SIM_SRC_FILES) \
 	-ccflags '-std=c++11' \
 	-l $(BUILD_DIR)/logs/compile/$(START_TIME)_verilog_vlog.log
 

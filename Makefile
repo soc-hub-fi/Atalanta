@@ -21,13 +21,6 @@ SHELL=bash
 
 BENDER ?= bender
 
-export COMMON_CELLS_DIR = $(shell $(BENDER) path common_cells)
-export OBI_DIR          = $(shell $(BENDER) path obi)
-export AXI_DIR          = $(shell $(BENDER) path axi)
-export APB_DIR          = $(shell $(BENDER) path apb)
-export RT_IBEX_DIR      = $(shell $(BENDER) path rt-ibex)
-export REGIF_DIR        = $(shell $(BENDER) path register_interface)
-
 ######################################################################
 # Repository targets
 ######################################################################
