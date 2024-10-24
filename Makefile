@@ -19,6 +19,15 @@ FPGA_DIR   = $(realpath $(CURDIR))/fpga
 START_TIME=`date +%F_%H:%M`
 SHELL=bash
 
+BENDER ?= bender
+
+export COMMON_CELLS_DIR = $(shell $(BENDER) path common_cells)
+export OBI_DIR          = $(shell $(BENDER) path obi)
+export AXI_DIR          = $(shell $(BENDER) path axi)
+export APB_DIR          = $(shell $(BENDER) path apb)
+export RT_IBEX_DIR      = $(shell $(BENDER) path rt-ibex)
+export REGIF_DIR        = $(shell $(BENDER) path register_interface)
+
 ######################################################################
 # Repository targets
 ######################################################################
@@ -47,33 +56,13 @@ compile:
 build_standalone:
 	$(MAKE) -C vsim compile elaborate dut_sanity_check DEBUG=+define+STANDALONE BUILD_DIR=$(BUILD_DIR)
 
-.PHONY: compile_debug
-compile_debug:
-	$(MAKE) -C vsim compile DEBUG=+define+DEBUG RVFI=+define+RVFI BUILD_DIR=$(BUILD_DIR)
-
 .PHONY: compile_fpga_mem
 compile_fpga:
 	$(MAKE) -C vsim compile FPGA=+define+FPGA_MEM BUILD_DIR=$(BUILD_DIR)
 
-.PHONY: compile_synth_wrapper
-compile_synth_wrapper:
-	$(MAKE) -C vsim compile SYNTH_WRAPPER=+define+SYNTH_WRAPPER BUILD_DIR=$(BUILD_DIR)
-
-.PHONY: build_wrapper
-build_wrapper:
-	$(MAKE) compile_synth_wrapper elaborate
-
 .PHONY: elaborate
 elaborate:
 	$(MAKE) -C vsim elaborate BUILD_DIR=$(BUILD_DIR)
-
-.PHONY: elab_syn
-elab_syn: check-env
-	$(MAKE) -C syn elab_syn
-
-.PHONY: elab_lec
-elab_lec: check-env
-	$(MAKE) -C syn elab_lec
 
 .PHONY: fpga
 fpga:
@@ -107,7 +96,6 @@ check_formal_result: check-env
 sanity_check: check-env
 	$(MAKE) -C vsim dut_sanity_check
 
-# TODO: rename & expand
 .PHONY: simulate
 simulate: check-env
 	$(MAKE) -C vsim run_batch
@@ -126,7 +114,6 @@ vsim_wave: check-env
 .PHONY: smoke_compile
 smoke_compile:
 	./examples/smoke_tests/scripts/compile.py ./examples/smoke_tests/$(TEST).c --riscv-xlen 64
-
 
 #####################
 # Verilator
@@ -147,15 +134,6 @@ wavev:
 .PHONY: initv
 initv:
 	$(MAKE) -C verilator init
-
-######################################################################
-# CI pipeline variables  targets 
-######################################################################
-
-.PHONY: echo_success
-echo_success:
-	echo -e "\n\n##################################################\n\n OK! \n\n##################################################\n"
-
 
 ######################################################################
 # clean target 

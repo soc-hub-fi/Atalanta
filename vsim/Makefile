@@ -1,7 +1,7 @@
 ######################################################################
 # SS local vsim makefile
 # Author: Matti Käyrä (Matti.kayra@tuni.fi)
-#
+#         Antti Nurmi (antti.nurmi@tuni.fi)
 ######################################################################
 BUILD_DIR ?= $(realpath $(CURDIR))/../build/
 START_TIME=`date +%F_%H:%M`
@@ -13,12 +13,31 @@ DUT = tb_rt_ss
 
 BENDER ?= bender
 
-COMMON_CELLS_DIR ?= $(shell $(BENDER) path common_cells)
-OBI_DIR          ?= $(shell $(BENDER) path obi)
-AXI_DIR          ?= $(shell $(BENDER) path axi)
-APB_DIR          ?= $(shell $(BENDER) path apb)
-RT_IBEX_DIR      ?= $(shell $(BENDER) path rt-ibex)
-REGIF_DIR        ?= $(shell $(BENDER) path register_interface)
+# These need to be defined at top level
+ifndef COMMON_CELLS_DIR
+$(error COMMON_CELLS_DIR not set)
+endif
+
+ifndef OBI_DIR
+$(error OBI_DIR not set)
+endif
+
+ifndef AXI_DIR
+$(error AXI_DIR not set)
+endif
+
+ifndef APB_DIR
+$(error APB_DIR not set)
+endif
+
+ifndef RT_IBEX_DIR
+$(error RT_IBEX_DIR not set)
+endif
+
+ifndef COMMON_CELLS_DIR
+$(error COMMON_CELLS_DIR not set)
+endif
+
 
 INCLUDES ?= \
 	+incdir+$(COMMON_CELLS_DIR)/include \
