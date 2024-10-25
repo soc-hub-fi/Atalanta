@@ -54,7 +54,7 @@ TEST      ?= nop_loop
 
 IBEX_USE_RVE  ?= 1
 
-ELF_PATH ?= "../examples/smoke_tests/build/$(TEST).elf"
+ELF_PATH ?= "../examples/smoke_tests/build/$(TEST)/$(TEST).elf"
 
 LOAD ?= JTAG
 

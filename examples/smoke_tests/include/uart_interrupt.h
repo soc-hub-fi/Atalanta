@@ -156,7 +156,7 @@ void print_uart_int(uint32_t addr)
         write_serial(hex[1]);
     }
 }
-
+/*
 void print_uart_addr(uint64_t addr)
 {
     int i;
@@ -169,6 +169,7 @@ void print_uart_addr(uint64_t addr)
         write_serial(hex[1]);
     }
 }
+*/
 
 void print_uart_byte(uint8_t byte)
 {
