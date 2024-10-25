@@ -79,8 +79,8 @@ rt_core #(
   .obim_rom        (rom_bus)
 );
 
-assign memb_bus[0].gnt    = 0;
-assign memb_bus[0].rvalid = 0;
+//assign memb_bus[0].gnt    = 0;
+//assign memb_bus[0].rvalid = 0;
 //assign memb_bus[1].gnt    = 0;
 //assign memb_bus[1].rvalid = 0;
 
@@ -128,7 +128,14 @@ rt_debug #(
   .dbg_slv         (dbgs_bus)
 );
 
-// rt_memory_banks #() i_memory_banks ();
+rt_memory_banks #(
+  .XbarCfg       (rt_pkg::ObiXbarCfg),
+  .NrMemBanks    (rt_pkg::NumMemBanks)
+) i_memory_banks (
+  .clk_i,
+  .rst_ni,
+  .obi_sbr (memb_bus)
+);
 
 axi_to_obi_intf #(
   .AxiIdWidth   (AxiIdWidth),

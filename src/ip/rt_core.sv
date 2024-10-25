@@ -30,7 +30,8 @@ module rt_core #(
   OBI_BUS.Subordinate     obis_axi,
   OBI_BUS.Subordinate     obis_debug
 );
-/*
+
+
 localparam int unsigned SramStart = XbarCfg.SramStart;
 localparam int unsigned SramEnd   = XbarCfg.SramEnd;
 localparam int unsigned SramSize  = rt_pkg::get_addr_size(SramEnd, SramStart);
@@ -39,19 +40,16 @@ rt_pkg::rule_t [NrMemBanks] SramRules;
 
 for (genvar i=0; i<NrMemBanks; i++) begin : g_sram_rules
   assign SramRules[i] = '{
-    idx: 32'd5+i,
+    idx: 32'd6+i,
     start_addr : (XbarCfg.SramStart) + SramSize*(i*1/NrMemBanks),
     end_addr   : (XbarCfg.SramStart) + SramSize*((i+1)*1/NrMemBanks)
   };
 end
-*/
 
 
 rt_pkg::rule_t EmptyRule  = '{idx: 32'd0, start_addr: 32'hFFFF_FFF0,  end_addr: 32'hFFFF_FFFF };
 
-rt_pkg::rule_t [XbarCfg.NumS-1:0] AddrMap = '{
-  //rt_pkg::SramRule,
-  rt_pkg::SramRule,
+rt_pkg::rule_t [(XbarCfg.NumS-NrMemBanks)-1:0] OtherRules = '{
   rt_pkg::AxiRule,
   rt_pkg::ApbRule,
   rt_pkg::DmemRule,
@@ -59,6 +57,8 @@ rt_pkg::rule_t [XbarCfg.NumS-1:0] AddrMap = '{
   rt_pkg::DbgRule,
   rt_pkg::RomRule
 };
+
+rt_pkg::rule_t [XbarCfg.NumS-1:0] AddrMap = {SramRules, OtherRules};
 
 logic [NumInterrupts-1:0] core_irq_x;
 
@@ -84,8 +84,6 @@ for (genvar i = 0; i < NrMemBanks; i++) begin : g_mem_banks
   obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[6+i]), .obi_m(obim_memory[i]));
 end : g_mem_banks
 
-//assign sbr_bus[4].gnt    = 0;
-//assign sbr_bus[4].rvalid = 0;
 
 obi_xbar_intf #(
   .NumSbrPorts     (XbarCfg.NumM),
