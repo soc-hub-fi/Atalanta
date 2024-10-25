@@ -89,8 +89,9 @@ check_formal_result: check-env
 sanity_check: check-env
 	$(MAKE) -C vsim dut_sanity_check
 
+
 .PHONY: simulate
-simulate: check-env
+simulate: check-env smoke_compile
 	$(MAKE) -C vsim run_batch
 
 .PHONY: gui
@@ -104,9 +105,17 @@ vsim_wave: check-env
 #####################
 # C compile
 #####################
+.PHONY: test_check
+test_check:
+ifeq ($(TEST),)
+	$(error "No TEST specified. Exiting.") 
+	exit 0
+endif
+
 .PHONY: smoke_compile
-smoke_compile:
-	./examples/smoke_tests/scripts/compile.py ./examples/smoke_tests/$(TEST).c --riscv-xlen 64
+smoke_compile: test_check
+	@$(MAKE) -C $(CURDIR)/examples/smoke_tests $(TEST)
+  
 
 #####################
 # Verilator
