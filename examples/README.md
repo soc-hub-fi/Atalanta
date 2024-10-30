@@ -37,7 +37,14 @@ podman exec -it rust-rv32e /bin/bash
 
 ### Compiling Rust
 
-Make sure you've some source code cloned up, and cd to the project directory (with a Cargo.toml file, e.g., `cd rust_minimal`)
+- Change directory to home
+  - `cd`
+- Copy your SSH keys to the container, e.g.,
+  - `podman cp ~/.ssh/id_ed25519 rust-rv32e:/root/.ssh/id_ed25519`
+- Clone the repository on the booted container / virtual machine, e.g.,
+  - `git clone ssh://git@github.com/soc-hub-fi/Atalanta.git`
+- Change to the project directory (with a Cargo.toml file), e.g.,
+  - `cd Atalanta/examples/rust_minimal`
 
 Then, `cargo` works as usual:
 
