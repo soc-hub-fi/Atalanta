@@ -11,6 +11,8 @@
 #define ITER_CNT 20
 #define RANGE_TOP 0x6000
 #define RANGE_BTM 0x5000
+#define SRAM_BTM 0x20000
+#define SRAM_TOP 0x30000
 
 // (pseudo)random data generation
 uint32_t lfsr = 0xCAFEFACEu;
@@ -134,6 +136,11 @@ int main() {
   print_uart("[UART] Performing unaligned byte accesses\n");
   for (int it=0; it<ITER_CNT; it++){
     write_readback_byte(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), (uint8_t)rand(), 0);
+  }
+
+  print_uart("[UART] Performing unaligned byte accesses to SRAM\n");
+  for (int it=0; it<ITER_CNT; it++){
+    write_readback_byte(get_rand_addr(SRAM_BTM, SRAM_TOP, 0), (uint8_t)rand(), 0);
   }
 
   print_uart("[UART] Test complete, error count: ");

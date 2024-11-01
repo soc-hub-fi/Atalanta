@@ -6,7 +6,7 @@ module rt_core #(
   parameter int unsigned DataWidth      = 32,
   parameter int unsigned NumInterrupts  = 64,
   parameter bit          RVE            =  1,
-  parameter rt_pkg::xbar_cfg_t XbarCfg  = rt_pkg::ObiXbarCfg,
+  parameter rt_pkg::xbar_cfg_t XbarCfg  = rt_pkg::CoreXbarCfg,
   parameter int unsigned NrMemBanks     = 2,
   localparam int unsigned SrcW          = $clog2(NumInterrupts)
 )(
@@ -21,17 +21,19 @@ module rt_core #(
   input  logic [     1:0] irq_priv_i,
   input  logic            debug_req_i,
   // crossbar m-ports
-  APB.Master              apbm_peripheral,
-  OBI_BUS.Manager         obim_memory [NrMemBanks],
-  OBI_BUS.Manager         obim_rom,
-  OBI_BUS.Manager         obim_debug,
-  OBI_BUS.Manager         obim_axi,
+  //APB.Master              apbm_peripheral,
+  //OBI_BUS.Manager         obim_memory [NrMemBanks],
+  //OBI_BUS.Manager         obim_rom,
+  //OBI_BUS.Manager         obim_debug,
+  //OBI_BUS.Manager         obim_axi,
   // crossbar s-ports
-  OBI_BUS.Subordinate     obis_axi,
-  OBI_BUS.Subordinate     obis_debug
+  //OBI_BUS.Subordinate     obis_axi,
+  //OBI_BUS.Subordinate     obis_debug
+  OBI_BUS.Manager           main_xbar_mgr,
+  OBI_BUS.Subordinate       main_xbar_sbr
 );
 
-
+/*
 localparam int unsigned SramStart = XbarCfg.SramStart;
 localparam int unsigned SramEnd   = XbarCfg.SramEnd;
 localparam int unsigned SramSize  = rt_pkg::get_addr_size(SramEnd, SramStart);
@@ -62,7 +64,7 @@ rt_pkg::rule_t [XbarCfg.NumS-1:0] AddrMap = {SramRules, OtherRules};
 
 logic [NumInterrupts-1:0] core_irq_x;
 
-OBI_BUS #() mgr_bus [rt_pkg::ObiXbarCfg.NumM] (), sbr_bus [rt_pkg::ObiXbarCfg.NumS] ();
+
 
 //`OBI_ASSIGN(mgr_bus[0], obis_debug, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 obi_cut_intf i_dbg_mgr_cut (.clk_i, .rst_ni, .obi_s(obis_debug), .obi_m(mgr_bus[0]));
@@ -74,31 +76,36 @@ obi_cut_intf i_axi_mgr_cut (.clk_i, .rst_ni, .obi_s(obis_axi), .obi_m(mgr_bus[3]
 //`OBI_ASSIGN(obim_debug, sbr_bus[0], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 //`OBI_ASSIGN(obim_rom, sbr_bus[1], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 //`OBI_ASSIGN(obim_axi, sbr_bus[5], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+*/
+obi_cut_intf i_main_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[0]),    .obi_m(main_xbar_mgr));
+obi_cut_intf i_main_mgr_cut (.clk_i, .rst_ni, .obi_s(main_xbar_sbr), .obi_m(mgr_bus[0])   );
 
-obi_cut_intf i_dbg_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[0]), .obi_m(obim_debug));
-obi_cut_intf i_rom_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[1]), .obi_m(obim_rom));
-obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[5]), .obi_m(obim_axi));
-
+//obi_cut_intf i_rom_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[1]), .obi_m(obim_rom));
+//obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[5]), .obi_m(obim_axi));
+/*
 for (genvar i = 0; i < NrMemBanks; i++) begin : g_mem_banks
   //`OBI_ASSIGN(obim_memory[i], sbr_bus[6+i], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
   obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[6+i]), .obi_m(obim_memory[i]));
 end : g_mem_banks
 
+*/
+
+OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
 
 obi_xbar_intf #(
   .NumSbrPorts     (XbarCfg.NumM),
   .NumMgrPorts     (XbarCfg.NumS),
   .NumMaxTrans     (XbarCfg.MaxTrans),
   .NumAddrRules    (XbarCfg.NumS),
-  .addr_map_rule_t (rt_pkg::rule_t),
+  .addr_map_rule_t (rt_pkg::xbar_rule_t),
   .UseIdForRouting (0)
-) i_obi_xbar (
-  .clk_i            (clk_i),
-  .rst_ni           (rst_ni),
+) i_core_xbar (
+  .clk_i,
+  .rst_ni,
   .testmode_i       (1'b0),
   .sbr_ports        (mgr_bus),
   .mgr_ports        (sbr_bus),
-  .addr_map_i       (AddrMap),
+  .addr_map_i       (rt_pkg::CoreAddrMap),
   .en_default_idx_i ('0),
   .default_idx_i    ('0)
 );
@@ -118,13 +125,14 @@ obi_sram_intf #(
   .sbr_bus (sbr_bus[3])
 );
 
+/*
 obi_to_apb_intf #() i_obi_to_apb (
   .clk_i,
   .rst_ni,
   .obi_i (sbr_bus[4]),
   .apb_o (apbm_peripheral)
 );
-
+*/
 `ifndef SYNTHESIS
 ibex_top_tracing #(
 `else
@@ -226,7 +234,7 @@ always_comb begin : gen_core_irq_x
     end
 end
 
-for (genvar i = 0; i < rt_pkg::ObiXbarCfg.NumM; i++) begin : g_tieoff
+for (genvar i = 0; i < rt_pkg::CoreXbarCfg.NumM; i++) begin : g_tieoff
   // OBI_ASSIGN seems to miss some signals
   assign mgr_bus[i].reqpar     = 0;
   assign mgr_bus[i].rready     = 0;

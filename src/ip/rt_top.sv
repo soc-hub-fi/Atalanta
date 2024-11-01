@@ -51,6 +51,8 @@ OBI_BUS #() dbgm_bus ();
 OBI_BUS #() dbgs_bus ();
 OBI_BUS #() rom_bus ();
 OBI_BUS #() memb_bus [rt_pkg::NumMemBanks] ();
+OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
+
 
 assign ibex_rst_n = rst_ni & ~(ndmreset);
 
@@ -70,13 +72,26 @@ rt_core #(
   .irq_shv_i       (irq_shv),
   .irq_priv_i      (irq_priv),
   .debug_req_i     (debug_req),
-  .apbm_peripheral (peripheral_bus),
-  .obim_memory     (memb_bus),
-  .obim_debug      (dbgs_bus),
-  .obim_axi        (axim_bus),
-  .obis_axi        (axis_bus),
-  .obis_debug      (dbgm_bus),
-  .obim_rom        (rom_bus)
+  .main_xbar_mgr   (),
+  .main_xbar_sbr   ()
+);
+
+obi_xbar_intf #(
+  .NumSbrPorts     (rt_pkg::MainXbarCfg.NumM),
+  .NumMgrPorts     (rt_pkg::MainXbarCfg.NumS),
+  .NumMaxTrans     (rt_pkg::MainXbarCfg.MaxTrans),
+  .NumAddrRules    (rt_pkg::MainXbarCfg.NumS),
+  .addr_map_rule_t (rt_pkg::xbar_rule_t),
+  .UseIdForRouting (0)
+) i_main_xbar (
+  .clk_i,
+  .rst_ni,
+  .testmode_i       (1'b0),
+  .sbr_ports        (mgr_bus),
+  .mgr_ports        (sbr_bus),
+  .addr_map_i       (rt_pkg::CoreAddrMap),
+  .en_default_idx_i ('0),
+  .default_idx_i    ('0)
 );
 
 //assign memb_bus[0].gnt    = 0;
