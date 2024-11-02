@@ -3,6 +3,7 @@
 #include "include/common.h"
 #include "include/clic.h"
 #include "include/csr_utils.h"
+#include "include/uart.h"
 
 
 #define N_SOURCE 64

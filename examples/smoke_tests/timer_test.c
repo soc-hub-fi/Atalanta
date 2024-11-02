@@ -11,6 +11,8 @@
 #define MTIMECMP_LOW_ADDR  (TIMER_BASE_ADDR +  8)
 #define MTIMECMP_HIGH_ADDR (TIMER_BASE_ADDR + 12)
 #define MTIME_CTRL_ADDR    (TIMER_BASE_ADDR + 16)
+#define COMMON_ADDR 0x7000
+
 
 #define COMMON_ADDR 0x7000
 
@@ -19,6 +21,11 @@ int main() {
   init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
   //Init OUTPUT_REG_ADDR 
 
+  *(uint32_t*)(MTIME_LOW_ADDR) = 0x0;
+  *(uint32_t*)(MTIME_HIGH_ADDR) = 0x0;
+// set mtimecmp to something non-zero
+  *(uint32_t*)(MTIMECMP_LOW_ADDR) = 0x00000123;
+  *(uint32_t*)(MTIMECMP_HIGH_ADDR) =0x0;
   *(uint32_t*)(COMMON_ADDR) = 0xFF;
 
 
@@ -43,8 +50,7 @@ int main() {
   set_priority(7, 0x88);
 
 
-  // set mtimecmp to something non-zero
-  *(uint32_t*)(MTIMECMP_LOW_ADDR) = 0x00000123;
+  
 
   //enable timer [bit 0] & set prescaler to 00F [bits 20:8]
   *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00F01;

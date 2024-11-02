@@ -15,6 +15,13 @@
 .extern pend_int
 .extern uart_handler
 
+ //Comment this if you are running sw tests on fpga. Uncomment for sim
+#define uart_interrupt 1
+                
+
+
+
+.extern pend_int
 
   .section .text
 
@@ -166,7 +173,6 @@ irq_handler_0:
 .endfunc
 
 
-
   .org 0x2F0 //0xA0
 .global uart_handler_1
 .func
@@ -210,6 +216,8 @@ uart_handler_1:
     addi sp, sp, (4 * 9)
     mret
 .endfunc
+#endif
+
 
 
 
@@ -246,6 +254,21 @@ mtimer_handler:
     beq t1, a1, quit
 
 
+    #Disable timer [bit 0] & set prescaler to 00F [bits 20:8]
+    #li t0, 0x00F00              
+    #la t1, MTIME_CTRL_ADDR       
+    #sw t0, 0(t1) 
+
+    #la t0, MTIME_CTRL_ADDR  // This block of code is relevent to timer_test.c
+    #sw x0, 0(t0)
+    #la t0, COMMON_ADDR
+    #lw t1, 0(t0) 
+    #addi t1, t1, -1
+    #sw t1, 0(t0)
+    #li a1, 0xFE
+    #beq t1, a1, quit
+
+
 
     la a2, 0x5E00
     lw a3, 0(a2)
@@ -258,6 +281,10 @@ mtimer_handler:
     li t0, 0x00F00              
     la t1, MTIME_CTRL_ADDR       
     sw t0, 0(t1) 
+    nop                 //stalling is needed here (ibex issue)
+    beq a3, x0, quit    // exit when dec_count reaches 0
+
+
 
     la t1, MTIMECMP_LOW_ADDR     
     lw t0, 0(t1)

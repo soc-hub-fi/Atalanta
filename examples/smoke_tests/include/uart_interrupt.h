@@ -45,12 +45,23 @@ uint8_t read_reg_u8(uintptr_t addr)
 //Start transmission if no ongoing transmission && buffer is not empty 
 void start_tx(uintptr_t addr) 
 {
+<<<<<<< HEAD
+<<<<<<<< HEAD:examples/smoke_tests/include/uart_interrupt.h
+=======
+>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823
     volatile uint8_t *loc_addr = (volatile uint8_t *)addr; 
     if(!circular_buffer_empty(&tx_buffer)){
         *loc_addr = circular_buffer_pop(&tx_buffer);
     }
+<<<<<<< HEAD
+========
+    return read_reg_u8(UART_LINE_STATUS) & 0x20;  
+>>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823:examples/smoke_tests/include/uart.h
 }
 
+=======
+}
+>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823
 // called from actual uart handler in crt0
 void uart_handler(){
 
@@ -61,7 +72,10 @@ void uart_handler(){
     }
 
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823
 void init_uart_irq()
 {
     write_word(CLIC_BASE_ADDR, 0x8, 0xFFFFFFFF, 0);
@@ -100,6 +114,7 @@ void init_uart(uint32_t freq, uint32_t baud)
     
 }
 
+<<<<<<< HEAD
 
 int is_transmit_empty()
 {
@@ -118,6 +133,19 @@ void write_serial(char a)
         circular_buffer_push(&tx_buffer, a);
         write_reg_u8(UART_INTERRUPT_ENABLE, 0x02); // Enable interrupt for uart only after pushing new character 
     }
+=======
+void write_serial(char a)
+{
+
+    while(circular_buffer_full(&tx_buffer)); // poll if buffer is full 
+    
+    write_reg_u8(UART_INTERRUPT_ENABLE, 0x00); // disable all interrupts
+
+    circular_buffer_push(&tx_buffer, a);
+    
+    write_reg_u8(UART_INTERRUPT_ENABLE, 0x02); // Enable interrupt for uart only after pushing new character 
+
+>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823
 }
 
 uint8_t bin_to_hex_table[16] = {
@@ -170,7 +198,13 @@ void print_uart_addr(uint64_t addr)
     }
 }
 */
+<<<<<<< HEAD
+<<<<<<<< HEAD:examples/smoke_tests/include/uart_interrupt.h
 
+========
+>>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823:examples/smoke_tests/include/uart.h
+=======
+>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823
 void print_uart_byte(uint8_t byte)
 {
     uint8_t hex[2];

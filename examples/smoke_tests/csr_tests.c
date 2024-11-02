@@ -30,6 +30,7 @@
 #include "include/common.h"
 #include "include/clic.h"
 #include "include/csr_utils.h"
+#include "include/uart.h"
 
 //#define LED_REG_ADDR (0x00030008)
 #define CLIC_BASE (0x00050000)

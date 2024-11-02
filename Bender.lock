@@ -6,6 +6,7 @@ packages:
       Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
+<<<<<<< HEAD
   apb_gpio:
     revision: c40620846e0029e09d989e33cb3132fbdcfc6c6f
     version: 0.2.0
@@ -18,6 +19,8 @@ packages:
     source:
       Git: https://github.com/pulp-platform/apb_timer
     dependencies: []
+=======
+>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823
   apb_uart:
     revision: 6c7dde3d749ac8274377745c105da8c8b8cd27c6
     version: 0.2.1
@@ -27,8 +30,13 @@ packages:
     - apb
     - register_interface
   axi:
+<<<<<<< HEAD
     revision: bfee21757bf090ec8e358456314b0b0fd3c90809
     version: 0.39.0
+=======
+    revision: 2f395b176bee1c769c80f060a4345fda965bb04b
+    version: 0.38.0
+>>>>>>> 506e0af40e363558b77afbc8685945287c7b8823
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
