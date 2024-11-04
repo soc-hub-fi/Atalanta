@@ -57,8 +57,8 @@ clean:
 # Prepare for the build
 .PHONY: init
 init: clean
-	@mkdir  $(BUILD_DIR)
-	@mkdir  $(BUILD_DIR)/$(TEST)
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)/$(TEST)
 	@echo "Building" $(TEST)"..."
 
 # Compile $(TEST)
@@ -82,7 +82,7 @@ objdump: #link
 	@$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) -Ssd > $(BUILD_DIR)/$(TEST)/$(TEST).dump
 # Delete the build artifacts
 .PHONY: all
-all: objdump
+all: link objdump
 	@rm $(BUILD_DIR)/$(TEST)/*.o
 
 #openOCD

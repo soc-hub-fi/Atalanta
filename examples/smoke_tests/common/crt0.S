@@ -216,7 +216,7 @@ uart_handler_1:
     addi sp, sp, (4 * 9)
     mret
 .endfunc
-#endif
+
 
 
 
