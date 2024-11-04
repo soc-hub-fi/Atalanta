@@ -34,10 +34,9 @@ module rt_top #(
   input  logic [ClicIrqSrcs-1:0] intr_src_i
 );
 
-localparam int unsigned MaxTrans  = 3;
-localparam int unsigned NumMemBanks = rt_pkg::NumMemBanks;
+localparam int unsigned DemuxWidth = 2;
 
-logic ibex_rst_n, ndmreset, debug_req;
+logic ibex_rst_n, ndmreset, debug_req, demux_sel;
 
 logic            irq_valid;
 logic            irq_ready;
@@ -46,38 +45,18 @@ logic [     7:0] irq_level;
 logic            irq_shv;
 logic [     1:0] irq_priv;
 
-APB #() peripheral_bus ();
-OBI_BUS #() axim_bus ();
-OBI_BUS #() axis_bus ();
-OBI_BUS #() dbgm_bus ();
-OBI_BUS #() dbgs_bus ();
-OBI_BUS #() rom_bus ();
-OBI_BUS #() memb_bus [NumMemBanks] ();
-OBI_BUS #() mgr_bus [rt_pkg::MainXbarCfg.NumM] (), sbr_bus [rt_pkg::MainXbarCfg.NumS] ();
+APB #() apb_bus ();
+OBI_BUS #() axi_mgr_bus ();
+OBI_BUS #() axi_sbr_bus ();
+OBI_BUS #() dbg_mgr_bus ();
+OBI_BUS #() demux_sbr_bus [DemuxWidth] ();
+OBI_BUS #() core_mgr_bus ();
+OBI_BUS #() core_sbr_bus ();
+OBI_BUS #() dbg_rom_bus ();
+
 
 assign ibex_rst_n = rst_ni & ~(ndmreset);
-
-
-// Compile-time mapping of SRAM to size, # ports
-rt_pkg::xbar_rule_t [NumMemBanks] SramRules;
-for (genvar i=0; i<NumMemBanks; i++) begin : g_sram_rules
-  assign SramRules[i] = '{
-    idx: 32'd4+i,
-    start_addr : (rt_pkg::SramRule.Start) + rt_pkg::SramSize*(i*1/NumMemBanks),
-    end_addr   : (rt_pkg::SramRule.Start) + rt_pkg::SramSize*((i+1)*1/NumMemBanks)
-  };
-end
-
-rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS-NumMemBanks+1] OtherRules = '{
-  '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::DmemRule.End},
-  '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End},
-  '{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End},
-  '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End},
-  '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End}
-};
-
-
-rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS] MainAddrMap = {SramRules, OtherRules};
+assign demux_sel = (dbg_rom_bus.addr <= rt_pkg::RomRule.Start);
 
 rt_core #(
   .NumInterrupts (ClicIrqSrcs),
@@ -95,46 +74,43 @@ rt_core #(
   .irq_shv_i       (irq_shv),
   .irq_priv_i      (irq_priv),
   .debug_req_i     (debug_req),
-  .main_xbar_mgr   (mgr_bus[0]),
-  .main_xbar_sbr   (sbr_bus[0])
+  .main_xbar_mgr   (core_mgr_bus),
+  .main_xbar_sbr   (core_sbr_bus)
 );
 
-obi_xbar_intf #(
-  .NumSbrPorts     (rt_pkg::MainXbarCfg.NumM),
-  .NumMgrPorts     (rt_pkg::MainXbarCfg.NumS),
-  .NumMaxTrans     (rt_pkg::MainXbarCfg.MaxTrans),
-  .NumAddrRules    (rt_pkg::MainXbarCfg.NumS),
-  .addr_map_rule_t (rt_pkg::xbar_rule_t),
-  .UseIdForRouting (0)
-) i_main_xbar (
+rt_interconnect #() i_interconnect (
   .clk_i,
   .rst_ni,
-  .testmode_i       (1'b0),
-  .sbr_ports        (mgr_bus),
-  .mgr_ports        (sbr_bus),
-  .addr_map_i       (MainAddrMap),
-  .en_default_idx_i ('0),
-  .default_idx_i    ('0)
+  .dbg_sbr     (dbg_mgr_bus),
+  .dbg_rom_mgr (dbg_rom_bus),
+  .core_sbr    (core_mgr_bus),
+  .core_mgr    (core_sbr_bus),
+  .axi_mgr     (axi_mgr_bus),
+  .axi_sbr     (axi_sbr_bus),
+  .apb_mgr     (apb_bus)
 );
 
-//assign memb_bus[0].gnt    = 0;
-//assign memb_bus[0].rvalid = 0;
-//assign memb_bus[1].gnt    = 0;
-//assign memb_bus[1].rvalid = 0;
-
-assign axim_bus.gnt    = 0;
-assign axim_bus.rvalid = 0;
+obi_demux_intf #(
+  .NumMgrPorts (DemuxWidth),
+  .NumMaxTrans (rt_pkg::MainXbarCfg.MaxTrans)
+) i_dbg_rom_demux (
+  .clk_i,
+  .rst_ni,
+  .sbr_port_select_i (demux_sel),
+  .sbr_port          (dbg_rom_bus),
+  .mgr_ports         (demux_sbr_bus)
+);
 
 rt_ibex_bootrom #() i_rom (
   .clk_i,
   .rst_ni,
-  .sbr_bus (rom_bus)
+  .sbr_bus (demux_sbr_bus[0])
 );
 
 rt_peripherals #() i_peripherals (
   .clk_i,
   .rst_ni,
-  .apb_i          (peripheral_bus),
+  .apb_i          (apb_bus),
   .uart_rx_i      (uart_rx_i),
   .uart_tx_o      (uart_tx_o),
   .irq_kill_req_o (),
@@ -162,30 +138,28 @@ rt_debug #(
   .jtag_td_o,
   .ndmreset_o      (ndmreset),
   .debug_req_irq_o (debug_req),
-  .dbg_mst         (dbgm_bus),
-  .dbg_slv         (dbgs_bus)
+  .dbg_mst         (dbg_mgr_bus),
+  .dbg_slv         (demux_sbr_bus[1])
 );
 
-rt_memory_banks #(
-  .NrMemBanks    (rt_pkg::NumMemBanks)
-) i_memory_banks (
-  .clk_i,
-  .rst_ni,
-  .obi_sbr (memb_bus)
-);
 
 axi_to_obi_intf #(
   .AxiIdWidth   (AxiIdWidth),
   .AxiUserWidth (AxiUserWidth),
-  .MaxTrans     (MaxTrans)
+  .MaxTrans     (rt_pkg::MainXbarCfg.MaxTrans)
 ) i_axi_to_obi (
   .clk_i,
   .rst_ni,
-  .obi_out (axis_bus),
+  .obi_out (axi_sbr_bus),
   .axi_in  (soc_slv)
 );
 
-// obi_to_axi_intf #() i_obi_to_axi ();
+obi_to_axi_intf #() i_obi_to_axi (
+  .clk_i,
+  .rst_ni,
+  .axi_out (soc_mst),
+  .obi_in  (axi_mgr_bus)
+);
 
 // TEST TIEOFF
 //assign soc_slv.aw_id = '0;

@@ -10,7 +10,6 @@ module axi_to_obi_intf #(
   parameter int unsigned  MaxTrans     = 0,
   localparam int unsigned AddrWidth    = 32,
   localparam int unsigned DataWidth    = 32
-
 ) (
   input logic     clk_i,
   input logic     rst_ni,
@@ -18,16 +17,10 @@ module axi_to_obi_intf #(
   AXI_BUS.Slave   axi_in
 );
 
-//`OBI_TYPEDEF_ALL(sbr_port_obi, obi_pkg::ObiDefaultConfig)
 `OBI_TYPEDEF_ALL(mgr_port_obi, obi_pkg::ObiDefaultConfig)
 
-//sbr_port_obi_req_t sbr_ports_req;
-//sbr_port_obi_rsp_t sbr_ports_rsp;
 mgr_port_obi_req_t mgr_ports_req;
 mgr_port_obi_rsp_t mgr_ports_rsp;
-
-//`OBI_ASSIGN_TO_REQ(sbr_ports_req, obi_s, obi_pkg::ObiDefaultConfig)
-//`OBI_ASSIGN_FROM_RSP(obi_s, sbr_ports_rsp, obi_pkg::ObiDefaultConfig)
 
 `OBI_ASSIGN_FROM_REQ(obi_out, mgr_ports_req, obi_pkg::ObiDefaultConfig)
 `OBI_ASSIGN_TO_RSP(mgr_ports_rsp, obi_out, obi_pkg::ObiDefaultConfig)
@@ -46,14 +39,11 @@ typedef logic [AxiUserWidth-1:0] user_t;
 `AXI_TYPEDEF_REQ_T(axi_req_t, aw_chan_t, w_chan_t, ar_chan_t)
 `AXI_TYPEDEF_RESP_T(axi_resp_t, b_chan_t, r_chan_t)
 
-axi_req_t slv_req; //, mst_req;
-axi_resp_t slv_resp; //, mst_resp;
+axi_req_t slv_req;
+axi_resp_t slv_resp;
 
 `AXI_ASSIGN_TO_REQ(slv_req, axi_in)
 `AXI_ASSIGN_FROM_RESP(axi_in, slv_resp)
-
-//`AXI_ASSIGN_FROM_REQ(mst, mst_req)
-//`AXI_ASSIGN_TO_RESP(mst_resp, mst)
 
 axi_to_obi #(
   .ObiCfg        (ObiCfg),
