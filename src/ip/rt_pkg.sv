@@ -77,5 +77,7 @@ typedef struct packed {
 localparam int unsigned DbgIdCode      = 32'hFEEDC0D3;
 localparam int unsigned ImemSizeBytes  = get_addr_size(ImemRule.Start, ImemRule.End);
 localparam int unsigned DmemSizeBytes  = get_addr_size(DmemRule.Start, DmemRule.End);
+localparam int unsigned SramSize       = get_addr_size(SramRule.Start, SramRule.End);
+
 
 endpackage : rt_pkg

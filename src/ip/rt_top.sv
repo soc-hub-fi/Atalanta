@@ -34,7 +34,9 @@ module rt_top #(
   input  logic [ClicIrqSrcs-1:0] intr_src_i
 );
 
-localparam int unsigned MaxTrans = 3;
+localparam int unsigned MaxTrans  = 3;
+localparam int unsigned NumMemBanks = rt_pkg::NumMemBanks;
+
 logic ibex_rst_n, ndmreset, debug_req;
 
 logic            irq_valid;
@@ -50,11 +52,32 @@ OBI_BUS #() axis_bus ();
 OBI_BUS #() dbgm_bus ();
 OBI_BUS #() dbgs_bus ();
 OBI_BUS #() rom_bus ();
-OBI_BUS #() memb_bus [rt_pkg::NumMemBanks] ();
+OBI_BUS #() memb_bus [NumMemBanks] ();
 OBI_BUS #() mgr_bus [rt_pkg::MainXbarCfg.NumM] (), sbr_bus [rt_pkg::MainXbarCfg.NumS] ();
 
-
 assign ibex_rst_n = rst_ni & ~(ndmreset);
+
+
+// Compile-time mapping of SRAM to size, # ports
+rt_pkg::xbar_rule_t [NumMemBanks] SramRules;
+for (genvar i=0; i<NumMemBanks; i++) begin : g_sram_rules
+  assign SramRules[i] = '{
+    idx: 32'd4+i,
+    start_addr : (rt_pkg::SramRule.Start) + rt_pkg::SramSize*(i*1/NumMemBanks),
+    end_addr   : (rt_pkg::SramRule.Start) + rt_pkg::SramSize*((i+1)*1/NumMemBanks)
+  };
+end
+
+rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS-NumMemBanks+1] OtherRules = '{
+  '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::DmemRule.End},
+  '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End},
+  '{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End},
+  '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End},
+  '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End}
+};
+
+
+rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS] MainAddrMap = {SramRules, OtherRules};
 
 rt_core #(
   .NumInterrupts (ClicIrqSrcs),
@@ -72,8 +95,8 @@ rt_core #(
   .irq_shv_i       (irq_shv),
   .irq_priv_i      (irq_priv),
   .debug_req_i     (debug_req),
-  .main_xbar_mgr   (),
-  .main_xbar_sbr   ()
+  .main_xbar_mgr   (mgr_bus[0]),
+  .main_xbar_sbr   (sbr_bus[0])
 );
 
 obi_xbar_intf #(

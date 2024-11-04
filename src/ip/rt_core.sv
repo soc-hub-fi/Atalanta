@@ -34,19 +34,7 @@ module rt_core #(
 );
 
 /*
-localparam int unsigned SramStart = XbarCfg.SramStart;
-localparam int unsigned SramEnd   = XbarCfg.SramEnd;
-localparam int unsigned SramSize  = rt_pkg::get_addr_size(SramEnd, SramStart);
 
-rt_pkg::rule_t [NrMemBanks] SramRules;
-
-for (genvar i=0; i<NrMemBanks; i++) begin : g_sram_rules
-  assign SramRules[i] = '{
-    idx: 32'd6+i,
-    start_addr : (XbarCfg.SramStart) + SramSize*(i*1/NrMemBanks),
-    end_addr   : (XbarCfg.SramStart) + SramSize*((i+1)*1/NrMemBanks)
-  };
-end
 
 
 rt_pkg::rule_t EmptyRule  = '{idx: 32'd0, start_addr: 32'hFFFF_FFF0,  end_addr: 32'hFFFF_FFFF };
