@@ -112,7 +112,7 @@ obi_xbar_intf #(
   .testmode_i       (1'b0),
   .sbr_ports        (mgr_bus),
   .mgr_ports        (sbr_bus),
-  .addr_map_i       (rt_pkg::CoreAddrMap),
+  .addr_map_i       (MainAddrMap),
   .en_default_idx_i ('0),
   .default_idx_i    ('0)
 );
@@ -146,8 +146,8 @@ rt_peripherals #() i_peripherals (
   .irq_ready_i    (irq_ready),
   .irq_id_o       (irq_id),
   .irq_src_i      (intr_src_i),
-  .gpio_i         (),
-  .gpio_o         ()
+  .gpio_i         (gpio_input_i),
+  .gpio_o         (gpio_output_o)
 );
 
 rt_debug #(
