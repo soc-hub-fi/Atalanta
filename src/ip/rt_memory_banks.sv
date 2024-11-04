@@ -1,5 +1,4 @@
 module rt_memory_banks #(
-  parameter rt_pkg::xbar_cfg_t XbarCfg  = rt_pkg::ObiXbarCfg,
   parameter int unsigned NrMemBanks     = 2
 )(
   input logic         clk_i,
@@ -8,8 +7,8 @@ module rt_memory_banks #(
 );
 
 localparam int unsigned NrBanks        = NrMemBanks;
-localparam int unsigned SramStart      = XbarCfg.SramStart;
-localparam int unsigned SramEnd        = XbarCfg.SramEnd;
+localparam int unsigned SramStart      = rt_pkg::SramRule.Start;
+localparam int unsigned SramEnd        = rt_pkg::SramRule.End;
 localparam int unsigned SramSizeBytes  = rt_pkg::get_addr_size(SramEnd, SramStart);
 
 for (genvar i=0; i<NrMemBanks; i++) begin : g_mem_banks

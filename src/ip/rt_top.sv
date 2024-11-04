@@ -51,7 +51,7 @@ OBI_BUS #() dbgm_bus ();
 OBI_BUS #() dbgs_bus ();
 OBI_BUS #() rom_bus ();
 OBI_BUS #() memb_bus [rt_pkg::NumMemBanks] ();
-OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
+OBI_BUS #() mgr_bus [rt_pkg::MainXbarCfg.NumM] (), sbr_bus [rt_pkg::MainXbarCfg.NumS] ();
 
 
 assign ibex_rst_n = rst_ni & ~(ndmreset);
@@ -59,7 +59,7 @@ assign ibex_rst_n = rst_ni & ~(ndmreset);
 rt_core #(
   .NumInterrupts (ClicIrqSrcs),
   .RVE           (IbexRve),
-  .XbarCfg       (rt_pkg::ObiXbarCfg),
+  .XbarCfg       (rt_pkg::CoreXbarCfg),
   .NrMemBanks    (rt_pkg::NumMemBanks)
 ) i_core (
   .clk_i,
@@ -144,7 +144,6 @@ rt_debug #(
 );
 
 rt_memory_banks #(
-  .XbarCfg       (rt_pkg::ObiXbarCfg),
   .NrMemBanks    (rt_pkg::NumMemBanks)
 ) i_memory_banks (
   .clk_i,

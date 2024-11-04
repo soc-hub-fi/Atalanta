@@ -287,7 +287,7 @@ task automatic jtag_elf_run(input string binary);
   word entry;
   jtag_elf_halt_load(binary, entry);
   // Repoint execution
-  write_reg_abstract_cmd(dm::CSR_DPC, rt_pkg::ObiXbarCfg.ImemStart);
+  write_reg_abstract_cmd(dm::CSR_DPC, rt_pkg::ImemRule.Start);
   // Resume hart 0
   jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
   $display("[JTAG] Resumed hart 0 from 0x%h", entry);
@@ -319,8 +319,8 @@ endtask
 /// Sanity tests
 task automatic run_dbg_mem_test();
   localparam int unsigned IterCnt = 200;
-  int unsigned imem_start = rt_pkg::ObiXbarCfg.ImemStart;
-  int unsigned dmem_end   = rt_pkg::ObiXbarCfg.DmemEnd;
+  int unsigned imem_start = rt_pkg::ImemRule.Start;
+  int unsigned dmem_end   = rt_pkg::DmemRule.End;
   int unsigned size       = rt_pkg::get_addr_size(imem_start, dmem_end);
   int unsigned rand_addr  = 32'h0000_0000;
 

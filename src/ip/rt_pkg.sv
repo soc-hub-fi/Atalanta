@@ -40,7 +40,7 @@ typedef struct packed {
   int unsigned end_addr;
 } xbar_rule_t;
 
-localparam xbar_rule_t [CoreXbarCfg.NumS] CoreAddrMap = '{
+localparam xbar_rule_t [CoreXbarCfg.NumS+1] CoreAddrMap = '{
   // Rule 0 covers everything outside IMEM & DMEM
   '{idx: 0, start_addr: DbgRule.Start,  end_addr: DbgRule.End},
   '{idx: 0, start_addr: DmemRule.End,   end_addr: AxiRule.End},
@@ -75,7 +75,7 @@ typedef struct packed {
 } jtag_idcode_t;
 
 localparam int unsigned DbgIdCode      = 32'hFEEDC0D3;
-localparam int unsigned ImemSizeBytes  = get_addr_size(ObiXbarCfg.ImemStart, ObiXbarCfg.ImemEnd);
-localparam int unsigned DmemSizeBytes  = get_addr_size(ObiXbarCfg.DmemStart, ObiXbarCfg.DmemEnd);
+localparam int unsigned ImemSizeBytes  = get_addr_size(ImemRule.Start, ImemRule.End);
+localparam int unsigned DmemSizeBytes  = get_addr_size(DmemRule.Start, DmemRule.End);
 
 endpackage : rt_pkg

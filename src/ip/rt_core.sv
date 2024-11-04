@@ -62,7 +62,7 @@ rt_pkg::rule_t [(XbarCfg.NumS-NrMemBanks)-1:0] OtherRules = '{
 
 rt_pkg::rule_t [XbarCfg.NumS-1:0] AddrMap = {SramRules, OtherRules};
 
-logic [NumInterrupts-1:0] core_irq_x;
+
 
 
 
@@ -77,6 +77,9 @@ obi_cut_intf i_axi_mgr_cut (.clk_i, .rst_ni, .obi_s(obis_axi), .obi_m(mgr_bus[3]
 //`OBI_ASSIGN(obim_rom, sbr_bus[1], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 //`OBI_ASSIGN(obim_axi, sbr_bus[5], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 */
+
+OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
+
 obi_cut_intf i_main_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[0]),    .obi_m(main_xbar_mgr));
 obi_cut_intf i_main_mgr_cut (.clk_i, .rst_ni, .obi_s(main_xbar_sbr), .obi_m(mgr_bus[0])   );
 
@@ -90,7 +93,9 @@ end : g_mem_banks
 
 */
 
-OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
+
+
+logic [NumInterrupts-1:0] core_irq_x;
 
 obi_xbar_intf #(
   .NumSbrPorts     (XbarCfg.NumM),
@@ -115,14 +120,14 @@ obi_sram_intf #(
 ) i_imem (
   .clk_i,
   .rst_ni,
-  .sbr_bus (sbr_bus[2])
+  .sbr_bus (sbr_bus[1])
 );
 obi_sram_intf #(
   .NumWords (rt_pkg::DmemSizeBytes / 4)
 ) i_dmem (
   .clk_i,
   .rst_ni,
-  .sbr_bus (sbr_bus[3])
+  .sbr_bus (sbr_bus[2])
 );
 
 /*
@@ -177,7 +182,7 @@ ibex_top #(
 
   // Configuration
   .hart_id_i   (32'h0),
-  .boot_addr_i (rt_pkg::ObiXbarCfg.RomStart),
+  .boot_addr_i (rt_pkg::RomRule.Start),
 
   // Instruction memory interface
   .instr_req_o        (mgr_bus[1].req ),
