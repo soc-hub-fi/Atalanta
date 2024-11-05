@@ -77,7 +77,7 @@ rt_core #(
   .main_xbar_mgr   (core_mgr_bus),
   .main_xbar_sbr   (core_sbr_bus)
 );
-
+/*
 rt_interconnect #() i_interconnect (
   .clk_i,
   .rst_ni,
@@ -89,7 +89,7 @@ rt_interconnect #() i_interconnect (
   .axi_sbr     (axi_sbr_bus),
   .apb_mgr     (apb_bus)
 );
-
+*/
 obi_demux_intf #(
   .NumMgrPorts (DemuxWidth),
   .NumMaxTrans (rt_pkg::MainXbarCfg.MaxTrans)
@@ -153,6 +153,7 @@ axi_to_obi_intf #(
   .obi_out (axi_sbr_bus),
   .axi_in  (soc_slv)
 );
+
 
 obi_to_axi_intf #(
   .AxiIdWidth   (AxiIdWidth),

@@ -4,17 +4,19 @@
 `include "axi/assign.svh"
 
 module obi_to_axi_intf #(
-  parameter int unsigned AxiIdWidth   = 0,
-  parameter int unsigned AxiUserWidth = 0,
+  parameter int unsigned AxiIdWidth   = 1,
+  parameter int unsigned AxiUserWidth = 1,
   parameter int unsigned AddrWidth    = 32,
   parameter int unsigned DataWidth    = 32,
-  parameter int unsigned MaxRequests  = 0
+  parameter int unsigned MaxRequests  = 2
 ) (
   input logic         clk_i,
   input logic         rst_ni,
   AXI_BUS.Master      axi_out,
   OBI_BUS.Subordinate obi_in
 );
+/*
+localparam bit [AxiUserWidth-1:0] DefaultUser = '0;
 
 `OBI_TYPEDEF_ALL(sbr_port_obi, obi_pkg::ObiDefaultConfig)
 
@@ -45,24 +47,28 @@ axi_resp_t mst_resp;
 `AXI_ASSIGN_TO_RESP(mst_resp, axi_out)
 
 obi_to_axi #(
-  .obi_req_t   (sbr_port_obi_req_t),
-  .obi_rsp_t   (sbr_port_obi_rsp_t),
-  .axi_req_t   (axi_req_t),
-  .axi_rsp_t   (axi_resp_t),
-  .AxiUserWidth(AxiUserWidth),
-  .MaxRequests (MaxRequests)
+  .ObiCfg       (obi_pkg::ObiDefaultConfig),
+  .obi_req_t    (sbr_port_obi_req_t),
+  .obi_rsp_t    (sbr_port_obi_rsp_t),
+  .axi_req_t    (axi_req_t),
+  .axi_rsp_t    (axi_resp_t),
+  .AxiAddrWidth (AddrWidth),
+  .AxiDataWidth (DataWidth),
+  .AxiUserWidth (AxiUserWidth),
+  .MaxRequests  (MaxRequests),
+  .AxiLite      (1'b0)
 ) i_obi_to_axi (
   .clk_i,
   .rst_ni,
-  .obi_req_i (sbr_ports_req),
-  .obi_rsp_o (sbr_ports_rsp),
-  .axi_req_o (mst_req),
-  .axi_rsp_i (mst_resp),
+  .obi_req_i           (sbr_ports_req),
+  .obi_rsp_o           (sbr_ports_rsp),
+  .axi_req_o           (mst_req),
+  .axi_rsp_i           (mst_resp),
   .axi_rsp_channel_sel (),
-  .axi_rsp_b_user_o (),
-  .axi_rsp_r_user_o (),
-  .obi_rsp_user_i   ('0),
-  .user_i           ('0)
+  .axi_rsp_b_user_o    (),
+  .axi_rsp_r_user_o    (),
+  .obi_rsp_user_i      ('0),
+  .user_i              (DefaultUser)
 );
-
+*/
 endmodule : obi_to_axi_intf

@@ -71,6 +71,7 @@ AXI_BUS_DV #(
 ) axi_slave_dv (clk_o);
 
 `AXI_ASSIGN(axi_mst, axi_master_dv)
+`AXI_ASSIGN(axi_slave_dv, axi_slv)
 
 axi_rand_master_t axi_drv = new(axi_master_dv);
 
@@ -93,6 +94,35 @@ assign jtag_trst_no = jtag.trst_n;
 assign jtag_tms_o   = jtag.tms;
 assign jtag_tdi_o   = jtag.tdi;
 assign jtag.tdo     = jtag_tdo_i;
+
+/*
+axi_sim_mem_intf #(
+  .AXI_ADDR_WIDTH      (AxiAw),
+  .AXI_DATA_WIDTH      (AxiDw),
+  .AXI_ID_WIDTH        (AxiIw),
+  .AXI_USER_WIDTH      (AxiUw),
+  .WARN_UNINITIALIZED  (1),
+  .APPL_DELAY          (TAppl),
+  .ACQ_DELAY           (TTest)
+) i_sim_mem (
+  .clk_i   (clk),
+  .rst_ni  (rst_n),
+  .axi_slv (axi_slv),
+  .mon_w_valid_o     (),
+  .mon_w_addr_o      (),
+  .mon_w_data_o      (),
+  .mon_w_id_o        (),
+  .mon_w_user_o      (),
+  .mon_w_beat_count_o(),
+  .mon_w_last_o      (),
+  .mon_r_valid_o     (),
+  .mon_r_addr_o      (),
+  .mon_r_data_o      (),
+  .mon_r_id_o        (),
+  .mon_r_user_o      (),
+  .mon_r_beat_count_o(),
+  .mon_r_last_o      ()
+);*/
 
 initial begin
   @(negedge rst_n);
