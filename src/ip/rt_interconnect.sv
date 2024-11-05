@@ -15,13 +15,14 @@ module rt_interconnect #(
   OBI_BUS.Subordinate axi_sbr,
   APB.Master          apb_mgr
 );
+
 localparam rt_pkg::xbar_cfg_t XbarCfg = rt_pkg::MainXbarCfg;
 localparam int unsigned NumMemBanks = rt_pkg::NumMemBanks;
 
 OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
-OBI_BUS #() mem_bus [NumMemBanks] ();
+OBI_BUS #() sram_bus [NumMemBanks] ();
 OBI_BUS #() apb_bus ();
-
+/*
 
 // Compile-time mapping of SRAM to size, # ports
 rt_pkg::xbar_rule_t [NumMemBanks] SramRules;
@@ -94,13 +95,18 @@ obi_xbar_intf #(
   .default_idx_i    ('0)
 );
 
-rt_memory_banks #(
-  .NrMemBanks    (rt_pkg::NumMemBanks)
-) i_memory_banks (
-  .clk_i,
-  .rst_ni,
-  .obi_sbr (mem_bus)
-);
+*/
+for (genvar i=0; i<NumMemBanks; i++) begin : g_mem_banks
+
+  obi_sram_intf #(
+    .NumWords ((rt_pkg::SramSizeBytes / 4) / NumMemBanks)
+  ) i_bank (
+    .clk_i,
+    .rst_ni,
+    .sbr_bus (sram_bus[i])
+  );
+
+end : g_mem_banks
 
 obi_to_apb_intf #() i_obi_to_apb (
   .clk_i,
@@ -108,5 +114,4 @@ obi_to_apb_intf #() i_obi_to_apb (
   .obi_i (apb_bus),
   .apb_o (apb_mgr)
 );
-
 endmodule : rt_interconnect
