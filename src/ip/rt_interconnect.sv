@@ -2,8 +2,8 @@
 `include "obi/assign.svh"
 
 module rt_interconnect #(
-  parameter bit CutMgrPorts = 0,
-  parameter bit CutSbrPorts = 0
+  parameter bit CutMgrPorts = 1,
+  parameter bit CutSbrPorts = 1
 )(
   input  logic        clk_i,
   input  logic        rst_ni,
@@ -105,7 +105,7 @@ rt_memory_banks #(
 obi_to_apb_intf #() i_obi_to_apb (
   .clk_i,
   .rst_ni,
-  .obi_i (sbr_bus[2]),
+  .obi_i (apb_bus),
   .apb_o (apb_mgr)
 );
 

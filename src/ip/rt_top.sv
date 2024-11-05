@@ -154,7 +154,11 @@ axi_to_obi_intf #(
   .axi_in  (soc_slv)
 );
 
-obi_to_axi_intf #() i_obi_to_axi (
+obi_to_axi_intf #(
+  .AxiIdWidth   (AxiIdWidth),
+  .AxiUserWidth (AxiUserWidth),
+  .MaxRequests  (rt_pkg::MainXbarCfg.MaxTrans)
+) i_obi_to_axi (
   .clk_i,
   .rst_ni,
   .axi_out (soc_mst),

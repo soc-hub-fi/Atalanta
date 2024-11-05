@@ -49,6 +49,7 @@ obi_to_axi #(
   .obi_rsp_t   (sbr_port_obi_rsp_t),
   .axi_req_t   (axi_req_t),
   .axi_rsp_t   (axi_resp_t),
+  .AxiUserWidth(AxiUserWidth),
   .MaxRequests (MaxRequests)
 ) i_obi_to_axi (
   .clk_i,
