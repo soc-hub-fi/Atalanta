@@ -22,18 +22,17 @@ localparam int unsigned NumMemBanks = rt_pkg::NumMemBanks;
 OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
 OBI_BUS #() sram_bus [NumMemBanks] ();
 OBI_BUS #() apb_bus ();
-/*
+
 
 // Compile-time mapping of SRAM to size, # ports
 rt_pkg::xbar_rule_t [NumMemBanks] SramRules;
 for (genvar i=0; i<NumMemBanks; i++) begin : g_sram_rules
   assign SramRules[i] = '{
     idx: 32'd4+i,
-    start_addr : (rt_pkg::SramRule.Start) + rt_pkg::SramSize*(i*1/NumMemBanks),
-    end_addr   : (rt_pkg::SramRule.Start) + rt_pkg::SramSize*((i+1)*1/NumMemBanks)
+    start_addr : (rt_pkg::SramRule.Start) + rt_pkg::SramSizeBytes*(i*1/NumMemBanks),
+    end_addr   : (rt_pkg::SramRule.Start) + rt_pkg::SramSizeBytes*((i+1)*1/NumMemBanks)
   };
 end
-
 rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS-NumMemBanks+1] OtherRules = '{
   '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::DmemRule.End},
   '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End},
@@ -41,8 +40,9 @@ rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS-NumMemBanks+1] OtherRules = '{
   '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End},
   '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End}
 };
-
 rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS] MainAddrMap = {SramRules, OtherRules};
+
+
 
 if (CutMgrPorts) begin : g_mgr_cut
 
@@ -52,7 +52,7 @@ if (CutMgrPorts) begin : g_mgr_cut
   obi_cut_intf i_axi_mgr_cut  (.clk_i, .rst_ni, .obi_s(sbr_bus[3]), .obi_m(axi_mgr));
 
   for (genvar i = 0; i < NumMemBanks; i++) begin : g_mem_ports
-    obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[4+i]), .obi_m(mem_bus[i]));
+    obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[4+i]), .obi_m(sram_bus[i]));
   end : g_mem_ports
 
 end else begin : g_no_mgr_cut
@@ -63,7 +63,7 @@ end else begin : g_no_mgr_cut
   `OBI_ASSIGN(axi_mgr,     sbr_bus[3], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 
   for (genvar i = 0; i < NumMemBanks; i++) begin : g_mem_ports
-    `OBI_ASSIGN(mem_bus[i], sbr_bus[4+i], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+    `OBI_ASSIGN(sram_bus[i], sbr_bus[4+i], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
   end : g_mem_ports
 end
 
@@ -76,6 +76,7 @@ end else begin : g_no_sbr_cut
   `OBI_ASSIGN(mgr_bus[1], dbg_sbr,  obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
   `OBI_ASSIGN(mgr_bus[2], axi_sbr,  obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 end
+
 
 obi_xbar_intf #(
   .NumSbrPorts     (XbarCfg.NumM),
@@ -95,7 +96,6 @@ obi_xbar_intf #(
   .default_idx_i    ('0)
 );
 
-*/
 for (genvar i=0; i<NumMemBanks; i++) begin : g_mem_banks
 
   obi_sram_intf #(
