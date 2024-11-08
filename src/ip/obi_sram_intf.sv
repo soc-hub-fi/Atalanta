@@ -43,7 +43,21 @@ xilinx_sp_BRAM #(
 );
 
 `else
+  `ifdef SYNTHESIS
+rt_ss_tech_mem #(
+  .DATA_WIDTH (DataWidth),
+  .NUM_WORDS  (NumWords)
+) i_rt_ss_tech_mem_sram (
+  .clk_i   (clk_i),
+  .req_i   (sbr_bus.req),
+  .we_i    (sbr_bus.we),
+  .addr_i  (sram_addr),
+  .wdata_i (sbr_bus.wdata),
+  .be_i    (sbr_bus.be),
+  .rdata_o (sbr_bus.rdata)
+);
 
+  `else
 tc_sram #(
   .NumWords  (NumWords),
   .DataWidth (DataWidth),
@@ -60,6 +74,7 @@ tc_sram #(
   .wdata_i (sbr_bus.wdata),
   .rdata_o (sbr_bus.rdata)
 );
+  `endif
 `endif
 
 endmodule : obi_sram_intf

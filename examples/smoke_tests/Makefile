@@ -18,7 +18,7 @@ OBJCOPY		      =$(TOOLCHAIN_PREFIX)objcopy
 
 # Architecture and Compiler flags
 ARCH_FLAGS       ?=-march=rv32emc_zicsr -mabi=ilp32e
-CFLAGS 			 ?=-Os -ffunction-sections -fdata-sections -g -c
+CFLAGS 			 ?=-O0 -ffunction-sections -fdata-sections -g -c
 
 # Linker flags
 LDFLAGS 		  = -T$(L_SCRIPT) -nostartfiles
@@ -64,7 +64,7 @@ init: clean
 # Compile $(TEST)
 .PHONY: compile
 compile: init
-	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) $(CRUNTIME).S \
+	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) -DLANGUAGE_ASSEMBLY $(CRUNTIME).S \
 	-o $(BUILD_DIR)/crt0.o
 
 	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) $(CURDIR)/$(TEST).c \
