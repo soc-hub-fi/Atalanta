@@ -17,7 +17,8 @@ module rt_interconnect #(
 );
 
 localparam rt_pkg::xbar_cfg_t XbarCfg = rt_pkg::MainXbarCfg;
-localparam int unsigned NumMemBanks = rt_pkg::NumMemBanks;
+localparam int unsigned NumMemBanks   = rt_pkg::NumMemBanks;
+localparam int unsigned IcnNrSlv      = rt_pkg::MainXbarCfg.NumS;
 
 OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
 OBI_BUS #() sram_bus [NumMemBanks] ();
@@ -32,16 +33,24 @@ for (genvar i=0; i<NumMemBanks; i++) begin : g_sram_rules
     start_addr : (rt_pkg::SramRule.Start) + rt_pkg::SramSizeBytes*(i*1/NumMemBanks),
     end_addr   : (rt_pkg::SramRule.Start) + rt_pkg::SramSizeBytes*((i+1)*1/NumMemBanks)
   };
-end
-rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS-NumMemBanks+1] OtherRules = '{
+end : g_sram_rules
+
+localparam rt_pkg::xbar_rule_t [IcnNrSlv-NumMemBanks+1] OtherRules = '{
   '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::DmemRule.End},
   '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End},
   '{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End},
   '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End},
   '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End}
 };
-rt_pkg::xbar_rule_t [rt_pkg::MainXbarCfg.NumS] MainAddrMap = {SramRules, OtherRules};
 
+rt_pkg::xbar_rule_t [IcnNrSlv] MainAddrMap; // = {OtherRules, SramRules};
+for (genvar i=0; i<IcnNrSlv; i++) begin : g_addr_map_assign
+  if (i < IcnNrSlv-NumMemBanks) begin : g_other_rules
+    assign MainAddrMap[i] = OtherRules[i];
+  end else begin : g_sram_rules
+    assign MainAddrMap[i] = SramRules[i-(IcnNrSlv-NumMemBanks)];
+  end
+end : g_addr_map_assign
 
 
 if (CutMgrPorts) begin : g_mgr_cut
@@ -52,7 +61,7 @@ if (CutMgrPorts) begin : g_mgr_cut
   obi_cut_intf i_axi_mgr_cut  (.clk_i, .rst_ni, .obi_s(sbr_bus[3]), .obi_m(axi_mgr));
 
   for (genvar i = 0; i < NumMemBanks; i++) begin : g_mem_ports
-    obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[4+i]), .obi_m(sram_bus[i]));
+    obi_cut_intf i_sram_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[4+i]), .obi_m(sram_bus[i]));
   end : g_mem_ports
 
 end else begin : g_no_mgr_cut

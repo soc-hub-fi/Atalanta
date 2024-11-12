@@ -351,14 +351,25 @@ task automatic run_dbg_mem_test();
   localparam int unsigned IterCnt = 200;
   int unsigned imem_start = rt_pkg::ImemRule.Start;
   int unsigned dmem_end   = rt_pkg::DmemRule.End;
-  int unsigned size       = rt_pkg::get_addr_size(imem_start, dmem_end);
+  int unsigned sram_start = rt_pkg::SramRule.Start;
+  int unsigned sram_end   = rt_pkg::SramRule.End;
+  int unsigned size_spm   = rt_pkg::get_addr_size(imem_start, dmem_end);
+  int unsigned size_sram  = rt_pkg::get_addr_size(sram_start, sram_end);
   int unsigned rand_addr  = 32'h0000_0000;
 
-  $display("[test:dbg_mem] Memory size is %08H, range %08H to %08H", size, imem_start, dmem_end);
-  $display("[test:dbg_mem] Performing %d word-alligned random address accesses", IterCnt);
+  $display("[test:dbg_mem] Scratchpads size is %08H, range %08H to %08H", size_spm, imem_start, dmem_end);
+  $display("[test:dbg_mem] Performing %d word-alligned random address accesses to SPMs", IterCnt);
+
+  for (int i=0; i<IterCnt; i++) begin : spm_alligned_loop
+    rand_addr = (($urandom()%size_spm) & 32'hFFFF_FFFC) + imem_start;
+    jtag_write_reg32(rand_addr, $urandom(), 1, 20, 0);
+  end : spm_alligned_loop
+
+  $display("[test:dbg_mem] SRAM size is %08H, range %08H to %08H", size_sram, sram_start, sram_end);
+  $display("[test:dbg_mem] Performing %d word-alligned random address accesses to SRAM", IterCnt);
 
   for (int i=0; i<IterCnt; i++) begin : alligned_loop
-    rand_addr = (($urandom()%size) & 32'hFFFF_FFFC) + imem_start;
+    rand_addr = (($urandom()%size_sram) & 32'hFFFF_FFFC) + sram_start;
     jtag_write_reg32(rand_addr, $urandom(), 1, 20, 0);
   end : alligned_loop
 
