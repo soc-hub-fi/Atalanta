@@ -35,14 +35,13 @@ assign bw_ena = (sbr_bus.we) ? (4'b1111 & sbr_bus.be) : 4'b0;
 xilinx_sp_BRAM #(
   .RAM_DEPTH (NumWords)
 ) i_sram (
-  .addra  (sram_addr),
-  .dina   (sbr_bus.wdata),
-  .clka   (clk_i),
-  .wea    (bw_ena),
-  .ena    (1'b1),
-  .rsta   (rst_ni),
-  .regcea (1'b0),
-  .douta  (sbr_bus.rdata)
+  .clk_i    (clk_i),
+  .rst_ni   (rst_ni),
+  .req_i    (sbr_bus.req),
+  .bwe_i    (bw_ena),
+  .addr_i   (sram_addr),
+  .wdata_i  (sbr_bus.wdata),
+  .rdata_o  (sbr_bus.rdata)
 );
 
 `else
@@ -50,7 +49,7 @@ xilinx_sp_BRAM #(
 rt_ss_tech_mem #(
   .DATA_WIDTH (DataWidth),
   .NUM_WORDS  (NumWords)
-) i_rt_ss_tech_mem_sram (
+) i_tech_sram (
   .clk_i   (clk_i),
   .req_i   (sbr_bus.req),
   .we_i    (sbr_bus.we),
