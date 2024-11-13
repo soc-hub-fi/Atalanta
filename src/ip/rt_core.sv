@@ -104,14 +104,16 @@ obi_xbar_intf #(
 );
 
 obi_sram_intf #(
-  .NumWords (rt_pkg::ImemSizeBytes / 4)
+  .NumWords (rt_pkg::ImemSizeBytes / 4),
+  .BaseAddr (rt_pkg::ImemRule.Start)
 ) i_imem (
   .clk_i,
   .rst_ni,
   .sbr_bus (sbr_bus[1])
 );
 obi_sram_intf #(
-  .NumWords (rt_pkg::DmemSizeBytes / 4)
+  .NumWords (rt_pkg::DmemSizeBytes / 4),
+  .BaseAddr (rt_pkg::DmemRule.Start)
 ) i_dmem (
   .clk_i,
   .rst_ni,

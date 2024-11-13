@@ -1,5 +1,6 @@
 module obi_sram_intf #(
   parameter int unsigned  NumWords  = 1024,
+  parameter int unsigned  BaseAddr  = 0,
   parameter int unsigned  DataWidth = 32,
   parameter int unsigned  Latency   = 1,
   localparam int unsigned AddrWidth = $clog2(NumWords)
@@ -9,11 +10,13 @@ module obi_sram_intf #(
   OBI_BUS.Subordinate sbr_bus
 );
 
+logic [31:0] offset_addr;
 logic [29:0] word_addr;
 logic [AddrWidth-1:0] sram_addr;
 
-assign word_addr = sbr_bus.addr[31:2];
-assign sram_addr = word_addr[AddrWidth-1:0];
+assign offset_addr = sbr_bus.addr - BaseAddr;
+assign word_addr   = offset_addr[31:2];
+assign sram_addr   = word_addr[AddrWidth-1:0];
 
 obi_handshake_fsm i_fsm (
   .clk_i,

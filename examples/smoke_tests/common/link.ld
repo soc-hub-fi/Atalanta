@@ -18,12 +18,12 @@ SECTIONS
     _stext = .;
     *(.text*)
     _etext = .;
-    *(.rodata*)
   } > IMEM
 
   .data : ALIGN(4)
   {
     *(.data*);
+    *(.rodata*);
   } > DMEM
 
   .sdata : ALIGN(4)

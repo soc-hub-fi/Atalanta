@@ -108,7 +108,8 @@ obi_xbar_intf #(
 for (genvar i=0; i<NumMemBanks; i++) begin : g_mem_banks
 
   obi_sram_intf #(
-    .NumWords ((rt_pkg::SramSizeBytes / 4) / NumMemBanks)
+    .NumWords ((rt_pkg::SramSizeBytes / 4) / NumMemBanks),
+    .BaseAddr ((rt_pkg::SramRule.Start) + rt_pkg::SramSizeBytes*(i*1/NumMemBanks))
   ) i_bank (
     .clk_i,
     .rst_ni,
