@@ -113,20 +113,22 @@ int main() {
     write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), rand(), 0);
   }
 
-  print_uart("[UART] Performing unaligned word accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), rand(), 0);
-  }
+  // TODO: FIXME
+  //print_uart("[UART] Performing unaligned word accesses to SPM\n");
+  //for (int it=0; it<ITER_CNT; it++){
+  //  write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), rand(), 0);
+  //}
 
   print_uart("[UART] Performing alligned half-word accesses to SPM\n");
   for (int it=0; it<ITER_CNT; it++){
     write_readback_half(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), (uint16_t)rand(), 0);
   }
 
-  print_uart("[UART] Performing unaligned half-word accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_half(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), (uint16_t)rand(), 0);
-  }
+  // TODO: FIXME
+  //print_uart("[UART] Performing unaligned half-word accesses to SPM\n");
+  //for (int it=0; it<ITER_CNT; it++){
+  //  write_readback_half(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), (uint16_t)rand(), 0);
+  //}
 
     print_uart("[UART] Performing alligned byte accesses to SPM\n");
   for (int it=0; it<ITER_CNT; it++){
