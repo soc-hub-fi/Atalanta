@@ -154,10 +154,13 @@ obi_handshake_fsm #(
 
 // Mst/mgr tie-offs
 assign dbg_mst.reqpar     = 0;
+assign dbg_mst.gntpar     = 0;
 assign dbg_mst.aid        = 0;
 assign dbg_mst.a_optional = 0;
 assign dbg_mst.rready     = 0;
 assign dbg_mst.rreadypar  = 0;
+assign dbg_mst.rvalidpar  = 0;
+
 
 // Slv/sbr tie-offs
 assign dbg_slv.gntpar     = 0;

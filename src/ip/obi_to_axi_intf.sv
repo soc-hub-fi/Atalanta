@@ -15,6 +15,43 @@ module obi_to_axi_intf #(
   AXI_BUS.Master      axi_out,
   OBI_BUS.Subordinate obi_in
 );
+
+assign axi_out.ar_addr   = '0;
+assign axi_out.ar_burst  = '0;
+assign axi_out.ar_cache  = '0;
+assign axi_out.ar_id     = '0;
+assign axi_out.ar_len    = '0;
+assign axi_out.ar_lock   = '0;
+assign axi_out.ar_prot   = '0;
+assign axi_out.ar_qos    = '0;
+assign axi_out.ar_region = '0;
+assign axi_out.ar_size   = '0;
+assign axi_out.ar_user   = '0;
+assign axi_out.ar_valid  = '0;
+
+assign axi_out.aw_addr   = '0;
+assign axi_out.aw_atop   = '0;
+assign axi_out.aw_burst  = '0;
+assign axi_out.aw_cache  = '0;
+assign axi_out.aw_id     = '0;
+assign axi_out.aw_len    = '0;
+assign axi_out.aw_lock   = '0;
+assign axi_out.aw_prot   = '0;
+assign axi_out.aw_qos    = '0;
+assign axi_out.aw_region = '0;
+assign axi_out.aw_size   = '0;
+assign axi_out.aw_user   = '0;
+assign axi_out.aw_valid  = '0;
+
+assign axi_out.b_ready   = '0;
+assign axi_out.r_ready   = '0;
+
+assign axi_out.w_data    = '0;
+assign axi_out.w_last    = '0;
+assign axi_out.w_strb    = '0;
+assign axi_out.w_user    = '0;
+assign axi_out.w_valid   = '0;
+
 /*
 localparam bit [AxiUserWidth-1:0] DefaultUser = '0;
 

@@ -188,8 +188,8 @@ apb_gpio #(
 ) i_gpio (
   .HRESETn        (rst_ni),
   .HCLK           (periph_clk),
-  .gpio_in        (gpio_input_i),
-  .gpio_out       (gpio_output_o),
+  .gpio_in        (gpio_i),
+  .gpio_out       (gpio_o),
   .PENABLE        (apb_out[0].penable),
   .PWRITE         (apb_out[0].pwrite),
   .PADDR          (apb_out[0].paddr),
