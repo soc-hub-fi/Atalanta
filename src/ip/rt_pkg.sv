@@ -53,7 +53,7 @@ typedef struct packed {
   int unsigned end_addr;
 } xbar_rule_t;
 
-localparam xbar_rule_t [CoreXbarCfg.NumS+1] CoreAddrMap = '{
+localparam xbar_rule_t [(CoreXbarCfg.NumS+1)-1:0] CoreAddrMap = '{
   // Rule 0 covers everything outside IMEM & DMEM
   '{idx: 0, start_addr: DbgRule.Start,  end_addr: DbgRule.End},
   '{idx: 0, start_addr: DmemRule.End,   end_addr: AxiRule.End},
