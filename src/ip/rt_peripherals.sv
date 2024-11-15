@@ -8,6 +8,8 @@
   `define NOT_MOCK
 `endif
 
+`include "register_interface/typedef.svh"
+
 module rt_peripherals #(
   parameter int unsigned AddrWidth = 32,
   parameter int unsigned DataWidth = 32,
@@ -35,24 +37,15 @@ module rt_peripherals #(
   input  logic                 uart_rx_i
 );
 
-// INCLUSIVE END ADDR
-localparam int unsigned GpioStartAddr   = 32'h0003_0000;
-localparam int unsigned GpioEndAddr     = 32'h0003_00FF;
-localparam int unsigned UartStartAddr   = 32'h0003_0100;
-localparam int unsigned UartEndAddr     = 32'h0003_01FF;
-localparam int unsigned MTimerStartAddr = 32'h0003_0200;
-localparam int unsigned MTimerEndAddr   = 32'h0003_0210;
-localparam int unsigned ClicStartAddr   = 32'h0005_0000;
-localparam int unsigned ClicEndAddr     = 32'h0005_FFFF;
-
-localparam int unsigned NrApbPerip = 4;
+localparam int unsigned NrApbPerip = 5;
+localparam int unsigned SelWidth   = $clog2(NrApbPerip);
 
 logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
 logic                   uart_irq;
 
-logic             [1:0] demux_sel;
-logic     [NSource-1:0] intr_src;
-logic                   mtimer_irq;
+logic [SelWidth-1:0] demux_sel;
+logic  [NSource-1:0] intr_src;
+logic                mtimer_irq;
 
 logic                   periph_clk;
 
@@ -139,20 +132,23 @@ assign irq_ready_delay = irq_ready_i | irq_ready_q;
 always_comb
   begin : decode // TODO: Make enum for values
     unique case (apb_div.paddr) inside
-      [GpioStartAddr:GpioEndAddr]: begin
-        demux_sel = 2'b00;
+      [rt_pkg::GpioStartAddr:rt_pkg::GpioEndAddr]: begin
+        demux_sel = SelWidth'('h0);
       end
-      [UartStartAddr:UartEndAddr]: begin
-        demux_sel = 2'b01;
+      [rt_pkg::UartStartAddr:rt_pkg::UartEndAddr]: begin
+        demux_sel = SelWidth'('h1);
       end
-      [MTimerStartAddr:MTimerEndAddr]: begin
-        demux_sel = 2'b10;
+      [rt_pkg::MTimerStartAddr:rt_pkg::MTimerEndAddr]: begin
+        demux_sel = SelWidth'('h2);
       end
-      [ClicStartAddr:ClicEndAddr]: begin
-        demux_sel = 2'b11;
+      [rt_pkg::ClicStartAddr:rt_pkg::ClicEndAddr]: begin
+        demux_sel = SelWidth'('h3);
+      end
+      [rt_pkg::SpiStartAddr:rt_pkg::SpiEndAddr]: begin
+        demux_sel = SelWidth'('h4);
       end
       default: begin
-        demux_sel = 2'b00;
+        demux_sel = SelWidth'('h0);
       end
     endcase
   end
@@ -199,6 +195,42 @@ apb_gpio #(
   .PREADY         (apb_out[0].pready),
   .PSLVERR        (apb_out[0].pslverr),
   .interrupt      ()
+);
+
+// APB to REG_BUS boilerplate
+`REG_BUS_TYPEDEF_ALL(regbus, logic [31:0], logic [31:0], logic [3:0])
+
+regbus_req_t spi_req;
+regbus_rsp_t spi_rsp;
+
+assign spi_req.addr  = apb_out[4].paddr;
+assign spi_req.wdata = apb_out[4].pwdata;
+assign spi_req.wstrb = '1;
+assign spi_req.write = apb_out[4].pwrite;
+assign spi_req.valid = apb_out[4].psel & apb_out[4].penable;
+
+assign apb_out[4].prdata  = spi_rsp.rdata;
+assign apb_out[4].pslverr = spi_rsp.error;
+assign apb_out[4].pready  = spi_rsp.ready;
+//
+
+spi_host #(
+  .reg_req_t (regbus_req_t),
+  .reg_rsp_t (regbus_rsp_t)
+) i_spih (
+  .clk_i,
+  .rst_ni,
+  .reg_req_i        (spi_req),
+  .reg_rsp_o        (spi_rsp),
+  .cio_sck_o        (),
+  .cio_sck_en_o     (),
+  .cio_csb_o        (),
+  .cio_csb_en_o     (),
+  .cio_sd_o         (),
+  .cio_sd_en_o      (),
+  .cio_sd_i         (),
+  .intr_error_o     (),
+  .intr_spi_event_o ()
 );
 
 `ifdef NOT_MOCK

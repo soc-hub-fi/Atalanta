@@ -7,13 +7,14 @@ package:
 dependencies:
   rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: master }
   clic: { git: "https://github.com/pulp-platform/clic.git", version: 2.0.0 }
-  riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1}
+  riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
   obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
   axi: { git: "https://github.com/pulp-platform/axi.git", rev: "bfee21757bf090ec8e358456314b0b0fd3c90809" }
   apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4}
   apb_timer: { git: "https://github.com/pulp-platform/apb_timer", version: 0.1.0}
   apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio", version: 0.2.0}
+  opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals", version: 0.4.0 }
 
 
 sources:

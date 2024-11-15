@@ -65,6 +65,15 @@ packages:
     dependencies:
     - common_cells
     - common_verification
+  opentitan_peripherals:
+    revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
+    version: 0.4.0
+    source:
+      Git: https://github.com/pulp-platform/opentitan_peripherals
+    dependencies:
+    - common_cells
+    - register_interface
+    - tech_cells_generic
   register_interface:
     revision: 146501d80052b61475cdc333d3aab4cd769fd5dc
     version: 0.3.9

@@ -20,6 +20,19 @@ localparam addr_rule_t SramRule = '{ Start: 32'h0002_0000, End: 32'h0003_0000 };
 localparam addr_rule_t ApbRule  = '{ Start: 32'h0003_0000, End: 32'h0006_0000 };
 localparam addr_rule_t AxiRule  = '{ Start: 32'hFFFF_0000, End: 32'hFFFF_FFFF };
 
+
+// APB MAPPING, INCLUSIVE END ADDR
+localparam int unsigned GpioStartAddr   = 32'h0003_0000;
+localparam int unsigned GpioEndAddr     = 32'h0003_00FF;
+localparam int unsigned UartStartAddr   = 32'h0003_0100;
+localparam int unsigned UartEndAddr     = 32'h0003_01FF;
+localparam int unsigned MTimerStartAddr = 32'h0003_0200;
+localparam int unsigned MTimerEndAddr   = 32'h0003_0210;
+localparam int unsigned ClicStartAddr   = 32'h0005_0000;
+localparam int unsigned ClicEndAddr     = 32'h0005_FFFF;
+localparam int unsigned SpiStartAddr    = 32'h0006_0000;
+localparam int unsigned SpiEndAddr      = 32'h0006_FFFF;
+
 localparam int unsigned NumMemBanks = 1;
 
 localparam xbar_cfg_t CoreXbarCfg = '{
@@ -48,16 +61,6 @@ localparam xbar_rule_t [CoreXbarCfg.NumS+1] CoreAddrMap = '{
   '{idx: 2, start_addr: DmemRule.Start, end_addr: DmemRule.End}
 };
 
-//localparam rule_t SramRules [NumMemBanks] = '{idx: 32'd5, start_addr: ObiXbarCfg.AxiStart,  end_addr: ObiXbarCfg.AxiEnd  };
-/*
-localparam rule_t SramRule = '{idx: 32'd6, start_addr: ObiXbarCfg.SramStart,  end_addr: ObiXbarCfg.SramEnd  };
-localparam rule_t AxiRule  = '{idx: 32'd5, start_addr: ObiXbarCfg.AxiStart,  end_addr: ObiXbarCfg.AxiEnd  };
-localparam rule_t ApbRule  = '{idx: 32'd4, start_addr: ObiXbarCfg.ApbStart,  end_addr: ObiXbarCfg.ApbEnd  };
-localparam rule_t DmemRule = '{idx: 32'd3, start_addr: ObiXbarCfg.DmemStart, end_addr: ObiXbarCfg.DmemEnd };
-localparam rule_t ImemRule = '{idx: 32'd2, start_addr: ObiXbarCfg.ImemStart, end_addr: ObiXbarCfg.ImemEnd };
-localparam rule_t RomRule  = '{idx: 32'd1, start_addr: ObiXbarCfg.RomStart,  end_addr: ObiXbarCfg.RomEnd  };
-localparam rule_t DbgRule  = '{idx: 32'd0, start_addr: 32'h0000_0000,  end_addr: 32'h0000_1000  };
-*/
 
 function automatic int unsigned get_addr_size (
   int unsigned start_addr,
