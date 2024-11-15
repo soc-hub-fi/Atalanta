@@ -52,7 +52,7 @@ module xilinx_sp_BRAM #(
 );
 
   logic [DataWidth-1:0] BRAM [RAM_DEPTH];
-  logic [$clog2(RAM_DEPTH)-1:0] addr_q;
+  //logic [$clog2(RAM_DEPTH)-1:0] addr_q;
 
   generate
       integer ram_index;
@@ -73,13 +73,13 @@ module xilinx_sp_BRAM #(
 
   always_ff @(posedge clk_i) begin
     if (~rst_ni)
-      addr_q <= '0;
+      rdata_o <= '0;
     else
-      if (req_i & ~bwe_i)
-        addr_q <= addr_i;
+      if (req_i)
+        rdata_o <= BRAM[addr_i];
   end
 
-  assign rdata_o = BRAM[addr_q];
+  //assign rdata_o = BRAM[addr_q];
 
 endmodule
 
