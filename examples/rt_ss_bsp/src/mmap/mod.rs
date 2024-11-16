@@ -8,11 +8,13 @@
 #![allow(clippy::identity_op)]
 
 mod clic;
+mod spi;
 mod timer;
 mod uart;
 mod spi;
 
 pub use clic::*;
+pub use spi::*;
 pub use timer::*;
 pub use uart::*;
 pub use spi::*;
