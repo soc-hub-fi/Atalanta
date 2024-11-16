@@ -46,11 +46,10 @@ impl Peripherals {
     }
 }
 
-pub const CPU_FREQ: u32 = match () {
-    #[cfg(feature = "rtl-tb")]
-    () => 100_000_000,
-    #[cfg(feature = "fpga")]
-    () => 40_000_000,
+pub const CPU_FREQ: u32 = if cfg!(feature = "rtl-tb") {
+    100_000_000
+} else {
+    40_000_000
 };
 // Experimentally found value for how to adjust for real-time
 const fn nop_mult() -> u32 {
@@ -119,11 +118,10 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     #[cfg(feature = "ufmt")]
     sprintln!("panic occurred");
 
-    match () {
-        #[cfg(feature = "rtl-tb")]
-        () => tb::rtl_testbench_signal_fail(),
-        #[cfg(feature = "fpga")]
-        () => tb::blink_panic(),
+    if cfg!(feature = "rtl-tb") {
+        tb::rtl_testbench_signal_fail()
+    } else {
+        tb::blink_panic()
     }
 }
 

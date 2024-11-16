@@ -48,11 +48,10 @@ pub fn signal_pass(use_uart: bool) -> ! {
         uart_write("\r\n");
     }
 
-    match () {
-        #[cfg(feature = "rtl-tb")]
-        () => rtl_testbench_signal_ok(),
-        #[cfg(feature = "fpga")]
-        () => ok_blink(),
+    if cfg!(feature = "rtl-tb") {
+        rtl_testbench_signal_ok()
+    } else {
+        ok_blink()
     }
 }
 
@@ -64,23 +63,21 @@ pub fn signal_fail(use_uart: bool) -> ! {
         uart_write("\r\n");
     }
 
-    match () {
-        #[cfg(feature = "rtl-tb")]
-        () => rtl_testbench_signal_fail(),
-        #[cfg(feature = "fpga")]
-        () => fail_blink(),
+    if cfg!(feature = "rtl-tb") {
+        rtl_testbench_signal_fail()
+    } else {
+        fail_blink()
     }
 }
 
 /// Signal that the test case is waiting for a timered event to happen
 #[inline]
 pub fn signal_wait() -> ! {
-    match () {
-        #[cfg(feature = "rtl-tb")]
+    if cfg!(feature = "rtl-tb") {
         // No signaling required on sim
-        () => loop {},
-        #[cfg(feature = "fpga")]
-        () => wait_blink(),
+        loop {}
+    } else {
+        wait_blink()
     }
 }
 
@@ -203,11 +200,10 @@ fn ok_blink() -> ! {
 fn fail_blink() -> ! {
     use crate::{asm_delay, NOPS_PER_SEC};
 
-    match () {
-        #[cfg(feature = "rtl-tb")]
-        () => rtl_testbench_signal_fail(),
-        #[cfg(feature = "fpga")]
-        () => loop {
+    if cfg!(feature = "rtl-tb") {
+        rtl_testbench_signal_fail()
+    } else {
+        loop {
             led_on(Led::Ld0);
             led_on(Led::Ld1);
             led_on(Led::Ld2);
@@ -218,6 +214,6 @@ fn fail_blink() -> ! {
             led_off(Led::Ld2);
             led_off(Led::Ld3);
             asm_delay(NOPS_PER_SEC);
-        },
+        }
     }
 }
