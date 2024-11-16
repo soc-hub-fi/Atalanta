@@ -1,3 +1,4 @@
+//! Memory maps for mtimer
 pub const TIMER_BASE: usize = 0x30200;
 
 pub const MTIME_LOW_ADDR: usize = TIMER_BASE + 0;
