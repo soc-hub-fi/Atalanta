@@ -1,4 +1,4 @@
-pub const CLIC_BASE_ADDR: usize = 0x50000;
+pub const CLIC_BASE_ADDR: usize = 0x5_0000;
 
 /* Register width */
 pub const CLIC_PARAM_REG_WIDTH: usize = 8;
