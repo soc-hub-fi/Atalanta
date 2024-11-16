@@ -18,8 +18,9 @@ jobs:
         id: changes
         with:
           filters: |
-            # Only Track directories which may affect tests / SW
+            # Only Track files which may affect tests / SW
             any:
+              - 'Bender.yml'
               - 'src/**'
               - 'fpga/**'
 
