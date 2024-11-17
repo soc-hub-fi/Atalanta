@@ -29,5 +29,3 @@ ufmt = ["dep:ufmt"]
 clic-smclic = []
 # CLIC selective hardware vectoring extension
 clic-smclicshv = []
-
-default = ["fpga"]
