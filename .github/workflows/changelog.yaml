@@ -1,0 +1,33 @@
+name: Changelog check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  changelog-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check which component is modified
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            # Only Track files which may affect tests / SW
+            any:
+              - 'Bender.yml'
+              - 'src/**'
+              - 'fpga/**'
+
+      - name: Check for CHANGELOG.md
+        if: steps.changes.outputs.any == 'true'
+        uses: dangoslen/changelog-enforcer@v3
+        with:
+          changeLogPath: ./CHANGELOG.md
+          skipLabels: 'skip changelog'
+          missingUpdateErrorMessage: 'Please add a changelog entry in the CHANGELOG.md file.'
