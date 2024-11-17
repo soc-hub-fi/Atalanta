@@ -8,7 +8,7 @@ pub const CPU_FREQ: u32 = match () {
     #[cfg(feature = "rtl-tb")]
     () => 100_000_000,
     #[cfg(not(feature = "rtl-tb"))]
-    () => 40_000_000,
+    () => 30_000_000,
 };
 // Experimentally found value for how to adjust for real-time
 const fn nop_mult() -> u32 {
