@@ -11,14 +11,14 @@ typedef struct packed {
   int unsigned End;
 } addr_rule_t;
 
-/// GENERAL ADDRESS MAPPING
+/// GENERAL ADDRESS MAPPING, EXCLUSIVE END ADDR
 localparam addr_rule_t DbgRule  = '{ Start: 32'h0000_0000, End: 32'h0000_1000 };
 localparam addr_rule_t ImemRule = '{ Start: 32'h0000_1000, End: 32'h0000_5000 };
 localparam addr_rule_t DmemRule = '{ Start: 32'h0000_5000, End: 32'h0000_9000 };
 localparam addr_rule_t RomRule  = '{ Start: 32'h0000_9000, End: 32'h0000_9300 };
 localparam addr_rule_t SramRule = '{ Start: 32'h0002_0000, End: 32'h0003_0000 };
-localparam addr_rule_t ApbRule  = '{ Start: 32'h0003_0000, End: 32'h0006_0000 };
-localparam addr_rule_t AxiRule  = '{ Start: 32'hFFFF_0000, End: 32'hFFFF_FFFF };
+localparam addr_rule_t ApbRule  = '{ Start: 32'h0003_0000, End: 32'h0007_0000 };
+localparam addr_rule_t AxiRule  = '{ Start: 32'hFFFF_0000, End: 32'h0000_0000 };
 
 
 // APB MAPPING, INCLUSIVE END ADDR
