@@ -22,6 +22,11 @@ mod ufmt_debug;
 #[cfg(feature = "ufmt")]
 mod ufmt_sprint;
 
+#[cfg(not(any(feature = "fpga", feature = "rtl-tb")))]
+compile_error!(
+    "Select one of -Ffpga -Frtl-tb, BSP supports FPGA and RTL testbench implementations only"
+);
+
 pub use interrupt::Interrupt;
 pub use riscv;
 #[cfg(feature = "rt")]
@@ -46,10 +51,11 @@ impl Peripherals {
     }
 }
 
-pub const CPU_FREQ: u32 = if cfg!(feature = "rtl-tb") {
-    100_000_000
-} else {
-    30_000_000
+pub const CPU_FREQ: u32 = match () {
+    #[cfg(feature = "rtl-tb")]
+    () => 100_000_000,
+    #[cfg(not(feature = "rtl-tb"))]
+    () => 30_000_000,
 };
 // Experimentally found value for how to adjust for real-time
 const fn nop_mult() -> u32 {
@@ -118,10 +124,11 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     #[cfg(feature = "ufmt")]
     sprintln!("panic occurred");
 
-    if cfg!(feature = "rtl-tb") {
-        tb::rtl_testbench_signal_fail()
-    } else {
-        tb::blink_panic()
+    match () {
+        #[cfg(feature = "rtl-tb")]
+        () => tb::rtl_testbench_signal_fail(),
+        #[cfg(not(feature = "rtl-tb"))]
+        () => tb::blink_panic(),
     }
 }
 

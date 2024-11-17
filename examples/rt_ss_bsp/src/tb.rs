@@ -15,7 +15,7 @@ pub const TEST_PASS_TAG: &str = "[PASSED]";
 pub const TEST_OK_TAG: &str = "[OK]";
 pub const TEST_FAIL_TAG: &str = "[FAILED]";
 
-#[cfg(all(feature = "fpga", feature = "rt"))]
+#[cfg(any(all(feature = "fpga", feature = "rt"), feature = "panic"))]
 pub(crate) const DEFAULT_BAUD: u32 = 9600;
 
 /// Format a message and signal that a part of the test was OK
@@ -48,10 +48,11 @@ pub fn signal_pass(use_uart: bool) -> ! {
         uart_write("\r\n");
     }
 
-    if cfg!(feature = "rtl-tb") {
-        rtl_testbench_signal_ok()
-    } else {
-        ok_blink()
+    match () {
+        #[cfg(feature = "rtl-tb")]
+        () => rtl_testbench_signal_ok(),
+        #[cfg(not(feature = "rtl-tb"))]
+        () => ok_blink(),
     }
 }
 
@@ -63,21 +64,23 @@ pub fn signal_fail(use_uart: bool) -> ! {
         uart_write("\r\n");
     }
 
-    if cfg!(feature = "rtl-tb") {
-        rtl_testbench_signal_fail()
-    } else {
-        fail_blink()
+    match () {
+        #[cfg(feature = "rtl-tb")]
+        () => rtl_testbench_signal_fail(),
+        #[cfg(not(feature = "rtl-tb"))]
+        () => fail_blink(),
     }
 }
 
 /// Signal that the test case is waiting for a timered event to happen
 #[inline]
 pub fn signal_wait() -> ! {
-    if cfg!(feature = "rtl-tb") {
+    match () {
+        #[cfg(feature = "rtl-tb")]
         // No signaling required on sim
-        loop {}
-    } else {
-        wait_blink()
+        () => loop {},
+        #[cfg(not(feature = "rtl-tb"))]
+        () => wait_blink(),
     }
 }
 
@@ -198,22 +201,25 @@ fn ok_blink() -> ! {
 /// Flashes all leds on and off, slow
 #[cfg(feature = "fpga")]
 fn fail_blink() -> ! {
-    use crate::{asm_delay, NOPS_PER_SEC};
 
-    if cfg!(feature = "rtl-tb") {
-        rtl_testbench_signal_fail()
-    } else {
-        loop {
-            led_on(Led::Ld0);
-            led_on(Led::Ld1);
-            led_on(Led::Ld2);
-            led_on(Led::Ld3);
-            asm_delay(NOPS_PER_SEC);
-            led_off(Led::Ld0);
-            led_off(Led::Ld1);
-            led_off(Led::Ld2);
-            led_off(Led::Ld3);
-            asm_delay(NOPS_PER_SEC);
-        }
+    match () {
+        #[cfg(feature = "rtl-tb")]
+        () => rtl_testbench_signal_fail(),
+        #[cfg(not(feature = "rtl-tb"))]
+        () => {
+            use crate::{asm_delay, NOPS_PER_SEC};
+            loop {
+                led_on(Led::Ld0);
+                led_on(Led::Ld1);
+                led_on(Led::Ld2);
+                led_on(Led::Ld3);
+                asm_delay(NOPS_PER_SEC);
+                led_off(Led::Ld0);
+                led_off(Led::Ld1);
+                led_off(Led::Ld2);
+                led_off(Led::Ld3);
+                asm_delay(NOPS_PER_SEC);
+            }
+        },
     }
 }
