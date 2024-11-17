@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Increased peripherals memory mapping size to fit SPI
+- Fix AXI address mapping end address
+
+
 ## [v0.1.0] - 2024-11-15
 
 ### Added
