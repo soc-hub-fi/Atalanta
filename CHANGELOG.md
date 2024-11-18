@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Fixed
-- Increased peripherals memory mapping size to fit SPI
-- Fix AXI address mapping end address
+- Peripheral memory map to fit SPI
+- AXI address mapping end address
 
+### Changed
+- FPGA flow timing error handling
 
 ## [v0.1.0] - 2024-11-15
 

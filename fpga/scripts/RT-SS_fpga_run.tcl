@@ -102,6 +102,8 @@ synth_design -rtl -sfcu -name rtl_1;
 # Run Synthesis
 # ------------------------------------------------------------------------------
 
+set_msg_config -id {Timing 38-282} -new_severity {ERROR}
+
 # Configure synthesis strategy
 set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1];
 # Use single file compilation unit mode to prevent issues with import pkg::* statements in the codebase
