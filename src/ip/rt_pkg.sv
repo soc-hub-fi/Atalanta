@@ -23,7 +23,7 @@ localparam addr_rule_t AxiRule  = '{ Start: 32'hFFFF_0000, End: 32'h0000_0000 };
 
 // APB MAPPING, INCLUSIVE END ADDR
 localparam int unsigned GpioStartAddr   = 32'h0003_0000;
-localparam int unsigned GpioEndAddr     = 32'h0003_00FF;
+localparam int unsigned GpioEndAddr     = 32'h0003_006F;
 localparam int unsigned UartStartAddr   = 32'h0003_0100;
 localparam int unsigned UartEndAddr     = 32'h0003_01FF;
 localparam int unsigned MTimerStartAddr = 32'h0003_0200;

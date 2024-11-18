@@ -11,17 +11,19 @@ module vip_rt_top #(
   parameter  int unsigned    AxiIw         = 9,
   parameter  int unsigned    AxiUw         = 4
 )(
-  output logic   clk_o,
-  output logic   rst_no,
-  AXI_BUS.Master axi_mst,
-  AXI_BUS.Slave  axi_slv,
-  output logic   jtag_tck_o,
-  output logic   jtag_tms_o,
-  output logic   jtag_trst_no,
-  output logic   jtag_tdi_o,
-  input  logic   jtag_tdo_i,
-  output logic   uart_dut_rx_o,
-  input  logic   uart_dut_tx_i
+  output logic       clk_o,
+  output logic       rst_no,
+  AXI_BUS.Master     axi_mst,
+  AXI_BUS.Slave      axi_slv,
+  output logic       jtag_tck_o,
+  output logic       jtag_tms_o,
+  output logic       jtag_trst_no,
+  output logic       jtag_tdi_o,
+  input  logic       jtag_tdo_i,
+  input  logic [3:0] gpio_dut_out,
+  output logic [3:0] gpio_dut_in,
+  output logic       uart_dut_rx_o,
+  input  logic       uart_dut_tx_i
 );
 
 import "DPI-C" function byte read_elf(input string filename);
@@ -380,6 +382,21 @@ task automatic run_dbg_mem_test();
   //  rand_addr = ($urandom()%size) + imem_start;
   //  jtag_write_reg32(rand_addr, $urandom(), 1, 20, 0);
   //end : unalligned_loop
+endtask
+
+task automatic gpio_sanity ();
+  fork
+    begin
+      wait (gpio_dut_out != '0);
+      $display("[TB] GPIO output high, blink [PASSED]");
+    end
+
+    begin // Timeout
+      #1ms;
+      $error("[TB] No GPIO output received, [FAILED]!");
+    end
+
+  join_any
 endtask
 
 endmodule : vip_rt_top
