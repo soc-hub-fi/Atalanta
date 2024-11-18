@@ -22,6 +22,7 @@ localparam longint unsigned TimeoutCycles = 32000;
 logic clk, rst_n;
 logic jtag_tck, jtag_tms, jtag_trst_n, jtag_tdi,jtag_tdo;
 logic [IrqNr-1:0] irqs;
+logic [3:0] gpio_output, gpio_input;
 logic uart_tx, uart_rx;
 
 initial begin : tb_process
@@ -49,6 +50,9 @@ initial begin : tb_process
       vip.readmem_elf_preload(ElfPath);
     else
       $fatal(1, "ERROR: unsupported LOAD, exiting");
+    if (TestName == "gpio_blink") begin
+      vip.gpio_sanity();
+    end
     vip.jtag_wait_for_eoc();
   end
 
@@ -87,6 +91,8 @@ vip_rt_top #(
   .jtag_trst_no (jtag_trst_n),
   .jtag_tdi_o   (jtag_tdi),
   .jtag_tdo_i   (jtag_tdo),
+  .gpio_dut_out (gpio_output),
+  .gpio_dut_in  (gpio_input),
   .uart_dut_rx_o(uart_rx),
   .uart_dut_tx_i(uart_tx)
 );
