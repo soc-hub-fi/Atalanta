@@ -79,7 +79,7 @@ link: compile
 # Dump the generated .elf file 
 .PHONY: objdump
 objdump: #link
-	@$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) -Ssd > $(BUILD_DIR)/$(TEST)/$(TEST).dump
+	@$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) -SsdhwD > $(BUILD_DIR)/$(TEST)/$(TEST).dump
 # Delete the build artifacts
 .PHONY: all
 all: link objdump
