@@ -53,6 +53,8 @@ OBI_BUS #() demux_sbr_bus [DemuxWidth] ();
 OBI_BUS #() core_mgr_bus ();
 OBI_BUS #() core_sbr_bus ();
 OBI_BUS #() dbg_rom_bus ();
+OBI_BUS #() dma_rd_bus [rt_pkg::NumDMAs] ();
+OBI_BUS #() dma_wr_bus [rt_pkg::NumDMAs] ();
 
 
 assign ibex_rst_n = rst_ni & ~(ndmreset);
@@ -87,8 +89,21 @@ rt_interconnect #() i_interconnect (
   .core_mgr    (core_sbr_bus),
   .axi_mgr     (axi_mgr_bus),
   .axi_sbr     (axi_sbr_bus),
-  .apb_mgr     (apb_bus)
+  .apb_mgr     (apb_bus),
+  .dma_rd_sbr  (dma_rd_bus),
+  .dma_wr_sbr  (dma_wr_bus)
 );
+
+for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++) begin : g_dmas
+  ndma #(
+    .Depth (3)
+  ) i_ndma (
+    .clk_i,
+    .rst_ni,
+    .read_mgr  (dma_rd_bus[ii]),
+    .write_mgr (dma_wr_bus[ii])
+  );
+end : g_dmas
 
 obi_demux_intf #(
   .NumMgrPorts (DemuxWidth),

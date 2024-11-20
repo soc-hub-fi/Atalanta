@@ -13,6 +13,8 @@ module rt_interconnect #(
   OBI_BUS.Manager     core_mgr,
   OBI_BUS.Manager     axi_mgr,
   OBI_BUS.Subordinate axi_sbr,
+  OBI_BUS.Subordinate dma_rd_sbr [rt_pkg::NumDMAs],
+  OBI_BUS.Subordinate dma_wr_sbr [rt_pkg::NumDMAs],
   APB.Master          apb_mgr
 );
 
