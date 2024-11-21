@@ -20,6 +20,7 @@ module rt_interconnect #(
 
 localparam rt_pkg::xbar_cfg_t XbarCfg = rt_pkg::MainXbarCfg;
 localparam int unsigned NumMemBanks   = rt_pkg::NumMemBanks;
+localparam int unsigned NumDMAs       = rt_pkg::NumDMAs;
 localparam int unsigned IcnNrSlv      = rt_pkg::MainXbarCfg.NumS;
 
 OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
@@ -82,10 +83,21 @@ if (CutSbrPorts) begin : g_sbr_cut
   obi_cut_intf i_core_sbr_cut (.clk_i, .rst_ni, .obi_s(core_sbr), .obi_m(mgr_bus[0]));
   obi_cut_intf i_axi_dbg_cut  (.clk_i, .rst_ni, .obi_s(dbg_sbr),  .obi_m(mgr_bus[1]));
   obi_cut_intf i_axi_sbr_cut  (.clk_i, .rst_ni, .obi_s(axi_sbr),  .obi_m(mgr_bus[2]));
+
+  for (genvar i = 0; i < NumDMAs; i++) begin : g_dma_mgrs
+    obi_cut_intf i_dma_rd_cut (.clk_i, .rst_ni, .obi_s(dma_rd_sbr[i]), .obi_m(mgr_bus[3+(2*i)]));
+    obi_cut_intf i_dma_wd_cut (.clk_i, .rst_ni, .obi_s(dma_wr_sbr[i]), .obi_m(mgr_bus[4+(2*i)]));
+  end
+
 end else begin : g_no_sbr_cut
   `OBI_ASSIGN(mgr_bus[0], core_sbr, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
   `OBI_ASSIGN(mgr_bus[1], dbg_sbr,  obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
   `OBI_ASSIGN(mgr_bus[2], axi_sbr,  obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+
+  for (genvar i = 0; i < NumDMAs; i++) begin : g_dma_mgrs
+    `OBI_ASSIGN(mgr_bus[3+(2*i)], dma_rd_sbr, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+    `OBI_ASSIGN(mgr_bus[4+(2*i)], dma_wr_sbr, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+  end
 end
 
 
