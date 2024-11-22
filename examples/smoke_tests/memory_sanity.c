@@ -9,8 +9,8 @@
 #define TIMER_BASE_ADDR    0x00030200
 
 #define ITER_CNT 20
-#define RANGE_TOP 0x7000
-#define RANGE_BTM 0x6000
+#define RANGE_TOP 0x6000
+#define RANGE_BTM 0x5000
 #define SRAM_BTM 0x20000
 #define SRAM_TOP 0x30000
 
