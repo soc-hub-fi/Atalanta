@@ -49,6 +49,7 @@ APB #() apb_bus ();
 OBI_BUS #() axi_mgr_bus ();
 OBI_BUS #() axi_sbr_bus ();
 OBI_BUS #() dbg_mgr_bus ();
+OBI_BUS #() dma_mgr_bus ();
 OBI_BUS #() demux_sbr_bus [DemuxWidth] ();
 OBI_BUS #() core_mgr_bus ();
 OBI_BUS #() core_sbr_bus ();
@@ -88,6 +89,7 @@ rt_interconnect #() i_interconnect (
   .core_sbr    (core_mgr_bus),
   .core_mgr    (core_sbr_bus),
   .axi_mgr     (axi_mgr_bus),
+  .dma_mgr     (dma_mgr_bus),
   .axi_sbr     (axi_sbr_bus),
   .apb_mgr     (apb_bus),
   .dma_rd_sbr  (dma_rd_bus),
