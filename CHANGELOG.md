@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- uart.sv duplicated newline behaviour
+
 ### Added
 - GPIO output sanity test to examples, `vip_rt_top`
 
