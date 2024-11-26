@@ -3,12 +3,24 @@
 #include "include/csr_utils.h"
 #include "include/uart_interrupt.h"
 
-#define DMA_SRC 0x00005000
+#define DMA_SRC 0x00006000
 #define DMA_DST 0x00020000
-#define DMA_LEN 0x200
+#define DMA_LEN 0x40
+
+// (pseudo)random data generation
+uint32_t lfsr = 0xBEEFFACEu;
+uint32_t bit;
+uint32_t rand(){
+  bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
+  return lfsr =  (lfsr >> 1) | (bit << 31);
+}
 
 void init_buffer( uint32_t* src, uint32_t len){
-  printf("Test %x String %x \n", 0x2d, 0xff);
+  for (int i = 0; i < DMA_LEN; i += 4){
+    uint32_t tmp = rand();
+    printf("[UART] Writing %x to addr %x\n", tmp, DMA_SRC + i);
+    *(uint32_t*)(DMA_SRC + i) = tmp;
+  }
 }	
 
 void dma_transfer( uint32_t* src, uint32_t* dst, uint32_t len){
