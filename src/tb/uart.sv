@@ -22,22 +22,15 @@ interface uart_bus
 
     input  logic rx_en
   );
-  //timeunit      1ps;
-  //timeprecision 1ps;
 
-  //localparam BIT_PERIOD = (1000000000/BAUD_RATE*1000);
   localparam time UartBaudPeriod = 1000ns*1000*1000/BAUD_RATE;
 
   logic [7:0]       character;
-  logic [256*8-1:0] stringa;
   logic             parity;
-  integer           charnum;
-  integer           file;
- 
+
   initial
   begin
     tx   = 1'b0;
-    //file = $fopen("stdout/uart", "w");
   end
 
   always
@@ -69,31 +62,9 @@ interface uart_bus
 
       // STOP BIT
       #UartBaudPeriod;
-      //$display("%h",character);
-      //$fwrite(file, "%c", character);
-      stringa[(255-charnum)*8 +: 8] = character;
-      if (character == 8'h0A || charnum == 254) // line feed or max. chars reached
-      begin
-        if (character == 8'h0A)
-          stringa[(255-charnum)*8 +: 8] = 8'h0; // null terminate string, replace line feed
-        else
-          stringa[(255-charnum-1)*8 +: 8] = 8'h0; // null terminate string
-
-        $write("%s\n",stringa);
-        charnum = 0;
-        stringa = "";
-      end
-      else
-      begin
-        charnum = charnum + 1;
-      end
-    end
-    else
-    begin
-      charnum = 0;
-      stringa = "";
+      $write("%c", character);
+    end else
       #10;
-    end
   end
 
   task send_char(input logic [7:0] c);
