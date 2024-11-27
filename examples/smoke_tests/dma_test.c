@@ -15,7 +15,7 @@ uint32_t rand(){
   return lfsr =  (lfsr >> 1) | (bit << 31);
 }
 
-void init_buffer( uint32_t* src, uint32_t len){
+void init_buffer( uint32_t src, uint32_t len){
   for (int i = 0; i < DMA_LEN; i += 4){
     uint32_t tmp = rand();
     printf("[UART] Writing %x to addr %x\n", tmp, DMA_SRC + i);
@@ -23,11 +23,11 @@ void init_buffer( uint32_t* src, uint32_t len){
   }
 }	
 
-void dma_transfer( uint32_t* src, uint32_t* dst, uint32_t len){
+void dma_transfer( uint32_t src, uint32_t dst, uint32_t len){
 
 }
 
-int cmp_buffer( uint32_t* src, uint32_t* dst, uint32_t len){
+int cmp_buffer( uint32_t src, uint32_t dst, uint32_t len){
   for (uint32_t i=0; i<len; i = i + 4){
     volatile uint32_t src_val = *(uint32_t*)(src + i);   
     volatile uint32_t dst_val = *(uint32_t*)(dst + i);   

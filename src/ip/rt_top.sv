@@ -34,9 +34,9 @@ module rt_top #(
   input  logic [ClicIrqSrcs-1:0] intr_src_i
 );
 
-localparam int unsigned DemuxWidth = 2;
+localparam int unsigned DgbDmuxWidth = 2;
 
-logic ibex_rst_n, ndmreset, debug_req, demux_sel;
+logic ibex_rst_n, ndmreset, debug_req, dbg_dmux_sel;
 
 logic            irq_valid;
 logic            irq_ready;
@@ -46,20 +46,22 @@ logic            irq_shv;
 logic [     1:0] irq_priv;
 
 APB #() apb_bus ();
-OBI_BUS #() axi_mgr_bus ();
-OBI_BUS #() axi_sbr_bus ();
-OBI_BUS #() dbg_mgr_bus ();
-OBI_BUS #() dma_mgr_bus ();
-OBI_BUS #() demux_sbr_bus [DemuxWidth] ();
+OBI_BUS #() axi_mgr_bus  ();
+OBI_BUS #() axi_sbr_bus  ();
+OBI_BUS #() dbg_mgr_bus  ();
+OBI_BUS #() dma_mgr_bus  ();
+OBI_BUS #() demux_sbr_bus [DgbDmuxWidth] ();
 OBI_BUS #() core_mgr_bus ();
 OBI_BUS #() core_sbr_bus ();
-OBI_BUS #() dbg_rom_bus ();
-OBI_BUS #() dma_rd_bus [rt_pkg::NumDMAs] ();
-OBI_BUS #() dma_wr_bus [rt_pkg::NumDMAs] ();
+OBI_BUS #() dbg_rom_bus  ();
+OBI_BUS #() dma_dmux_bus [rt_pkg::NumDMAs] ();
+OBI_BUS #() dma_rd_bus   [rt_pkg::NumDMAs] ();
+OBI_BUS #() dma_wr_bus   [rt_pkg::NumDMAs] ();
 
 
 assign ibex_rst_n = rst_ni & ~(ndmreset);
-assign demux_sel = (dbg_rom_bus.addr <= rt_pkg::RomRule.Start);
+assign dbg_dmux_sel = (dbg_rom_bus.addr <= rt_pkg::RomRule.Start);
+assign dma_dmux_sel = (dma_mgr_bus.addr <= rt_pkg::DmaRule.Start);
 
 rt_core #(
   .NumInterrupts (ClicIrqSrcs),
@@ -102,20 +104,32 @@ for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++) begin : g_dmas
   ) i_ndma (
     .clk_i,
     .rst_ni,
+    .cfg_sbr   (dma_dmux_bus[ii]), 
     .read_mgr  (dma_rd_bus[ii]),
     .write_mgr (dma_wr_bus[ii])
   );
 end : g_dmas
 
 obi_demux_intf #(
-  .NumMgrPorts (DemuxWidth),
+  .NumMgrPorts (DgbDmuxWidth),
   .NumMaxTrans (rt_pkg::MainXbarCfg.MaxTrans)
 ) i_dbg_rom_demux (
   .clk_i,
   .rst_ni,
-  .sbr_port_select_i (demux_sel),
+  .sbr_port_select_i (dbg_dmux_sel),
   .sbr_port          (dbg_rom_bus),
   .mgr_ports         (demux_sbr_bus)
+);
+
+obi_demux_intf #(
+  .NumMgrPorts (rt_pkg::NumDMAs),
+  .NumMaxTrans (rt_pkg::MainXbarCfg.MaxTrans)
+) i_dma_demux (
+  .clk_i,
+  .rst_ni,
+  .sbr_port_select_i (dma_dmux_sel),
+  .sbr_port          (dma_mgr_bus),
+  .mgr_ports         (dma_dmux_bus)
 );
 
 rt_ibex_bootrom #() i_rom (
