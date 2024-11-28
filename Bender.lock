@@ -58,7 +58,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   nanodma:
-    revision: 868706c943abe22818cf9a3299c92538ba57fd0a
+    revision: 629e7e3bab851242ebc0fa3ed11f77e3164cdda8
     version: null
     source:
       Git: https://github.com/ANurmi/NanoDMA.git
