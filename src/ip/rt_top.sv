@@ -4,6 +4,7 @@
 */
 
 `include "axi/assign.svh"
+`include "obi/assign.svh"
 `define COMMON_CELLS_ASSERTS_OFF
 
 module rt_top #(
@@ -35,8 +36,10 @@ module rt_top #(
 );
 
 localparam int unsigned DgbDmuxWidth = 2;
+localparam int unsigned DmaSelWidth  = $clog2(rt_pkg::NumDMAs);
 
 logic ibex_rst_n, ndmreset, debug_req, dbg_dmux_sel;
+logic [DmaSelWidth-1:0] dma_dmux_sel;
 
 logic            irq_valid;
 logic            irq_ready;
@@ -104,9 +107,15 @@ for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++) begin : g_dmas
   ) i_ndma (
     .clk_i,
     .rst_ni,
-    .cfg_sbr   (dma_dmux_bus[ii]), 
-    .read_mgr  (dma_rd_bus[ii]),
-    .write_mgr (dma_wr_bus[ii])
+    .cfg_req_i   (dma_dmux_bus[ii].req),
+    .cfg_gnt_o   (dma_dmux_bus[ii].gnt),
+    .cfg_we_i    (dma_dmux_bus[ii].we),
+    .cfg_addr_i  (dma_dmux_bus[ii].addr),
+    .cfg_wdata_i (dma_dmux_bus[ii].wdata),
+    .cfg_rdata_o (dma_dmux_bus[ii].rdata),
+    .cfg_rvalid_o(dma_dmux_bus[ii].rvalid),
+    .read_mgr    (dma_rd_bus[ii]),
+    .write_mgr   (dma_wr_bus[ii])
   );
 end : g_dmas
 
@@ -121,6 +130,9 @@ obi_demux_intf #(
   .mgr_ports         (demux_sbr_bus)
 );
 
+if (rt_pkg::NumDMAs == 1) begin : g_no_demux
+`OBI_ASSIGN(dma_dmux_bus[0], dma_mgr_bus, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+end else begin : g_dma_demux
 obi_demux_intf #(
   .NumMgrPorts (rt_pkg::NumDMAs),
   .NumMaxTrans (rt_pkg::MainXbarCfg.MaxTrans)
@@ -131,6 +143,7 @@ obi_demux_intf #(
   .sbr_port          (dma_mgr_bus),
   .mgr_ports         (dma_dmux_bus)
 );
+end : g_dma_demux
 
 rt_ibex_bootrom #() i_rom (
   .clk_i,

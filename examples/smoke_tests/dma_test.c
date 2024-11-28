@@ -5,7 +5,8 @@
 
 #define DMA_SRC 0x00006000
 #define DMA_DST 0x00020000
-#define DMA_LEN 0x40
+#define DMA_LEN 0x20
+#define DMA_CFG 0x00010000
 
 // (pseudo)random data generation
 uint32_t lfsr = 0xBEEFFACEu;
@@ -24,7 +25,11 @@ void init_buffer( uint32_t src, uint32_t len){
 }	
 
 void dma_transfer( uint32_t src, uint32_t dst, uint32_t len){
-
+  *(uint32_t*)(DMA_CFG    )  = 0x13;
+  *(uint32_t*)(DMA_CFG + 4)  = DMA_DST;
+  *(uint32_t*)(DMA_CFG + 4)  = DMA_SRC;
+  *(uint32_t*)(DMA_CFG + 8)  = DMA_DST;
+  *(uint32_t*)(DMA_CFG    ) |= 0x80000000;
 }
 
 int cmp_buffer( uint32_t src, uint32_t dst, uint32_t len){
