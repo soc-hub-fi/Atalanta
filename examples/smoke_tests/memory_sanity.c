@@ -80,40 +80,14 @@ uint8_t write_readback_byte(uint32_t addr, uint8_t value, char verbose){
 }
 
 int main() {  
-  init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
+  init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
   print_uart("[UART] Starting memory_sanity test\n");
 
-  print_uart("[UART] Performing alligned word accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), rand(), 0);
-  }
-
-  // TODO: FIXME
-  //print_uart("[UART] Performing unaligned word accesses to SPM\n");
+  // Software utilizes SPMs too much to test SPMs with software
+  //print_uart("[UART] Performing alligned word accesses to SPM\n");
   //for (int it=0; it<ITER_CNT; it++){
-  //  write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), rand(), 0);
+  //  write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), rand(), 1);
   //}
-
-  print_uart("[UART] Performing alligned half-word accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_half(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), (uint16_t)rand(), 0);
-  }
-
-  // TODO: FIXME
-  //print_uart("[UART] Performing unaligned half-word accesses to SPM\n");
-  //for (int it=0; it<ITER_CNT; it++){
-  //  write_readback_half(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), (uint16_t)rand(), 0);
-  //}
-
-    print_uart("[UART] Performing alligned byte accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_byte(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), (uint8_t)rand(), 0);
-  }
-
-  print_uart("[UART] Performing unaligned byte accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_byte(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), (uint8_t)rand(), 0);
-  }
 
   print_uart("[UART] Performing alligned word accesses to SRAM\n");
   for (int it=0; it<ITER_CNT; it++){
