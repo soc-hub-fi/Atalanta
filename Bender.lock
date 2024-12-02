@@ -10,13 +10,13 @@ packages:
     revision: c40620846e0029e09d989e33cb3132fbdcfc6c6f
     version: 0.2.0
     source:
-      Git: https://github.com/pulp-platform/apb_gpio
+      Git: https://github.com/pulp-platform/apb_gpio.git
     dependencies: []
   apb_timer:
     revision: 0cbc6cbc26c94b8e3bf27cc058c48ef89ea3d4c3
     version: 0.1.0
     source:
-      Git: https://github.com/pulp-platform/apb_timer
+      Git: https://github.com/pulp-platform/apb_timer.git
     dependencies: []
   apb_uart:
     revision: 6c7dde3d749ac8274377745c105da8c8b8cd27c6
@@ -57,6 +57,13 @@ packages:
     source:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
+  nanodma:
+    revision: 15c90d16ff26dc0ba6b1538b442246ba3b2ef7fe
+    version: null
+    source:
+      Git: https://github.com/ANurmi/NanoDMA.git
+    dependencies:
+    - common_cells
   obi:
     revision: 5321106817e177d6c16ecc4daa922b96b1bc946b
     version: 0.1.5
@@ -69,7 +76,7 @@ packages:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
     source:
-      Git: https://github.com/pulp-platform/opentitan_peripherals
+      Git: https://github.com/pulp-platform/opentitan_peripherals.git
     dependencies:
     - common_cells
     - register_interface
