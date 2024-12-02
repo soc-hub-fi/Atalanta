@@ -20,7 +20,7 @@ void init_clic(){
 }
 
 
-void main(){
+int main(){
     /*
         Enable all interrupts 
         Set triggering mode to positive edge

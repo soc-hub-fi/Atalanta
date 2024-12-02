@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include "csr_utils.h"
 #include "circular_buffer.h"
 #include "clic.h"

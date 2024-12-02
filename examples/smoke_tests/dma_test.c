@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stdarg.h>
 #include "include/csr_utils.h"
 #include "include/uart_interrupt.h"
 
