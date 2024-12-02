@@ -25,7 +25,7 @@ void init_buffer( uint32_t src, uint32_t len){
 }	
 
 void dma_transfer( uint32_t src, uint32_t dst, uint32_t len){
-  *(uint32_t*)(DMA_CFG    )  = 0x13;
+  *(uint32_t*)(DMA_CFG    )  = 0x8;
   *(uint32_t*)(DMA_CFG + 4)  = DMA_DST;
   *(uint32_t*)(DMA_CFG + 4)  = DMA_SRC;
   *(uint32_t*)(DMA_CFG + 8)  = DMA_DST;

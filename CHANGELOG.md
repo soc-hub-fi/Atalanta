@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- NanoDMA instance, minimal test
+
 ### Fixed
 - uart.sv duplicated newline behaviour
 
