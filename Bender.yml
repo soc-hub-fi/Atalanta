@@ -23,6 +23,7 @@ sources:
     - src/ip/rt_pkg.sv
     - src/ip/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
     #- src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
+    - src/ip/irq_pulse_cdc.sv
     - src/ip/axi_to_obi.sv
     - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
     - src/ip/axi_to_obi_intf.sv

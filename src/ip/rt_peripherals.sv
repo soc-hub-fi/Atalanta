@@ -14,27 +14,27 @@ module rt_peripherals #(
   parameter int unsigned AddrWidth = 32,
   parameter int unsigned DataWidth = 32,
   parameter int unsigned NSource   = 64,
-  //parameter type         rule_t    = logic,
   localparam int         SrcW      = $clog2(NSource),
   localparam int         StrbWidth = (DataWidth / 8),
   localparam int         GpioPadNum= 4
 )(
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
-  APB.Slave                    apb_i,
-  output logic           [GpioPadNum-1:0] gpio_o,
-  input  logic           [GpioPadNum-1:0] gpio_i,
-  input  logic   [NSource-1:0] irq_src_i,
-  output logic                 irq_valid_o,
-  input  logic                 irq_ready_i,
-  output logic      [SrcW-1:0] irq_id_o,
-  output logic           [7:0] irq_level_o,
-  output logic                 irq_shv_o,
-  output logic           [1:0] irq_priv_o,
-  output logic                 irq_kill_req_o,
-  input  logic                 irq_kill_ack_i,
-  output logic                 uart_tx_o,
-  input  logic                 uart_rx_i
+  input  logic                       clk_i,
+  input  logic                       rst_ni,
+  APB.Slave                          apb_i,
+  output logic      [GpioPadNum-1:0] gpio_o,
+  input  logic      [GpioPadNum-1:0] gpio_i,
+  input  logic   [NSource-1:0]       irq_src_i,
+  output logic                       irq_valid_o,
+  input  logic                       irq_ready_i,
+  output logic      [SrcW-1:0]       irq_id_o,
+  output logic           [7:0]       irq_level_o,
+  output logic                       irq_shv_o,
+  output logic           [1:0]       irq_priv_o,
+  output logic                       irq_kill_req_o,
+  input  logic                       irq_kill_ack_i,
+  output logic                       uart_tx_o,
+  input  logic                       uart_rx_i,
+  input  logic [rt_pkg::NumDMAs-1:0] dma_irqs_i
 );
 
 localparam int unsigned NrApbPerip = 5;
@@ -80,7 +80,7 @@ apb_cdc_intf #(
 `ifndef FPGA
 
   clk_int_div_static #(
-    .DIV_VALUE (2),
+    .DIV_VALUE (8),
     .ENABLE_CLOCK_IN_RESET (1'b0)
   ) i_clk_div (
     .clk_i          (clk_i),
@@ -110,6 +110,14 @@ apb_demux_intf #(
   .slv      (apb_div),
   .mst      (apb_out),
   .select_i (demux_sel)
+);
+
+irq_pulse_cdc #() i_irq_ready_sync (
+  .rst_ni,
+  .clk_a_i (clk_i),
+  .clk_b_i (periph_clk),
+  .pulse_i (irq_ready_i),
+  .pulse_o ()
 );
 
 // 2x delay logic for irq_ready
