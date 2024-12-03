@@ -42,6 +42,7 @@ localparam int unsigned SelWidth   = $clog2(NrApbPerip);
 localparam int unsigned ClkDiv     = 2;
 
 logic                   irq_ready_slow;
+logic [rt_pkg::NumDMAs-1:0] dma_irqs_q;
 logic                   uart_irq;
 
 logic [SelWidth-1:0] demux_sel;
@@ -57,12 +58,13 @@ APB #(
 
 always_comb
   begin : irq_assign
-    intr_src = irq_src_i;
-    intr_src[17] = uart_irq; // supervisor software irq
-    intr_src[7] = mtimer_irq;
+    intr_src     = irq_src_i;
+    intr_src[17] = uart_irq;   // supervisor software irq
+    intr_src[7]  = mtimer_irq;
     // supervisor external irq 9
     // machine external irq 11
     // platform defined 16-19
+    intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_q; // serve irqs 32-48 for DMAs
     // nmi 31
   end
 
@@ -122,6 +124,19 @@ irq_pulse_cdc #(
   .pulse_i (irq_ready_i),
   .pulse_o (irq_ready_slow)
 );
+
+for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++)
+  begin : g_dma_sync
+    irq_pulse_cdc #(
+      .Divisor (ClkDiv)
+    ) i_dma_sync (
+      .rst_ni,
+      .clk_a_i (clk_i),
+      .clk_b_i (periph_clk),
+      .pulse_i (dma_irqs_i[ii]),
+      .pulse_o (dma_irqs_q[ii])
+    );
+  end : g_dma_sync
 
 always_comb
   begin : decode // TODO: Make enum for values
