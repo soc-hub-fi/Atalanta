@@ -39,8 +39,9 @@ module rt_peripherals #(
 
 localparam int unsigned NrApbPerip = 5;
 localparam int unsigned SelWidth   = $clog2(NrApbPerip);
+localparam int unsigned ClkDiv     = 2;
 
-logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
+logic                   irq_ready_slow;
 logic                   uart_irq;
 
 logic [SelWidth-1:0] demux_sel;
@@ -80,7 +81,7 @@ apb_cdc_intf #(
 `ifndef FPGA
 
   clk_int_div_static #(
-    .DIV_VALUE (8),
+    .DIV_VALUE (ClkDiv),
     .ENABLE_CLOCK_IN_RESET (1'b0)
   ) i_clk_div (
     .clk_i          (clk_i),
@@ -95,7 +96,7 @@ apb_cdc_intf #(
   configurable_clock_divider_fpga i_clk_div (
     .clk_in       (clk_i),
     .rst_n        (rst_ni),
-    .divider_conf (2),
+    .divider_conf (ClkDiv),
     .clk_out      (periph_clk)
   );
 
@@ -112,30 +113,15 @@ apb_demux_intf #(
   .select_i (demux_sel)
 );
 
-irq_pulse_cdc #() i_irq_ready_sync (
+irq_pulse_cdc #(
+  .Divisor (ClkDiv)
+) i_irq_ready_sync (
   .rst_ni,
   .clk_a_i (clk_i),
   .clk_b_i (periph_clk),
   .pulse_i (irq_ready_i),
-  .pulse_o ()
+  .pulse_o (irq_ready_slow)
 );
-
-// 2x delay logic for irq_ready
-// TODO: make generic
-always_ff @(posedge(clk_i) or negedge(rst_ni))
-  begin : ready_delay
-    if (~rst_ni) begin
-      irq_ready_q       <= 0;
-      irq_ready_delay_q <= 0;
-    end else begin
-      irq_ready_q       <= irq_ready_i;
-      irq_ready_delay_q <= irq_ready_delay;
-    end
-  end
-
-assign irq_ready_delay = irq_ready_i | irq_ready_q;
-// end 2x delay
-
 
 always_comb
   begin : decode // TODO: Make enum for values
@@ -177,7 +163,7 @@ clic_apb #(
   .pslverr_o      (apb_out[3].pslverr),
   .intr_src_i     (intr_src), // 0-31 -> CLINT IRQS
   .irq_valid_o    (irq_valid_o),
-  .irq_ready_i    (irq_ready_delay_q),
+  .irq_ready_i    (irq_ready_slow),
   .irq_id_o       (irq_id_o),
   .irq_level_o    (irq_level_o),
   .irq_shv_o      (irq_shv_o),
