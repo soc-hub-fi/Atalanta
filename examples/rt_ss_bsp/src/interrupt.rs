@@ -12,12 +12,27 @@ pub enum Interrupt {
     MachineTimer = 7,
     // SupervisorExternal = 9,
     MachineExternal = 11,
-    /// Placeholder for testing
-    Sixteen = 16,
-    /// Placeholder for testing
-    Seventeen = 17,
-    // Reserved for clint NMI
-    // Nmi = 31,
+    /// UART interrupt (Non-standard, overrides S-mode software interrupt
+    /// mapping.)
+    Uart = 17,
+    /// Non-maskable interrupt, carried over from standard Ibex
+    Nmi = 31,
+    Dma0 = 32,
+    Dma1 = 33,
+    Dma2 = 34,
+    Dma3 = 35,
+    Dma4 = 36,
+    Dma5 = 37,
+    Dma6 = 38,
+    Dma7 = 39,
+    Dma8 = 40,
+    Dma9 = 41,
+    Dma10 = 42,
+    Dma11 = 43,
+    Dma12 = 44,
+    Dma13 = 45,
+    Dma14 = 46,
+    Dma15 = 47,
 }
 
 unsafe impl InterruptNumber for Interrupt {
@@ -32,8 +47,24 @@ unsafe impl InterruptNumber for Interrupt {
             3 => Ok(Self::MachineSoft),
             7 => Ok(Self::MachineTimer),
             11 => Ok(Self::MachineExternal),
-            16 => Ok(Self::Sixteen),
-            17 => Ok(Self::Seventeen),
+            17 => Ok(Self::Uart),
+            32 => Ok(Self::Dma0),
+            33 => Ok(Self::Dma1),
+            34 => Ok(Self::Dma2),
+            35 => Ok(Self::Dma3),
+            36 => Ok(Self::Dma4),
+            37 => Ok(Self::Dma5),
+            38 => Ok(Self::Dma6),
+            39 => Ok(Self::Dma7),
+            40 => Ok(Self::Dma8),
+            41 => Ok(Self::Dma9),
+            42 => Ok(Self::Dma10),
+            43 => Ok(Self::Dma11),
+            44 => Ok(Self::Dma12),
+            45 => Ok(Self::Dma13),
+            46 => Ok(Self::Dma14),
+            47 => Ok(Self::Dma15),
+
             _ => Err(value),
         }
     }

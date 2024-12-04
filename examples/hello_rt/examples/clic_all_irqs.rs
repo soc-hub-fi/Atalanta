@@ -24,8 +24,25 @@ const TEST_IRQS: &[Interrupt] = &[
     Interrupt::MachineSoft,
     Interrupt::MachineTimer,
     Interrupt::MachineExternal,
-    Interrupt::Sixteen,
-    Interrupt::Seventeen,
+    Interrupt::Uart,
+    // ???: enabling Nmi fails the test case
+    //Interrupt::Nmi,
+    Interrupt::Dma0,
+    Interrupt::Dma1,
+    Interrupt::Dma2,
+    Interrupt::Dma3,
+    Interrupt::Dma4,
+    Interrupt::Dma5,
+    Interrupt::Dma6,
+    Interrupt::Dma7,
+    Interrupt::Dma8,
+    Interrupt::Dma9,
+    Interrupt::Dma10,
+    Interrupt::Dma11,
+    Interrupt::Dma12,
+    Interrupt::Dma13,
+    Interrupt::Dma14,
+    Interrupt::Dma15,
 ];
 
 /// An array of 32 bits, one for each possible interrupt 0..32

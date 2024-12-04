@@ -34,8 +34,8 @@ fn main() -> ! {
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
 
-    setup_irq(Interrupt::Sixteen, 0x1);
-    setup_irq(Interrupt::Seventeen, 0x2);
+    setup_irq(Interrupt::Dma0, 0x1);
+    setup_irq(Interrupt::Dma1, 0x2);
 
     unsafe {
         // Raise interrupt threshold in RT-Ibex before enabling interrupts
@@ -48,9 +48,9 @@ fn main() -> ! {
 
         // No interrupt will fire yet
         sprintln!("lo::pend");
-        Clic::ip(Interrupt::Sixteen).pend();
+        Clic::ip(Interrupt::Dma0).pend();
         sprintln!("hi::pend");
-        Clic::ip(Interrupt::Seventeen).pend();
+        Clic::ip(Interrupt::Dma1).pend();
 
         // Lower interrupt threshold in RT-Ibex. Interrupts should fire.
         sprintln!("mintthresh <- 0x0");
@@ -61,13 +61,13 @@ fn main() -> ! {
 
     if unsafe { ptr::read_volatile(ptr::addr_of_mut!(LOCK)) } == 2u8 {
         riscv::interrupt::disable();
-        tear_irq(Interrupt::Sixteen);
-        tear_irq(Interrupt::Seventeen);
+        tear_irq(Interrupt::Dma0);
+        tear_irq(Interrupt::Dma1);
         signal_pass(true)
     } else {
         riscv::interrupt::disable();
-        tear_irq(Interrupt::Sixteen);
-        tear_irq(Interrupt::Seventeen);
+        tear_irq(Interrupt::Dma0);
+        tear_irq(Interrupt::Dma1);
         signal_fail(true)
     }
 }
@@ -81,13 +81,13 @@ fn interrupt_handler() {
         sprintln!("irq {}: enter", irq_n);
         sprintln!(
             "is_pending lo:{}, hi:{}",
-            Clic::ip(Interrupt::Sixteen).is_pending(),
-            Clic::ip(Interrupt::Seventeen).is_pending()
+            Clic::ip(Interrupt::Dma0).is_pending(),
+            Clic::ip(Interrupt::Dma1).is_pending()
         );
     }
 
     match irq {
-        Interrupt::Sixteen => {
+        Interrupt::Dma0 => {
             sprintln!("lo: enter");
 
             sprintln!("lo: waiting for hi to set lock");
@@ -99,7 +99,7 @@ fn interrupt_handler() {
 
             sprintln!("lo: leave");
         }
-        Interrupt::Seventeen => {
+        Interrupt::Dma1 => {
             sprintln!("hi: enter");
             unsafe { ptr::write_volatile(ptr::addr_of_mut!(LOCK), 1u8) }
             sprintln!("hi: lock value set");

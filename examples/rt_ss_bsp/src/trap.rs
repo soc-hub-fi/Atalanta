@@ -39,26 +39,51 @@ global_asm!(
     .option norvc
 
     _vector_table:
-        j _start_trap                         // Interrupt 0 is used for exceptions
-        .word _start_SupervisorSoft_trap
-        .word _start_DefaultHandler_trap      // Interrupt 2 is reserved
-        .word _start_MachineSoft_trap
-        .word _start_DefaultHandler_trap      // Interrupt 4 is reserved
-        .word _start_SupervisorTimer_trap
-        .word _start_DefaultHandler_trap      // Interrupt 6 is reserved
-        .word _start_MachineTimer_trap
-        .word _start_DefaultHandler_trap      // Interrupt 8 is reserved
-        .word _start_SupervisorExternal_trap
-        .word _start_DefaultHandler_trap      // Interrupt 10 is reserved
-        .word _start_MachineExternal_trap
-        .rept 4
-        .word _start_DefaultHandler_trap // 12..15
+        // Use [0] as exception entry point
+        j _start_trap
+        // [1..=16] are standard
+        .word _start_SupervisorSoft_trap    // 1
+        .word _start_DefaultHandler_trap
+        .word _start_MachineSoft_trap       // 3
+        .word _start_DefaultHandler_trap
+        .word _start_SupervisorTimer_trap   // 5
+        .word _start_DefaultHandler_trap
+        .word _start_MachineTimer_trap      // 7
+        .word _start_DefaultHandler_trap
+        .word _start_SupervisorExternal_trap // 9
+        .word _start_DefaultHandler_trap
+        .word _start_MachineExternal_trap   // 11
+        .rept 5
+        .word _start_DefaultHandler_trap    // 12..=16
         .endr
-        .word _start_Sixteen_trap             // Placeholder
-        .word _start_Seventeen_trap           // Placeholder
-        // Fill rest with the address of _start_DefaultHandler_trap. These get routed to `DefaultHandler`.
-        .rept 14
-        .word _start_DefaultHandler_trap // 18..31
+        .word _start_Uart_trap              // 17
+
+        // Pad with `DefaultHandler`
+        .rept 13
+        .word _start_DefaultHandler_trap    // 18..=30
+        .endr
+
+        .word _start_Nmi_trap   // 31
+        .word _start_Dma0_trap  // 32
+        .word _start_Dma1_trap  // 33
+        .word _start_Dma2_trap  // 34
+        .word _start_Dma3_trap  // 35
+        .word _start_Dma4_trap  // 36
+        .word _start_Dma5_trap  // 37
+        .word _start_Dma6_trap  // 38
+        .word _start_Dma7_trap  // 39
+        .word _start_Dma8_trap  // 40
+        .word _start_Dma9_trap  // 41
+        .word _start_Dma10_trap // 42
+        .word _start_Dma11_trap // 43
+        .word _start_Dma12_trap // 44
+        .word _start_Dma13_trap // 45
+        .word _start_Dma14_trap // 46
+        .word _start_Dma15_trap // 47
+
+        // Fill the rest with `DefaultHandler`
+        .rept 16
+        .word _start_DefaultHandler_trap // 48..64
         .endr
 
         // TODO: add remaining missing interrupts
