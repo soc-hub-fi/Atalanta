@@ -205,7 +205,6 @@ fn ok_blink() -> ! {
 /// Flashes all leds on and off, slow
 #[cfg(feature = "fpga")]
 fn fail_blink() -> ! {
-
     match () {
         #[cfg(feature = "rtl-tb")]
         () => rtl_testbench_signal_fail(),
@@ -224,6 +223,6 @@ fn fail_blink() -> ! {
                 led_off(Led::Ld3);
                 asm_delay(NOPS_PER_SEC);
             }
-        },
+        }
     }
 }
