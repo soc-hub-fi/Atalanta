@@ -7,6 +7,9 @@
 #define DMA_DST 0x00020000
 #define DMA_LEN 0x20
 #define DMA_CFG 0x00010000
+#define DMA_IRQ 32
+#define SHARED_VAR_ADDR 0x25F00
+
 
 // (pseudo)random data generation
 uint32_t lfsr = 0xBEEFFACEu;
@@ -49,14 +52,21 @@ int main() {
   printf("[UART] DMA test init: populate src buffer\n");
   init_buffer(DMA_SRC, DMA_LEN);
 
-  enable_vectoring(32);
-  enable_int(32);
-  set_trig(32, CLIC_TRIG_POSITIVE | CLIC_TRIG_EDGE);
-  set_priority(32, 0x90);
+  set_trig(DMA_IRQ, CLIC_TRIG_POSITIVE | CLIC_TRIG_EDGE);
+  csr_write(CSR_MTVT, 0x1000);
+  enable_vectoring(DMA_IRQ);
+
+  enable_int(DMA_IRQ);
+  set_priority(DMA_IRQ, 0x91);
 
   printf("[UART] Call DMA transfer\n");
   dma_transfer(DMA_SRC, DMA_DST, DMA_LEN);
-  asm("wfi");
+  ///*Enable global interrupts*/
+  csr_read_set(CSR_MSTATUS, (0x1 << 3));
+  //asm("wfi");
+  uint32_t shared_var = *(uint32_t*)(SHARED_VAR_ADDR);
+  while (shared_var == *(volatile uint32_t*)(SHARED_VAR_ADDR))
+    ; //printf("Shared var is %d\n", shared_var);
 
   printf("[UART] DMA test check: compare src and dst buffers\n");
   return cmp_buffer(DMA_SRC, DMA_DST, DMA_LEN);
