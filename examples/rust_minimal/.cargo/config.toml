@@ -1,3 +1,6 @@
+[unstable]
+build-std = ["core"]
+
 [build]
 target = "riscv32emc-unknown-none-elf"
 
