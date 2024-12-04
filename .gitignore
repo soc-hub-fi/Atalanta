@@ -1,4 +1,7 @@
+# Bender
 .bender/
+Bender.local
+
 build/
 src/ip/safety_island
 src/tb/cheshire
