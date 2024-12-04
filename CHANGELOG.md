@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Added
-- NanoDMA instance, minimal test
+- NanoDMA instance with interrupt-based test
 - GPIO output sanity test to examples, `vip_rt_top`
 
 ### Fixed
@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - AXI address mapping end address
 
 ### Changed
+- RT-Ibex initial fetch address to BASE+0x100 (was 0x80) to accomodate 64 entry vector table
 - FPGA flow timing error handling
 
 ## [v0.1.0] - 2024-11-15
