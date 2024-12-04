@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Added
-- NanoDMA instance, minimal test
+- NanoDMA instance with interrupt-based test
 - GPIO output sanity test to examples, `vip_rt_top`
 
 ### Fixed
