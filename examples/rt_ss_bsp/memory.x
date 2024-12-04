@@ -20,8 +20,8 @@ REGION_ALIAS("REGION_BSS", DMEM);
 REGION_ALIAS("REGION_HEAP", DMEM);
 REGION_ALIAS("REGION_STACK", DMEM);
 
-/* The simulator requires code to start from 0x1080 due to use of stim files */
-ASSERT(_start == 0x1080, "code must start from 0x1080 for simulator builds");
+/* The simulator requires code to start from 0x1100 since that's how the hardware operates */
+ASSERT(_start == 0x1100, "code must start from 0x1100 for simulator builds");
 
 /* Provide handlers for the placeholder traps */
 PROVIDE(_start_Sixteen_trap = _start_DefaultHandler_trap);

@@ -45,5 +45,5 @@ SECTIONS
   } > REGION_STACK
 }
 
-/* The simulator requires code to start from 0x1080 due to use of stim files */
-ASSERT(reset == 0x1080, "code must start from 0x1080 for simulator builds");
+/* The simulator requires code to start from 0x1100 since that's how the hardware operates */
+ASSERT(reset == 0x1100, "code must start from 0x1100 for simulator builds");
