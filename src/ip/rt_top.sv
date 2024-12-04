@@ -41,6 +41,8 @@ localparam int unsigned DmaSelWidth  = $clog2(rt_pkg::NumDMAs);
 logic ibex_rst_n, ndmreset, debug_req, dbg_dmux_sel;
 logic [DmaSelWidth-1:0] dma_dmux_sel;
 
+logic [rt_pkg::NumDMAs-1:0] dma_irqs;
+
 logic            irq_valid;
 logic            irq_ready;
 logic [SrcW-1:0] irq_id;
@@ -107,15 +109,16 @@ for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++) begin : g_dmas
   ) i_ndma (
     .clk_i,
     .rst_ni,
-    .cfg_req_i   (dma_dmux_bus[ii].req),
-    .cfg_gnt_o   (dma_dmux_bus[ii].gnt),
-    .cfg_we_i    (dma_dmux_bus[ii].we),
-    .cfg_addr_i  (dma_dmux_bus[ii].addr),
-    .cfg_wdata_i (dma_dmux_bus[ii].wdata),
-    .cfg_rdata_o (dma_dmux_bus[ii].rdata),
-    .cfg_rvalid_o(dma_dmux_bus[ii].rvalid),
-    .read_mgr    (dma_rd_bus[ii]),
-    .write_mgr   (dma_wr_bus[ii])
+    .cfg_req_i     (dma_dmux_bus[ii].req),
+    .cfg_gnt_o     (dma_dmux_bus[ii].gnt),
+    .cfg_we_i      (dma_dmux_bus[ii].we),
+    .cfg_addr_i    (dma_dmux_bus[ii].addr),
+    .cfg_wdata_i   (dma_dmux_bus[ii].wdata),
+    .cfg_rdata_o   (dma_dmux_bus[ii].rdata),
+    .cfg_rvalid_o  (dma_dmux_bus[ii].rvalid),
+    .read_mgr      (dma_rd_bus[ii]),
+    .write_mgr     (dma_wr_bus[ii]),
+    .tx_done_irq_o (dma_irqs)
   );
 end : g_dmas
 
@@ -167,7 +170,8 @@ rt_peripherals #() i_peripherals (
   .irq_id_o       (irq_id),
   .irq_src_i      (intr_src_i),
   .gpio_i         (gpio_input_i),
-  .gpio_o         (gpio_output_o)
+  .gpio_o         (gpio_output_o),
+  .dma_irqs_i     (dma_irqs)
 );
 
 rt_debug #(

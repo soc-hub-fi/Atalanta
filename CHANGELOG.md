@@ -9,14 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - NanoDMA instance, minimal test
-
-### Fixed
-- uart.sv duplicated newline behaviour
-
-### Added
 - GPIO output sanity test to examples, `vip_rt_top`
 
 ### Fixed
+- uart.sv duplicated newline behaviour
 - Peripheral memory map to fit SPI
 - AXI address mapping end address
 
