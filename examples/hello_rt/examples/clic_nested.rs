@@ -22,12 +22,13 @@ use bsp::{
     uart::init_uart,
     Interrupt,
 };
+use hello_rt::UART_BAUD;
 
 static mut LOCK: u8 = 0;
 
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, 9600);
+    init_uart(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8

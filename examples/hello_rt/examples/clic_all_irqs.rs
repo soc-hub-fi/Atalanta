@@ -17,6 +17,7 @@ use bsp::{
     sprintln, tb,
     uart::init_uart,
 };
+use hello_rt::UART_BAUD;
 
 /// Interrupts under testing
 const TEST_IRQS: &[Interrupt] = &[
@@ -33,7 +34,7 @@ static mut IRQ_RECVD: u32 = 0;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, 9600);
+    init_uart(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8

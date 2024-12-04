@@ -21,6 +21,12 @@ const fn nop_mult() -> u32 {
 }
 pub const NOPS_PER_SEC: u32 = CPU_FREQ / nop_mult();
 
+pub const UART_BAUD: u32 = if cfg!(feature = "rtl-tb") {
+    3_000_000
+} else {
+    9600
+};
+
 pub fn asm_delay(t: u32) {
     for _ in 0..t {
         unsafe { asm!("nop") }

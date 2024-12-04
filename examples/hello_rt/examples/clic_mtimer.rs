@@ -24,6 +24,7 @@ use bsp::{
     uart::init_uart,
     write_u32, CPU_FREQ,
 };
+use hello_rt::UART_BAUD;
 
 const MTIMER_IRQ: Interrupt = Interrupt::MachineTimer;
 
@@ -32,7 +33,7 @@ static mut LOCK: bool = true;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, 9600);
+    init_uart(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8

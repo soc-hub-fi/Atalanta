@@ -7,7 +7,7 @@
 #![no_std]
 
 use bsp::{print_example_name, riscv, rt::entry, sprintln, tb, uart::init_uart};
-use hello_rt::clic::*;
+use hello_rt::{clic::*, UART_BAUD};
 
 // 3 == MSI
 const IRQ_ID: u32 = 3;
@@ -17,7 +17,7 @@ static mut LAST_IRQ: Option<u32> = None;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, 9600);
+    init_uart(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8

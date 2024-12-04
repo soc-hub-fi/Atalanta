@@ -11,10 +11,11 @@
 
 use bsp::mmap::LED_ADDR;
 use bsp::{asm_delay, rt::entry, uart::*, write_u32, CPU_FREQ};
+use hello_rt::UART_BAUD;
 
 #[entry]
 fn main() -> ! {
-    init_uart(CPU_FREQ, 9600);
+    init_uart(CPU_FREQ, UART_BAUD);
 
     uart_write("\r\n");
     uart_write("[UART] Hello from mock UART (Rust)!\r\n");
