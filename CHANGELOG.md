@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - GPIO output sanity test to examples, `vip_rt_top`
 
 ### Fixed
+- DMA `rd_req` and `wr_req` combo loops
 - uart.sv duplicated newline behaviour
 - Peripheral memory map to fit SPI
 - AXI address mapping end address
