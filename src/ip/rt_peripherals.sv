@@ -237,7 +237,7 @@ spi_host #(
   .cio_csb_en_o     (),
   .cio_sd_o         (),
   .cio_sd_en_o      (),
-  .cio_sd_i         (),
+  .cio_sd_i         ('0),
   .intr_error_o     (),
   .intr_spi_event_o ()
 );
