@@ -133,7 +133,7 @@ obi_demux_intf #(
   .mgr_ports         (demux_sbr_bus)
 );
 
-if (rt_pkg::NumDMAs == 1) begin : g_no_demux
+if (rt_pkg::NumDMAs == 1'b1) begin : g_no_demux
 `OBI_ASSIGN(dma_dmux_bus[0], dma_mgr_bus, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
 end else begin : g_dma_demux
 obi_demux_intf #(
