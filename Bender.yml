@@ -15,7 +15,7 @@ dependencies:
   apb_timer: { git: "https://github.com/pulp-platform/apb_timer.git", version: 0.1.0}
   apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio.git", version: 0.2.0}
   opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", version: 0.4.0 }
-  nanodma: { git: "https://github.com/ANurmi/NanoDMA.git", rev: "59b7ae87a0df9b6015930384a2b62af029d2d616" }
+  nanodma: { git: "https://github.com/ANurmi/NanoDMA.git", rev: "8da672a3a747115bd3869a819643737364e87fa9" }
 
 
 sources:
