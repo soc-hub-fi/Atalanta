@@ -23,6 +23,7 @@ sources:
     - src/ip/rt_pkg.sv
     - src/ip/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
     #- src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
+    - src/ip/apb_spi_master/spi_master_apb_if.sv
     - src/ip/irq_pulse_cdc.sv
     - src/ip/axi_to_obi.sv
     - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
@@ -65,4 +66,10 @@ vendor_package:
       #- "future/axi_obi/src/axi_to_obi.sv"
       - "future/axi_obi/src/obi_to_axi.sv"
       - "future/axi_obi/src/axi_to_detailed_mem_user.sv"
+
+  - name: apb_spi_master
+    target_dir: src/ip/apb_spi_master
+    upstream: { git: "https://github.com/pulp-platform/apb_spi_master.git", rev: "3fce81084b15870f4bd9da7806cf950774f9672e"}
+    include_from_upstream:
+      - spi_master_apb_if.sv
 

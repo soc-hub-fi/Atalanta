@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - RT-Ibex initial fetch address to BASE+0x100 (was 0x80) to accomodate 64 entry vector table
 - FPGA flow timing error handling
 
+### Removed
+- OpenTitan SPI host IP due to internal undriven port
+
 ## [v0.1.0] - 2024-11-15
 
 ### Added
