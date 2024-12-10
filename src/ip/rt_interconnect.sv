@@ -39,14 +39,14 @@ for (genvar i=0; i<NumMemBanks; i++) begin : g_sram_rules
   };
 end : g_sram_rules
 
-rt_pkg::xbar_rule_t [(rt_pkg::MainXbarCfg.NumS-NumMemBanks+1)-1:0] OtherRules = '{
-  '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::DmemRule.End},
-  '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End},
-  '{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End},
-  '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End},
-  '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End},
-  '{idx: 4, start_addr: rt_pkg::DmaRule.Start,  end_addr: rt_pkg::DmaRule.End}
-};
+rt_pkg::xbar_rule_t [(rt_pkg::MainXbarCfg.NumS-NumMemBanks+1)-1:0] OtherRules;
+assign OtherRules[0] = '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::DmemRule.End};
+assign OtherRules[1] = '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End};
+assign OtherRules[2] = '{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End};
+assign OtherRules[3] = '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End};
+assign OtherRules[4] = '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End};
+assign OtherRules[5] = '{idx: 4, start_addr: rt_pkg::DmaRule.Start,  end_addr: rt_pkg::DmaRule.End};
+
 
 rt_pkg::xbar_rule_t [IcnNrSlv-1:0] MainAddrMap; // = {OtherRules, SramRules};
 for (genvar i=0; i<IcnNrSlv; i++) begin : g_addr_map_assign
