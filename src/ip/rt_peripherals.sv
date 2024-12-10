@@ -223,6 +223,7 @@ assign apb_out[4].pslverr = spi_rsp.error;
 assign apb_out[4].pready  = spi_rsp.ready;
 //
 
+/*
 spi_host #(
   .reg_req_t (regbus_req_t),
   .reg_rsp_t (regbus_rsp_t)
@@ -240,7 +241,7 @@ spi_host #(
   .cio_sd_i         ('0),
   .intr_error_o     (),
   .intr_spi_event_o ()
-);
+);*/
 
 `ifdef NOT_MOCK
 apb_uart i_apb_uart (
