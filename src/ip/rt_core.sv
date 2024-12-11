@@ -1,6 +1,3 @@
-`include "obi/typedef.svh"
-`include "obi/assign.svh"
-
 module rt_core #(
   parameter int unsigned AddrWidth      = 32,
   parameter int unsigned DataWidth      = 32,
