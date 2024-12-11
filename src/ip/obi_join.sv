@@ -12,4 +12,7 @@ assign Src.rdata  = Dst.rdata;
 assign Dst.we     = Src.we;
 assign Dst.be     = Src.be;
 
+assign Src.gntpar    = '0;
+assign Src.rvalidpar = '0;
+
 endmodule : obi_join

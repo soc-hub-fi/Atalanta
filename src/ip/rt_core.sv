@@ -17,8 +17,8 @@ module rt_core #(
   input  logic            irq_shv_i,
   input  logic [     1:0] irq_priv_i,
   input  logic            debug_req_i,
-  OBI_BUS.Manager           main_xbar_mgr,
-  OBI_BUS.Subordinate       main_xbar_sbr
+  OBI_BUS.Manager         main_xbar_mgr,
+  OBI_BUS.Subordinate     main_xbar_sbr
 );
 
 
