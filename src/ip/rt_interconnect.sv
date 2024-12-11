@@ -86,7 +86,7 @@ end
 
 if (CutSbrPorts) begin : g_sbr_cut
   obi_cut_intf i_core_sbr_cut (.clk_i, .rst_ni, .obi_s(core_sbr), .obi_m(mgr_bus[0]));
-  obi_cut_intf i_axi_dbg_cut  (.clk_i, .rst_ni, .obi_s(dbg_sbr),  .obi_m(mgr_bus[1]));
+  obi_cut_intf i_dbg_sbr_cut  (.clk_i, .rst_ni, .obi_s(dbg_sbr),  .obi_m(mgr_bus[1]));
   obi_cut_intf i_axi_sbr_cut  (.clk_i, .rst_ni, .obi_s(axi_sbr),  .obi_m(mgr_bus[2]));
 
   for (genvar i = 0; i < NumDMAs; i++) begin : g_dma_mgrs

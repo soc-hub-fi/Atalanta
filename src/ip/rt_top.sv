@@ -120,6 +120,8 @@ for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++) begin : g_dmas
     .write_mgr     (dma_wr_bus[ii]),
     .tx_done_irq_o (dma_irqs)
   );
+  assign dma_dmux_bus[ii].gntpar    = 0;
+  assign dma_dmux_bus[ii].rvalidpar = 0;
 end : g_dmas
 
 obi_demux_intf #(
@@ -213,12 +215,5 @@ obi_to_axi_intf #(
   .axi_out (soc_mst),
   .obi_in  (axi_mgr_bus)
 );
-
-// TEST TIEOFF
-//assign soc_slv.aw_id = '0;
-//assign soc_slv.aw_len = '0;
-//assign soc_slv.aw_atop = '0;
-//assign soc_slv.aw_user = '0;
-//assign soc_slv.aw_qos = '0;
 
 endmodule : rt_top
