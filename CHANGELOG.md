@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - GPIO output sanity test to examples, `vip_rt_top`
 
 ### Fixed
+- interconnect address map width
 - `OtherRules` bad initialization
 - DMA undriven ports
 - DMA `read_mgr.addr` and `write_mgr.addr` latches
