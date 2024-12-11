@@ -36,4 +36,7 @@ module rt_ibex_bootrom #()(
 
   assign sbr_bus.rdata = BootRom[RomAddr];
 
+  assign sbr_bus.gntpar    = 0;
+  assign sbr_bus.rvalidpar = 0;
+
   endmodule : rt_ibex_bootrom

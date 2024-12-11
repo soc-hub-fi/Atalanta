@@ -1,6 +1,3 @@
-`include "obi/typedef.svh"
-`include "obi/assign.svh"
-
 module rt_interconnect #(
   parameter bit CutMgrPorts = 1,
   parameter bit CutSbrPorts = 1
@@ -40,13 +37,13 @@ for (genvar i=0; i<NumMemBanks; i++) begin : g_sram_rules
 end : g_sram_rules
 
 rt_pkg::xbar_rule_t [(IcnNrRules-NumMemBanks)-1:0] OtherRules;
-assign OtherRules[0] = '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::ImemRule.End};
-assign OtherRules[1] = '{idx: 0, start_addr: rt_pkg::DmemRule.Start, end_addr: rt_pkg::DmemRule.End};
-assign OtherRules[2] = '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End};
-assign OtherRules[3] = '{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End};
-assign OtherRules[4] = '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End};
-assign OtherRules[5] = '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End};
-assign OtherRules[6] = '{idx: 4, start_addr: rt_pkg::DmaRule.Start,  end_addr: rt_pkg::DmaRule.End};
+assign OtherRules[0] ='{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::ImemRule.End};
+assign OtherRules[1] ='{idx: 0, start_addr: rt_pkg::DmemRule.Start, end_addr: rt_pkg::DmemRule.End};
+assign OtherRules[2] ='{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End};
+assign OtherRules[3] ='{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End};
+assign OtherRules[4] ='{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End};
+assign OtherRules[5] ='{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End};
+assign OtherRules[6] ='{idx: 4, start_addr: rt_pkg::DmaRule.Start,  end_addr: rt_pkg::DmaRule.End};
 
 
 rt_pkg::xbar_rule_t [IcnNrRules-1:0] MainAddrMap; // = {OtherRules, SramRules};
@@ -73,20 +70,20 @@ if (CutMgrPorts) begin : g_mgr_cut
 
 end else begin : g_no_mgr_cut
 
-  `OBI_ASSIGN(core_mgr,    sbr_bus[0], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-  `OBI_ASSIGN(dbg_rom_mgr, sbr_bus[1], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-  `OBI_ASSIGN(apb_bus,     sbr_bus[2], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-  `OBI_ASSIGN(axi_mgr,     sbr_bus[3], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-  `OBI_ASSIGN(dma_mgr,     sbr_bus[4], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+  obi_join i_core_mgr_join (.Src( core_mgr),    .Dst (sbr_bus[0]));
+  obi_join i_dbg_rom_join  (.Src( dbg_rom_mgr), .Dst (sbr_bus[1]));
+  obi_join i_apb_join      (.Src( apb_bus),     .Dst (sbr_bus[2]));
+  obi_join i_axi_mgr_join  (.Src( axi_mgr),     .Dst (sbr_bus[3]));
+  obi_join i_dma_mgr_join  (.Src( dma_mgr),     .Dst (sbr_bus[4]));
 
   for (genvar i = 0; i < NumMemBanks; i++) begin : g_mem_ports
-    `OBI_ASSIGN(sram_bus[i], sbr_bus[5+i], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+    obi_join i_sram_join (.Src(sram_bus[i]), .Dst(sbr_bus[5+i]));
   end : g_mem_ports
 end
 
 if (CutSbrPorts) begin : g_sbr_cut
   obi_cut_intf i_core_sbr_cut (.clk_i, .rst_ni, .obi_s(core_sbr), .obi_m(mgr_bus[0]));
-  obi_cut_intf i_axi_dbg_cut  (.clk_i, .rst_ni, .obi_s(dbg_sbr),  .obi_m(mgr_bus[1]));
+  obi_cut_intf i_dbg_sbr_cut  (.clk_i, .rst_ni, .obi_s(dbg_sbr),  .obi_m(mgr_bus[1]));
   obi_cut_intf i_axi_sbr_cut  (.clk_i, .rst_ni, .obi_s(axi_sbr),  .obi_m(mgr_bus[2]));
 
   for (genvar i = 0; i < NumDMAs; i++) begin : g_dma_mgrs
@@ -95,16 +92,15 @@ if (CutSbrPorts) begin : g_sbr_cut
   end
 
 end else begin : g_no_sbr_cut
-  `OBI_ASSIGN(mgr_bus[0], core_sbr, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-  `OBI_ASSIGN(mgr_bus[1], dbg_sbr,  obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-  `OBI_ASSIGN(mgr_bus[2], axi_sbr,  obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+  obi_join i_core_join (.Src(mgr_bus[0]), .Dst(core_sbr));
+  obi_join i_dbg_join  (.Src(mgr_bus[1]), .Dst(dbg_sbr) );
+  obi_join i_axi_join  (.Src(mgr_bus[2]), .Dst(axi_sbr) );
 
   for (genvar i = 0; i < NumDMAs; i++) begin : g_dma_mgrs
-    `OBI_ASSIGN(mgr_bus[3+(2*i)], dma_rd_sbr, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-    `OBI_ASSIGN(mgr_bus[4+(2*i)], dma_wr_sbr, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+    obi_join i_dma_rd_join (.Src(mgr_bus[3+(2*i)]), .Dst(dma_rd_sbr));
+    obi_join i_dma_wr_join (.Src(mgr_bus[4+(2*i)]), .Dst(dma_wr_sbr));
   end
 end
-
 
 obi_xbar_intf #(
   .NumSbrPorts     (XbarCfg.NumM),
@@ -143,8 +139,5 @@ obi_to_apb_intf #() i_obi_to_apb (
   .obi_i (apb_bus),
   .apb_o (apb_mgr)
 );
-
-assign dbg_sbr.gntpar    = 0;
-assign dbg_sbr.rvalidpar = 0;
 
 endmodule : rt_interconnect

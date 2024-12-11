@@ -3,8 +3,6 @@
   authors: Antti Nurmi <antti.nurmi@tuni.fi>
 */
 
-`include "axi/assign.svh"
-`include "obi/assign.svh"
 `define COMMON_CELLS_ASSERTS_OFF
 
 module rt_top #(
@@ -120,6 +118,8 @@ for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++) begin : g_dmas
     .write_mgr     (dma_wr_bus[ii]),
     .tx_done_irq_o (dma_irqs)
   );
+  assign dma_dmux_bus[ii].gntpar    = 0;
+  assign dma_dmux_bus[ii].rvalidpar = 0;
 end : g_dmas
 
 obi_demux_intf #(
@@ -134,7 +134,7 @@ obi_demux_intf #(
 );
 
 if (rt_pkg::NumDMAs == 1'b1) begin : g_no_demux
-`OBI_ASSIGN(dma_dmux_bus[0], dma_mgr_bus, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+  obi_join i_dma_join (.Dst(dma_dmux_bus[0]), .Src (dma_mgr_bus));
 end else begin : g_dma_demux
 obi_demux_intf #(
   .NumMgrPorts (rt_pkg::NumDMAs),
@@ -213,12 +213,5 @@ obi_to_axi_intf #(
   .axi_out (soc_mst),
   .obi_in  (axi_mgr_bus)
 );
-
-// TEST TIEOFF
-//assign soc_slv.aw_id = '0;
-//assign soc_slv.aw_len = '0;
-//assign soc_slv.aw_atop = '0;
-//assign soc_slv.aw_user = '0;
-//assign soc_slv.aw_qos = '0;
 
 endmodule : rt_top

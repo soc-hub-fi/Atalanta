@@ -32,6 +32,7 @@ sources:
     - src/ip/obi_to_apb_intf.sv
     - src/ip/obi_handshake_fsm.sv
     - src/ip/obi_cut_intf.sv
+    - src/ip/obi_join.sv
     - src/ip/obi_sram_intf.sv
     - fpga/hdl/src/xilinx_sp_BRAM.sv
     - src/ip/mock_uart.sv
