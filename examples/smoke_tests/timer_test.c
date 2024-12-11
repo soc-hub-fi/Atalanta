@@ -19,7 +19,7 @@
 int main() {
 
   init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
-  //Init OUTPUT_REG_ADDR 
+  //Init OUTPUT_REG_ADDR
 
   *(uint32_t*)(MTIME_LOW_ADDR) = 0x0;
   *(uint32_t*)(MTIME_HIGH_ADDR) = 0x0;
@@ -50,7 +50,7 @@ int main() {
   set_priority(7, 0x88);
 
 
-  
+
 
   //enable timer [bit 0] & set prescaler to 00F [bits 20:8]
   *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00F01;
@@ -58,7 +58,7 @@ int main() {
 
   csr_write(CSR_MINTTHRESH, 0x00);
 
-
+  asm("wfi");
 
   while (1)
     if (*(uint32_t*)(COMMON_ADDR) == 0xFE) break;
