@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.1.1] - 2024-11-15
+
 ### Added
 - NanoDMA instance with interrupt-based test
 - GPIO output sanity test to examples, `vip_rt_top`
 
 ### Fixed
+- interconnect address map width
 - `OtherRules` bad initialization
 - DMA undriven ports
 - DMA `read_mgr.addr` and `write_mgr.addr` latches

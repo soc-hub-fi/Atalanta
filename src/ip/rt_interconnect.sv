@@ -22,7 +22,7 @@ module rt_interconnect #(
 localparam rt_pkg::xbar_cfg_t XbarCfg = rt_pkg::MainXbarCfg;
 localparam int unsigned NumMemBanks   = rt_pkg::NumMemBanks;
 localparam int unsigned NumDMAs       = rt_pkg::NumDMAs;
-localparam int unsigned IcnNrSlv      = rt_pkg::MainXbarCfg.NumS;
+localparam int unsigned IcnNrRules    = rt_pkg::MainXbarCfg.NumS + 2; // account for aliased ports
 
 OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
 OBI_BUS #() sram_bus [NumMemBanks] ();
@@ -39,21 +39,22 @@ for (genvar i=0; i<NumMemBanks; i++) begin : g_sram_rules
   };
 end : g_sram_rules
 
-rt_pkg::xbar_rule_t [(rt_pkg::MainXbarCfg.NumS-NumMemBanks+1)-1:0] OtherRules;
-assign OtherRules[0] = '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::DmemRule.End};
-assign OtherRules[1] = '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End};
-assign OtherRules[2] = '{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End};
-assign OtherRules[3] = '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End};
-assign OtherRules[4] = '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End};
-assign OtherRules[5] = '{idx: 4, start_addr: rt_pkg::DmaRule.Start,  end_addr: rt_pkg::DmaRule.End};
+rt_pkg::xbar_rule_t [(IcnNrRules-NumMemBanks)-1:0] OtherRules;
+assign OtherRules[0] = '{idx: 0, start_addr: rt_pkg::ImemRule.Start, end_addr: rt_pkg::ImemRule.End};
+assign OtherRules[1] = '{idx: 0, start_addr: rt_pkg::DmemRule.Start, end_addr: rt_pkg::DmemRule.End};
+assign OtherRules[2] = '{idx: 1, start_addr: rt_pkg::DbgRule.Start,  end_addr: rt_pkg::DbgRule.End};
+assign OtherRules[3] = '{idx: 1, start_addr: rt_pkg::RomRule.Start,  end_addr: rt_pkg::RomRule.End};
+assign OtherRules[4] = '{idx: 2, start_addr: rt_pkg::ApbRule.Start,  end_addr: rt_pkg::ApbRule.End};
+assign OtherRules[5] = '{idx: 3, start_addr: rt_pkg::AxiRule.Start,  end_addr: rt_pkg::AxiRule.End};
+assign OtherRules[6] = '{idx: 4, start_addr: rt_pkg::DmaRule.Start,  end_addr: rt_pkg::DmaRule.End};
 
 
-rt_pkg::xbar_rule_t [IcnNrSlv-1:0] MainAddrMap; // = {OtherRules, SramRules};
-for (genvar i=0; i<IcnNrSlv; i++) begin : g_addr_map_assign
-  if (i < IcnNrSlv-NumMemBanks) begin : g_other_rules
+rt_pkg::xbar_rule_t [IcnNrRules-1:0] MainAddrMap; // = {OtherRules, SramRules};
+for (genvar i=0; i<IcnNrRules; i++) begin : g_addr_map_assign
+  if (i < IcnNrRules-NumMemBanks) begin : g_other_rules
     assign MainAddrMap[i] = OtherRules[i];
   end else begin : g_sram_rules
-    assign MainAddrMap[i] = SramRules[i-(IcnNrSlv-NumMemBanks)];
+    assign MainAddrMap[i] = SramRules[i-(IcnNrRules-NumMemBanks)];
   end
 end : g_addr_map_assign
 
@@ -109,7 +110,7 @@ obi_xbar_intf #(
   .NumSbrPorts     (XbarCfg.NumM),
   .NumMgrPorts     (XbarCfg.NumS),
   .NumMaxTrans     (XbarCfg.MaxTrans),
-  .NumAddrRules    (XbarCfg.NumS),
+  .NumAddrRules    (IcnNrRules),
   .addr_map_rule_t (rt_pkg::xbar_rule_t),
   .UseIdForRouting (0)
 ) i_main_xbar (
