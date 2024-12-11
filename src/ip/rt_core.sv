@@ -166,4 +166,22 @@ always_comb begin : gen_core_irq_x
     end
 end
 
+// Tie off unused signals
+assign mgr_bus[1].reqpar     = 1'b0;
+assign mgr_bus[1].aid        = '0;
+assign mgr_bus[1].a_optional = '0;
+assign mgr_bus[1].rready     = '0;
+assign mgr_bus[1].rreadypar  = '0;
+
+assign mgr_bus[2].reqpar     = 1'b0;
+assign mgr_bus[2].aid        = '0;
+assign mgr_bus[2].a_optional = '0;
+assign mgr_bus[2].rready     = '0;
+assign mgr_bus[2].rreadypar  = '0;
+
+
+assign mgr_bus[1].be     = 4'hF;
+assign mgr_bus[1].wdata  = '0;
+assign mgr_bus[1].we     = 1'b0;
+
 endmodule : rt_core

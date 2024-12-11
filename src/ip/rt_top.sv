@@ -3,8 +3,6 @@
   authors: Antti Nurmi <antti.nurmi@tuni.fi>
 */
 
-`include "axi/assign.svh"
-`include "obi/assign.svh"
 `define COMMON_CELLS_ASSERTS_OFF
 
 module rt_top #(
@@ -136,7 +134,7 @@ obi_demux_intf #(
 );
 
 if (rt_pkg::NumDMAs == 1'b1) begin : g_no_demux
-`OBI_ASSIGN(dma_dmux_bus[0], dma_mgr_bus, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
+  obi_join i_dma_join (.Dst(dma_dmux_bus[0]), .Src (dma_mgr_bus));
 end else begin : g_dma_demux
 obi_demux_intf #(
   .NumMgrPorts (rt_pkg::NumDMAs),

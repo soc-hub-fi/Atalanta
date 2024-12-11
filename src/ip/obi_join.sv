@@ -3,6 +3,13 @@ module obi_join #()(
   OBI_BUS.Manager     Dst
 );
 
-
+assign Dst.req    = Src.req;
+assign Src.gnt    = Dst.gnt;
+assign Src.rvalid = Dst.rvalid;
+assign Dst.addr   = Src.addr;
+assign Dst.wdata  = Src.wdata;
+assign Src.rdata  = Dst.rdata;
+assign Dst.we     = Src.we;
+assign Dst.be     = Src.be;
 
 endmodule : obi_join
