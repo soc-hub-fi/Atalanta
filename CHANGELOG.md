@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## [v0.1.1] - 2024-11-15
+## [v0.1.1] - 2024-12-11
 
 ### Added
 - NanoDMA instance with interrupt-based test
