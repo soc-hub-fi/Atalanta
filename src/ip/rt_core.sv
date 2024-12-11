@@ -20,67 +20,15 @@ module rt_core #(
   input  logic            irq_shv_i,
   input  logic [     1:0] irq_priv_i,
   input  logic            debug_req_i,
-  // crossbar m-ports
-  //APB.Master              apbm_peripheral,
-  //OBI_BUS.Manager         obim_memory [NrMemBanks],
-  //OBI_BUS.Manager         obim_rom,
-  //OBI_BUS.Manager         obim_debug,
-  //OBI_BUS.Manager         obim_axi,
-  // crossbar s-ports
-  //OBI_BUS.Subordinate     obis_axi,
-  //OBI_BUS.Subordinate     obis_debug
   OBI_BUS.Manager           main_xbar_mgr,
   OBI_BUS.Subordinate       main_xbar_sbr
 );
 
-/*
-
-
-
-rt_pkg::rule_t EmptyRule  = '{idx: 32'd0, start_addr: 32'hFFFF_FFF0,  end_addr: 32'hFFFF_FFFF };
-
-rt_pkg::rule_t [(XbarCfg.NumS-NrMemBanks)-1:0] OtherRules = '{
-  rt_pkg::AxiRule,
-  rt_pkg::ApbRule,
-  rt_pkg::DmemRule,
-  rt_pkg::ImemRule,
-  rt_pkg::DbgRule,
-  rt_pkg::RomRule
-};
-
-rt_pkg::rule_t [XbarCfg.NumS-1:0] AddrMap = {SramRules, OtherRules};
-
-
-
-
-
-//`OBI_ASSIGN(mgr_bus[0], obis_debug, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-obi_cut_intf i_dbg_mgr_cut (.clk_i, .rst_ni, .obi_s(obis_debug), .obi_m(mgr_bus[0]));
-
-//`OBI_ASSIGN(mgr_bus[3], obis_axi, obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-obi_cut_intf i_axi_mgr_cut (.clk_i, .rst_ni, .obi_s(obis_axi), .obi_m(mgr_bus[3]));
-
-
-//`OBI_ASSIGN(obim_debug, sbr_bus[0], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-//`OBI_ASSIGN(obim_rom, sbr_bus[1], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-//`OBI_ASSIGN(obim_axi, sbr_bus[5], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-*/
 
 OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
 
 obi_cut_intf i_main_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[0]),    .obi_m(main_xbar_mgr));
 obi_cut_intf i_main_mgr_cut (.clk_i, .rst_ni, .obi_s(main_xbar_sbr), .obi_m(mgr_bus[0])   );
-
-//obi_cut_intf i_rom_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[1]), .obi_m(obim_rom));
-//obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[5]), .obi_m(obim_axi));
-/*
-for (genvar i = 0; i < NrMemBanks; i++) begin : g_mem_banks
-  //`OBI_ASSIGN(obim_memory[i], sbr_bus[6+i], obi_pkg::ObiDefaultConfig, obi_pkg::ObiDefaultConfig)
-  obi_cut_intf i_axi_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[6+i]), .obi_m(obim_memory[i]));
-end : g_mem_banks
-
-*/
-
 
 
 logic [NumInterrupts-1:0] core_irq_x;
@@ -120,14 +68,6 @@ obi_sram_intf #(
   .sbr_bus (sbr_bus[2])
 );
 
-/*
-obi_to_apb_intf #() i_obi_to_apb (
-  .clk_i,
-  .rst_ni,
-  .obi_i (sbr_bus[4]),
-  .apb_o (apbm_peripheral)
-);
-*/
 `ifndef SYNTHESIS
 ibex_top_tracing #(
 `else
@@ -228,26 +168,5 @@ always_comb begin : gen_core_irq_x
         core_irq_x[irq_id_i] = 1'b1;
     end
 end
-
-for (genvar i = 0; i < rt_pkg::CoreXbarCfg.NumM; i++) begin : g_tieoff
-  // OBI_ASSIGN seems to miss some signals
-  assign mgr_bus[i].reqpar     = 0;
-  assign mgr_bus[i].rready     = 0;
-  assign mgr_bus[i].rreadypar  = 0;
-  if (i == 1 || i == 2) begin : g_extra_tieoff
-    assign mgr_bus[i].aid        = 0;
-    assign mgr_bus[i].a_optional = 0;
-  end : g_extra_tieoff
-  assign sbr_bus[i].gntpar     = 0;
-  assign sbr_bus[i].rvalidpar  = 0;
-  assign sbr_bus[i].rready     = 0;
-  assign sbr_bus[i].rreadypar  = 0;
-end : g_tieoff
-
-// IMEM tieoff
-assign mgr_bus[1].we    = '0;
-assign mgr_bus[1].be    = '0;
-assign mgr_bus[1].wdata = '0;
-
 
 endmodule : rt_core

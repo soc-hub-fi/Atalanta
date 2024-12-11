@@ -144,7 +144,7 @@ obi_to_apb_intf #() i_obi_to_apb (
   .apb_o (apb_mgr)
 );
 
-assign dbg_sbr.gntpar    = 0;
-assign dbg_sbr.rvalidpar = 0;
+//assign dbg_sbr.gntpar    = 0;
+//assign dbg_sbr.rvalidpar = 0;
 
 endmodule : rt_interconnect
