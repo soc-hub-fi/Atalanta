@@ -122,17 +122,6 @@ for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++) begin : g_dmas
   assign dma_dmux_bus[ii].rvalidpar = 0;
 end : g_dmas
 
-obi_demux_intf #(
-  .NumMgrPorts (DgbDmuxWidth),
-  .NumMaxTrans (rt_pkg::MainXbarCfg.MaxTrans)
-) i_dbg_rom_demux (
-  .clk_i,
-  .rst_ni,
-  .sbr_port_select_i (dbg_dmux_sel),
-  .sbr_port          (dbg_rom_bus),
-  .mgr_ports         (demux_sbr_bus)
-);
-
 if (rt_pkg::NumDMAs == 1'b1) begin : g_no_demux
   obi_join i_dma_join (.Dst(dma_dmux_bus[0]), .Src (dma_mgr_bus));
 end else begin : g_dma_demux
@@ -187,7 +176,7 @@ rt_debug #(
   .ndmreset_o      (ndmreset),
   .debug_req_irq_o (debug_req),
   .dbg_mst         (dbg_mgr_bus),
-  .dbg_slv         (demux_sbr_bus[1])
+  .dbg_slv         (dbg_rom_bus)
 );
 
 

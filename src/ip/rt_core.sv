@@ -21,15 +21,106 @@ module rt_core #(
   OBI_BUS.Subordinate     main_xbar_sbr
 );
 
-
-OBI_BUS #() mgr_bus [XbarCfg.NumM] (), sbr_bus [XbarCfg.NumS] ();
-
-obi_cut_intf i_main_sbr_cut (.clk_i, .rst_ni, .obi_s(sbr_bus[0]),    .obi_m(main_xbar_mgr));
-obi_cut_intf i_main_mgr_cut (.clk_i, .rst_ni, .obi_s(main_xbar_sbr), .obi_m(mgr_bus[0])   );
-
+OBI_BUS #() lsu_mgr  ();
+OBI_BUS #() if_mgr   ();
+OBI_BUS #() if_demux  [3]();
+OBI_BUS #() lsu_demux [2]();
+OBI_BUS #() ext_demux [2]();
+OBI_BUS #() imem_mux  [2]();
+OBI_BUS #() dmem_mux  [2]();
+OBI_BUS #() ext_mux   [2]();
+OBI_BUS #() imem_sbr  ();
+OBI_BUS #() dmem_sbr  ();
 
 logic [NumInterrupts-1:0] core_irq_x;
+logic lsu_sel, ext_sel;
+logic [1:0] if_sel;
 
+// add hierarchy for xbar without module
+if (1) begin : g_part_connected_xbar
+
+assign lsu_sel = (~debug_req_i & (lsu_mgr.addr >= rt_pkg::DmemRule.Start
+                                & lsu_mgr.addr <  rt_pkg::DmemRule.End));
+assign if_sel  = (debug_req_i) ? 2'b01 : (if_mgr.addr < rt_pkg::ImemRule.End) ? 2'b00 : 2'b10;
+assign ext_sel = ~(main_xbar_sbr.addr <= rt_pkg::ImemRule.End);
+
+obi_join if_imem_join  ( .Src (if_demux[0]),  .Dst (imem_mux[0]));
+obi_join if_ext_join   ( .Src (if_demux[1]),  .Dst (ext_mux[0] ));
+obi_join lsu_dmem_join ( .Src (lsu_demux[0]), .Dst (dmem_mux[0]));
+obi_join lsu_ext_join  ( .Src (lsu_demux[1]), .Dst (ext_mux[1] ));
+obi_join ext_imem_join ( .Src (ext_demux[0]), .Dst (imem_mux[1]));
+obi_join ext_dmem_join ( .Src (ext_demux[1]), .Dst (dmem_mux[1]));
+
+obi_demux_intf #(
+  .NumMgrPorts (3),
+  .NumMaxTrans    (XbarCfg.MaxTrans)
+) i_if_demux (
+  .clk_i,
+  .rst_ni,
+  .sbr_port_select_i (if_sel),
+  .sbr_port          (if_mgr),
+  .mgr_ports         (if_demux)
+);
+
+obi_demux_intf #(
+  .NumMgrPorts (2),
+  .NumMaxTrans    (XbarCfg.MaxTrans)
+) i_lsu_demux (
+  .clk_i,
+  .rst_ni,
+  .sbr_port_select_i (lsu_sel),
+  .sbr_port          (lsu_mgr),
+  .mgr_ports         (lsu_demux)
+);
+
+obi_demux_intf #(
+  .NumMgrPorts (2),
+  .NumMaxTrans    (XbarCfg.MaxTrans)
+) i_ext_demux (
+  .clk_i,
+  .rst_ni,
+  .sbr_port_select_i (ext_sel),
+  .sbr_port          (main_xbar_sbr),
+  .mgr_ports         (ext_demux)
+);
+
+obi_mux_intf #(
+  .NumSbrPorts (2),
+  .NumMaxTrans    (XbarCfg.MaxTrans)
+) i_imem_mux (
+  .clk_i,
+  .rst_ni,
+  .testmode_i (1'b0),
+  .sbr_ports  (imem_mux),
+  .mgr_port   (imem_sbr)
+);
+
+obi_mux_intf #(
+  .NumSbrPorts (2),
+  .NumMaxTrans    (XbarCfg.MaxTrans)
+) i_dmem_mux (
+  .clk_i,
+  .rst_ni,
+  .testmode_i (1'b0),
+  .sbr_ports  (dmem_mux),
+  .mgr_port   (dmem_sbr)
+);
+
+obi_mux_intf #(
+  .NumSbrPorts (2),
+  .NumMaxTrans    (XbarCfg.MaxTrans)
+) i_ext_mux (
+  .clk_i,
+  .rst_ni,
+  .testmode_i (1'b0),
+  .sbr_ports  (ext_mux),
+  .mgr_port   (main_xbar_mgr)
+);
+
+
+end : g_part_connected_xbar
+
+/*
 obi_xbar_intf #(
   .NumSbrPorts     (XbarCfg.NumM),
   .NumMgrPorts     (XbarCfg.NumS),
@@ -47,22 +138,29 @@ obi_xbar_intf #(
   .en_default_idx_i ('0),
   .default_idx_i    ('0)
 );
-
+*/
 obi_sram_intf #(
   .NumWords (rt_pkg::ImemSizeBytes / 4),
   .BaseAddr (rt_pkg::ImemRule.Start)
 ) i_imem (
   .clk_i,
   .rst_ni,
-  .sbr_bus (sbr_bus[1])
+  .sbr_bus (imem_sbr)
 );
+
+rt_ibex_bootrom #() i_rom (
+  .clk_i,
+  .rst_ni,
+  .sbr_bus (if_demux[2])
+);
+
 obi_sram_intf #(
   .NumWords (rt_pkg::DmemSizeBytes / 4),
   .BaseAddr (rt_pkg::DmemRule.Start)
 ) i_dmem (
   .clk_i,
   .rst_ni,
-  .sbr_bus (sbr_bus[2])
+  .sbr_bus (dmem_sbr)
 );
 
 `ifndef SYNTHESIS
@@ -92,7 +190,7 @@ ibex_top #(
   .SecureIbex       (0),
   .CLIC             (1),
   .HardwareStacking (1'b0),
-  .NumInterrupts   (NumInterrupts),
+  .NumInterrupts    (NumInterrupts),
   .RndCnstLfsrSeed  (ibex_pkg::RndCnstLfsrSeedDefault),
   .RndCnstLfsrPerm  (ibex_pkg::RndCnstLfsrPermDefault),
   .DbgTriggerEn     (0),
@@ -112,24 +210,24 @@ ibex_top #(
   .boot_addr_i (rt_pkg::RomRule.Start),
 
   // Instruction memory interface
-  .instr_req_o        (mgr_bus[1].req ),
-  .instr_gnt_i        (mgr_bus[1].gnt ),
-  .instr_rvalid_i     (mgr_bus[1].rvalid ),
-  .instr_addr_o       (mgr_bus[1].addr ),
-  .instr_rdata_i      (mgr_bus[1].rdata ),
+  .instr_req_o        (if_mgr.req ),
+  .instr_gnt_i        (if_mgr.gnt ),
+  .instr_rvalid_i     (if_mgr.rvalid ),
+  .instr_addr_o       (if_mgr.addr ),
+  .instr_rdata_i      (if_mgr.rdata ),
   .instr_rdata_intg_i ('0 ),
   .instr_err_i        ('0 ),
 
   // Data memory interface
-  .data_req_o             (mgr_bus[2].req),
-  .data_gnt_i             (mgr_bus[2].gnt),
-  .data_rvalid_i          (mgr_bus[2].rvalid),
-  .data_we_o              (mgr_bus[2].we),
-  .data_be_o              (mgr_bus[2].be),
-  .data_addr_o            (mgr_bus[2].addr),
-  .data_wdata_o           (mgr_bus[2].wdata),
+  .data_req_o             (lsu_mgr.req),
+  .data_gnt_i             (lsu_mgr.gnt),
+  .data_rvalid_i          (lsu_mgr.rvalid),
+  .data_we_o              (lsu_mgr.we),
+  .data_be_o              (lsu_mgr.be),
+  .data_addr_o            (lsu_mgr.addr),
+  .data_wdata_o           (lsu_mgr.wdata),
   .data_wdata_intg_o      (),
-  .data_rdata_i           (mgr_bus[2].rdata),
+  .data_rdata_i           (lsu_mgr.rdata),
   .data_rdata_intg_i      ('0 ),
   .data_err_i             ('0 ),
 
@@ -166,22 +264,24 @@ always_comb begin : gen_core_irq_x
     end
 end
 
+
 // Tie off unused signals
-assign mgr_bus[1].reqpar     = 1'b0;
-assign mgr_bus[1].aid        = '0;
-assign mgr_bus[1].a_optional = '0;
-assign mgr_bus[1].rready     = '0;
-assign mgr_bus[1].rreadypar  = '0;
+assign if_mgr.reqpar     = 1'b0;
+assign if_mgr.aid        = '0;
+assign if_mgr.a_optional = '0;
+assign if_mgr.rready     = '0;
+assign if_mgr.rreadypar  = '0;
 
-assign mgr_bus[2].reqpar     = 1'b0;
-assign mgr_bus[2].aid        = '0;
-assign mgr_bus[2].a_optional = '0;
-assign mgr_bus[2].rready     = '0;
-assign mgr_bus[2].rreadypar  = '0;
+assign lsu_mgr.reqpar     = 1'b0;
+assign lsu_mgr.aid        = '0;
+assign lsu_mgr.a_optional = '0;
+assign lsu_mgr.rready     = '0;
+assign lsu_mgr.rreadypar  = '0;
 
 
-assign mgr_bus[1].be     = 4'hF;
-assign mgr_bus[1].wdata  = '0;
-assign mgr_bus[1].we     = 1'b0;
+assign if_mgr.be     = 4'hF;
+assign if_mgr.wdata  = '0;
+assign if_mgr.we     = 1'b0;
+
 
 endmodule : rt_core
