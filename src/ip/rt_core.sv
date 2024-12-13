@@ -34,15 +34,23 @@ OBI_BUS #() dmem_sbr  ();
 
 logic [NumInterrupts-1:0] core_irq_x;
 logic lsu_sel, ext_sel;
+logic lsu_dmem_hit;
 logic [1:0] if_sel;
+logic debug_mode;
+logic if_dbg_sel;
 
 // add hierarchy for xbar without module
 if (1) begin : g_part_connected_xbar
 
-assign lsu_sel = (~debug_req_i & (lsu_mgr.addr >= rt_pkg::DmemRule.Start
-                                & lsu_mgr.addr <  rt_pkg::DmemRule.End));
-assign if_sel  = (debug_req_i) ? 2'b01 : (if_mgr.addr < rt_pkg::ImemRule.End) ? 2'b00 : 2'b10;
-assign ext_sel = ~(main_xbar_sbr.addr <= rt_pkg::ImemRule.End);
+
+assign if_dbg_sel = debug_mode | debug_req_i;
+assign lsu_dmem_hit = lsu_mgr.req & (lsu_mgr.addr >= rt_pkg::DmemRule.Start
+                                   & lsu_mgr.addr <  rt_pkg::DmemRule.End);
+
+assign lsu_sel = (if_dbg_sel | ~lsu_dmem_hit);
+
+assign if_sel  = (if_dbg_sel) ? 2'b01 : (if_mgr.addr < rt_pkg::ImemRule.End) ? 2'b00 : 2'b10;
+assign ext_sel = ~(main_xbar_sbr.addr < rt_pkg::ImemRule.End);
 
 obi_join if_imem_join  ( .Src (if_demux[0]),  .Dst (imem_mux[0]));
 obi_join if_ext_join   ( .Src (if_demux[1]),  .Dst (ext_mux[0] ));
@@ -241,6 +249,7 @@ ibex_top #(
 
   // Debug interface
   .debug_req_i,
+  .debug_mode_o (debug_mode),
   .crash_dump_o (),
 
   // Special control signals
