@@ -53,11 +53,15 @@ assign if_sel  = (if_dbg_sel) ? 2'b01 : (if_mgr.addr < rt_pkg::ImemRule.End) ? 2
 assign ext_sel = ~(main_xbar_sbr.addr < rt_pkg::ImemRule.End);
 
 obi_join if_imem_join  ( .Src (if_demux[0]),  .Dst (imem_mux[0]));
-obi_join if_ext_join   ( .Src (if_demux[1]),  .Dst (ext_mux[0] ));
+//obi_join if_ext_join   ( .Src (if_demux[1]),  .Dst (ext_mux[0] ));
 obi_join lsu_dmem_join ( .Src (lsu_demux[0]), .Dst (dmem_mux[0]));
 obi_join lsu_ext_join  ( .Src (lsu_demux[1]), .Dst (ext_mux[1] ));
 obi_join ext_imem_join ( .Src (ext_demux[0]), .Dst (imem_mux[1]));
 obi_join ext_dmem_join ( .Src (ext_demux[1]), .Dst (dmem_mux[1]));
+
+//
+obi_cut_intf if_ext_cut (.clk_i, .rst_ni, .obi_s(if_demux[1]),   .obi_m(ext_mux[0]));
+//obi_cut_intf if_ext_cut (.clk_i, .rst_ni, .obi_s(lsu_demux[1]),  .obi_m(ext_mux[1]));
 
 obi_demux_intf #(
   .NumMgrPorts (3),
