@@ -52,13 +52,13 @@ packages:
     - common_verification
     - tech_cells_generic
   common_verification:
-    revision: 9c07fa860593b2caabd9b5681740c25fac04b878
-    version: 0.2.3
+    revision: fa2630f61666f61d9d78451c4d8b4d1ea403944e
+    version: 0.2.4
     source:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   nanodma:
-    revision: 15c90d16ff26dc0ba6b1538b442246ba3b2ef7fe
+    revision: c1bcd56ed3f5a95e42a27098a5ee85495e18f020
     version: null
     source:
       Git: https://github.com/ANurmi/NanoDMA.git
@@ -99,7 +99,7 @@ packages:
     - common_cells
     - tech_cells_generic
   rt-ibex:
-    revision: d3fb7a131fb67c39bb8336bcca67dfd4a7af1f9e
+    revision: afa8124703d5c3b0b0ec3e0964453fe343b6c0de
     version: null
     source:
       Git: https://github.com/soc-hub-fi/rt-ibex.git
