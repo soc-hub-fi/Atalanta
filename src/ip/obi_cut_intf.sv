@@ -105,5 +105,12 @@ obi_cut #(
   .mgr_port_rsp_i (mgr_ports_rsp)
 );
 
+assign obi_m.reqpar    = 0;
+assign obi_m.rready    = 0;
+assign obi_m.rreadypar = 0;
+
+assign obi_s.gntpar    = 0;
+assign obi_s.rvalidpar = 0;
+
 
 endmodule

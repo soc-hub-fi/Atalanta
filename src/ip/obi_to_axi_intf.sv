@@ -52,6 +52,9 @@ assign axi_out.w_strb    = '0;
 assign axi_out.w_user    = '0;
 assign axi_out.w_valid   = '0;
 
+assign obi_in.gntpar     = '0;
+assign obi_in.rvalidpar  = '0;
+
 /*
 localparam bit [AxiUserWidth-1:0] DefaultUser = '0;
 
