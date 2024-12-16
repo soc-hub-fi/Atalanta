@@ -5,7 +5,7 @@ package:
     - "Abdesattar Kalache <abdesattar.kalache@tuni.fi>"
 
 dependencies:
-  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "fb7e90a786f5d8ae7d200ad3acfaee727a56e058" }
+  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "afa8124703d5c3b0b0ec3e0964453fe343b6c0de" }
   clic: { git: "https://github.com/pulp-platform/clic.git", version: 2.0.0 }
   riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
@@ -15,7 +15,7 @@ dependencies:
   apb_timer: { git: "https://github.com/pulp-platform/apb_timer.git", version: 0.1.0}
   apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio.git", version: 0.2.0}
   opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", version: 0.4.0 }
-  nanodma: { git: "https://github.com/ANurmi/NanoDMA.git", rev: "8da672a3a747115bd3869a819643737364e87fa9" }
+  nanodma: { git: "https://github.com/ANurmi/NanoDMA.git", rev: "c1bcd56ed3f5a95e42a27098a5ee85495e18f020" }
 
 
 sources:
