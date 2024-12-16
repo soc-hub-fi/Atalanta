@@ -163,8 +163,6 @@ assign dbg_mst.rreadypar  = 0;
 // Slv/sbr tie-offs
 assign dbg_slv.gntpar     = 0;
 assign dbg_slv.rvalidpar  = 0;
-assign dbg_slv.rready     = 0;
-assign dbg_slv.rreadypar  = 0;
 assign dbg_slv.rid        = 0;
 assign dbg_slv.err        = 0;
 assign dbg_slv.r_optional = 0;

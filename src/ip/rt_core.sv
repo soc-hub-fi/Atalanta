@@ -125,28 +125,17 @@ obi_mux_intf #(
   .mgr_port   (main_xbar_mgr)
 );
 
+assign main_xbar_mgr.reqpar    = '0;
+assign main_xbar_mgr.rready    = '0;
+assign main_xbar_mgr.rreadypar = '0;
+
+//assign ext_mux[1].reqpar    = '0;
+//assign ext_mux[1].rready    = '0;
+//assign ext_mux[1].rreadypar = '0;
 
 end : g_part_connected_xbar
 
-/*
-obi_xbar_intf #(
-  .NumSbrPorts     (XbarCfg.NumM),
-  .NumMgrPorts     (XbarCfg.NumS),
-  .NumMaxTrans     (XbarCfg.MaxTrans),
-  .NumAddrRules    (XbarCfg.NumS),
-  .addr_map_rule_t (rt_pkg::xbar_rule_t),
-  .UseIdForRouting (0)
-) i_core_xbar (
-  .clk_i,
-  .rst_ni,
-  .testmode_i       (1'b0),
-  .sbr_ports        (mgr_bus),
-  .mgr_ports        (sbr_bus),
-  .addr_map_i       (rt_pkg::CoreAddrMap),
-  .en_default_idx_i ('0),
-  .default_idx_i    ('0)
-);
-*/
+
 obi_sram_intf #(
   .NumWords (rt_pkg::ImemSizeBytes / 4),
   .BaseAddr (rt_pkg::ImemRule.Start)
