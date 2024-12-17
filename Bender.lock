@@ -99,7 +99,7 @@ packages:
     - common_cells
     - tech_cells_generic
   rt-ibex:
-    revision: afa8124703d5c3b0b0ec3e0964453fe343b6c0de
+    revision: 6128895107b08bab42406f8aa1e59ef5794efe88
     version: null
     source:
       Git: https://github.com/soc-hub-fi/rt-ibex.git
