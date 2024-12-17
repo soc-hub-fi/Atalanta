@@ -15,7 +15,7 @@ VERIL_DIR       ?= $(realpath $(CURDIR))/../verilator
 VERIL_BUILD_DIR ?= $(BUILD_DIR)/verilator_build
 
 TOP_MODULE       = rt_top_unpacked
-VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cc
+VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
 
 # if VERILATOR_ROOT is undefined, assume that it is in PATH
 ifeq ($(VERILATOR_ROOT),)
@@ -27,26 +27,27 @@ VERILATOR = $(VERILATOR_ROOT)/bin/verilator
 VERILATOR_COVERAGE = $(VERILATOR_ROOT)/bin/verilator_coverage
 endif
 
-
-
-#VERIL_WARN_SUPPRESS ?= \
-#  -Wno-BLKANDNBLK      \
-#  -Wno-CASEINCOMPLETE  \
-#  -Wno-CMPCONST        \
-#  -Wno-LATCH           \
-#  -Wno-LITENDIAN       \
-#  -Wno-UNOPTFLAT       \
-#  -Wno-UNPACKED        \
-#  -Wno-UNSIGNED        \
-#  -Wno-WIDTH           \
-#  -Wno-WIDTHCONCAT     \
-#  -Wno-ENUMVALUE       \
-#  -Wno-COMBDLY         \
-#  -Wno-TIMESCALEMOD
+VERIL_WARN_SUPPRESS ?= \
+  -Wno-BLKANDNBLK      \
+  -Wno-WIDTHEXPAND     \
+  -Wno-UNOPTFLAT       \
+  -Wno-UNSIGNED        \
+  -Wno-WIDTHCONCAT     \
+  -Wno-WIDTHTRUNC      \
+  -Wno-COMBDLY         \
+  -Wno-LATCH           \
+  -Wno-LITENDIAN       \
+  -Wno-CASEINCOMPLETE  \
+  -Wno-PINMISSING      \
+  -Wno-MULTIDRIVEN     \
+  -Wno-CMPCONST        \
+  -Wno-IMPLICIT        \
+  -Wno-BLKLOOPINIT     
        
 VERIL_DEFINES ?= \
 	+define+VERILATOR=1 \
-	+define+RVFI
+	+define+RVFI \
+	+define+COMMON_CELLS_ASSERTS_OFF
 
 ifdef TRACE
 VERIL_DEFINES += +define+RVFI +define+DEBUG
@@ -79,7 +80,9 @@ VERIL_FLAGS ?= \
 	--trace-structs \
 	--trace-params \
 	--hierarchical \
-	--exe --cc \
+	--exe $(VERIL_TOP) \
+	--cc \
+	--unroll-count 4 \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
 	--top-module $(TOP_MODULE) \
 	$(shell bender script flist $(BENDER_TARGETS)) \
@@ -87,12 +90,17 @@ VERIL_FLAGS ?= \
 	--build \
 	-j `nproc`
 
+.PHONY: init
+init:
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(VERIL_BUILD_DIR)
+
 .PHONY: verilate
-verilate: clean
+verilate: clean init
 	$(VERILATOR) $(VERIL_FLAGS)
 
 .PHONY: simv
-simv:
+simv: init
 	cd $(VERIL_BUILD_DIR) && \
 	./V$(TOP_MODULE)
 
