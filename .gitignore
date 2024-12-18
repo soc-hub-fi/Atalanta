@@ -2,6 +2,7 @@
 build/
 src/ip/safety_island
 src/ip/apb_spi_master
+src/ip/obi
 src/tb/cheshire
 vsim/modelsim.ini
 transcript

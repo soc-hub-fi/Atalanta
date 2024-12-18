@@ -1,13 +1,3 @@
-`define FULL_UART 1
-
-`ifdef SYNTHESIS
-  `define NOT_MOCK
-`elsif FPGA
-  `define NOT_MOCK
-`elsif FULL_UART
-  `define NOT_MOCK
-`endif
-
 `include "register_interface/typedef.svh"
 
 module rt_peripherals #(
@@ -243,7 +233,7 @@ spi_host #(
   .intr_spi_event_o ()
 );*/
 
-`ifdef NOT_MOCK
+`ifndef VERILATOR
 apb_uart i_apb_uart (
   .CLK      (periph_clk),
   .RSTN     (rst_ni),

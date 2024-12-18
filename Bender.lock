@@ -64,14 +64,6 @@ packages:
       Git: https://github.com/ANurmi/NanoDMA.git
     dependencies:
     - common_cells
-  obi:
-    revision: 5321106817e177d6c16ecc4daa922b96b1bc946b
-    version: 0.1.5
-    source:
-      Git: https://github.com/pulp-platform/obi.git
-    dependencies:
-    - common_cells
-    - common_verification
   opentitan_peripherals:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
@@ -99,7 +91,7 @@ packages:
     - common_cells
     - tech_cells_generic
   rt-ibex:
-    revision: afa8124703d5c3b0b0ec3e0964453fe343b6c0de
+    revision: c3a02703a7d1629f24cd58195a8002144818efc5
     version: null
     source:
       Git: https://github.com/soc-hub-fi/rt-ibex.git

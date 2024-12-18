@@ -1,4 +1,4 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
+- OBI Bender dependency to vendor package to avoid problematic syntax in `obi_cut.sv`
 - Core crossbar to partially-connected pseudo-crossbar
-- added "wfi" to timer_test to accomodate for rt-ibex's sleep mode
+- added "wfi" to timer_test to accommodate for rt-ibex's sleep mode
 
 ## [v0.1.1] - 2024-12-11
 
@@ -22,12 +23,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - DMA undriven ports
 - DMA `read_mgr.addr` and `write_mgr.addr` latches
 - DMA `rd_req` and `wr_req` combo loops
-- uart.sv duplicated newline behaviour
+- uart.sv duplicated newline behavior
 - Peripheral memory map to fit SPI
 - AXI address mapping end address
 
 ### Changed
-- RT-Ibex initial fetch address to BASE+0x100 (was 0x80) to accomodate 64 entry vector table
+- RT-Ibex initial fetch address to BASE+0x100 (was 0x80) to accommodate 64 entry vector table
 - FPGA flow timing error handling
 
 ### Removed

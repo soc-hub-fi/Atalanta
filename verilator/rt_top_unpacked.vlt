@@ -18,4 +18,4 @@ lint_off -rule PINMISSING -file "*/ips/*" -match "*"
 //lint_off -rule PINMISSING -file "*/pulp_axi/*" -match "*"
 
 // Ignore usage of reserved words on Ariane
-//lint_off -rule SYMRSVDWORD -file "*/pulp_cva6/*" -match "*"
+//lint_off -rule BLKANDNBLK -file "*/*uart*" -match "*"

@@ -11,9 +11,11 @@ ifneq ($(words $(CURDIR)),1)
 endif
 
 BUILD_DIR       ?= $(realpath $(CURDIR))/../build
-SRC_DIR         ?= $(realpath $(CURDIR))/../src
 VERIL_DIR       ?= $(realpath $(CURDIR))/../verilator
 VERIL_BUILD_DIR ?= $(BUILD_DIR)/verilator_build
+
+TOP_MODULE       = rt_top_unpacked
+VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
 
 # if VERILATOR_ROOT is undefined, assume that it is in PATH
 ifeq ($(VERILATOR_ROOT),)
@@ -25,47 +27,27 @@ VERILATOR = $(VERILATOR_ROOT)/bin/verilator
 VERILATOR_COVERAGE = $(VERILATOR_ROOT)/bin/verilator_coverage
 endif
 
-TOP_MODULE ?= tb_rt_ss
-VERIL_TOP  ?= $(VERIL_DIR)/$(TOP_MODULE).cpp
-
-
-gpio_blink = 0
-uart_test  = 0
-csr_tests  = 0
-clic_tests = 0
-timer_test = 0
-
-# memory initialisation file used for L2
-TEST               ?= hello_world
-TEST_IMEM_FILE      := $(BUILD_DIR)/../stims/$(TEST)_imem.hex
-TEST_DMEM_FILE      := $(BUILD_DIR)/../stims/$(TEST)_dmem.hex
-IMEM_INIT_FILE      := $(BUILD_DIR)/memory_init/test_imem_init.mem
-DMEM_INIT_FILE      := $(BUILD_DIR)/memory_init/test_dmem_init.mem
-# results file when running in ideal dispatcher mode
-IDEAL_RESULTS_FILE := $(BUILD_DIR)/ideal_results_veril.log
-# used for ideal_dispatcher fifo
-#VTRACE_FILE        ?= $(BUILD_DIR)/../sw/ideal_dispatcher/dispatch.hex
-N_VINSN            ?=
-
-VERIL_PARAMS = -GSoftwareTest=1
-
 VERIL_WARN_SUPPRESS ?= \
   -Wno-BLKANDNBLK      \
-  -Wno-CASEINCOMPLETE  \
-  -Wno-CMPCONST        \
+  -Wno-WIDTHEXPAND     \
+  -Wno-UNOPTFLAT       \
+  -Wno-UNSIGNED        \
+  -Wno-WIDTHCONCAT     \
+  -Wno-WIDTHTRUNC      \
+  -Wno-COMBDLY         \
   -Wno-LATCH           \
   -Wno-LITENDIAN       \
-  -Wno-UNOPTFLAT       \
-  -Wno-UNPACKED        \
-  -Wno-UNSIGNED        \
-  -Wno-WIDTH           \
-  -Wno-WIDTHCONCAT     \
-  -Wno-ENUMVALUE       \
-  -Wno-COMBDLY         \
-	-Wno-TIMESCALEMOD
+  -Wno-CASEINCOMPLETE  \
+  -Wno-PINMISSING      \
+  -Wno-MULTIDRIVEN     \
+  -Wno-CMPCONST        \
+  -Wno-IMPLICIT        \
+  -Wno-BLKLOOPINIT     
        
 VERIL_DEFINES ?= \
-	+define+VERILATOR=1
+	+define+VERILATOR=1 \
+	+define+RVFI \
+	+define+COMMON_CELLS_ASSERTS_OFF
 
 ifdef TRACE
 VERIL_DEFINES += +define+RVFI +define+DEBUG
@@ -73,23 +55,20 @@ VERIL_WARN_SUPPRESS += -Wno-MULTIDRIVEN
 endif
 
 VERIL_INCLUDES ?= \
-	+incdir+../ips/bow-common-ips/ips/pulp-common-cells/include/ \
-	+incdir+../ips/rt-ibex/vendor/lowrisc_ip/ip/prim/rtl/ \
-	+incdir+../ips/rt-ibex/rtl/ \
-	+incdir+../ips/register_interface/include \
-	+incdir+../ips/apb/include \
-	+incdir+../ips/rt-ibex/vendor/lowrisc_ip/dv/sv/dv_utils/ \
-	+incdir+../ips/bow-common-ips/ips/axi/include/
+	+incdir+$(shell bender path common_cells)/include \
+	+incdir+$(shell bender path apb)/include \
+	+incdir+$(shell bender path axi)/include \
+	+incdir+$(shell bender path register_interface)/include \
+	+incdir+$(VERIL_DIR)/../src/ip/obi/include \
+	+incdir+$(shell bender path rt-ibex)/vendor/lowrisc_ip/dv/sv/dv_utils \
+	+incdir+$(shell bender path rt-ibex)/vendor/lowrisc_ip/ip/prim/rtl \
+	+incdir+$(shell bender path rt-ibex)/rtl
 
-RTL_SRC_LIST   ?= $(SRC_DIR)/ss-files.list
-EXTRA_SRC_LIST ?= $(SRC_DIR)/verilator.list
-TB_SRC_LIST    ?= $(SRC_DIR)/tb-files.list
+BENDER_TARGETS ?= \
+	-t tech_cells_generic_exclude_deprecated \
+	-t verilator
 
 VERIL_FLAGS ?= \
-	--binary \
-	-f $(RTL_SRC_LIST) \
-	-f $(EXTRA_SRC_LIST) \
-	-f $(TB_SRC_LIST) \
 	$(VERIL_DEFINES) \
 	$(VERIL_INCLUDES) \
 	$(VERIL_PARAMS) \
@@ -98,26 +77,31 @@ VERIL_FLAGS ?= \
 	-sv \
 	--timing \
 	--trace-fst \
+	--trace-structs \
+	--trace-params \
 	--hierarchical \
+	--exe $(VERIL_TOP) \
+	--cc \
+	--unroll-count 4 \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
 	--top-module $(TOP_MODULE) \
+	$(shell bender script flist $(BENDER_TARGETS)) \
 	--Mdir $(VERIL_BUILD_DIR) \
 	--build \
 	-j `nproc`
-
 
 .PHONY: init
 init:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(VERIL_BUILD_DIR)
-	@rm -f $(IMEM_INIT_FILE)
-	@rm -f $(DMEM_INIT_FILE)
-	@mkdir -p $(BUILD_DIR)/memory_init
-	@echo "Copying $(TEST_IMEM_FILE) into $(IMEM_INIT_FILE)"
-	@echo "Copying $(TEST_DMEM_FILE) into $(DMEM_INIT_FILE)"
-	@cp -f $(TEST_IMEM_FILE) $(IMEM_INIT_FILE)
-	@cp -f $(TEST_DMEM_FILE) $(DMEM_INIT_FILE)
 
+.PHONY: lint
+lint:
+	$(VERILATOR) --lint-only \
+	$(VERIL_INCLUDES) \
+	--top-module $(TOP_MODULE) \
+	$(shell bender script flist $(BENDER_TARGETS)) \
+	
 
 .PHONY: verilate
 verilate: clean init
