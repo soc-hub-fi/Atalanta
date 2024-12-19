@@ -30,7 +30,7 @@ interface uart_bus
 
   initial
   begin
-    tx   = 1'b0;
+    tx   = 1'b1;
   end
 
   always

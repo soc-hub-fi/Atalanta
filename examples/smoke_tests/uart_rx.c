@@ -17,10 +17,16 @@ int main() {
   //enable_int(UART_IRQ);
   //set_priority(UART_IRQ, 0x91);
 
-  //delay
-  for (volatile uint32_t i = 0; i < 1000; i++);
+  write_reg_u8(UART_INTERRUPT_ENABLE, 0x04); // RX interrupt 
+  *(uint8_t*)(UART_INTERRUPT_IDENT) = 1u; // RX fifo reset
 
-  //printf("[UART] Call DMA transfer\n");
+
+  //delay
+  for (volatile uint32_t i = 0; i < 2000; i++);
+
+
+  uint8_t tmp = *(uint8_t*)(UART_RBR);
+  printf("[UART] RX char %d\n", tmp);
   ///*Enable global interrupts*/
   //csr_read_set(CSR_MSTATUS, (0x1 << 3));
   //asm("wfi");
