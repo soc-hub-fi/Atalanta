@@ -18,15 +18,17 @@ export FPGA_BOARD       ?= PYNQZ1
 export DUT_TOP_MODULE   ?= rt_top_fpga_wrapper_$(FPGA_BOARD)
 export TB_TOP_MODULE    ?= tb_rt_ss
 
+export FPGA_DIR          ?= $(PWD)
+export REPO_DIR          ?= $(realpath $(FPGA_DIR)/..)
+
 export COMMON_CELLS_DIR ?= $(shell bender path common_cells)
 export APB_DIR          ?= $(shell bender path apb)
 export AXI_DIR          ?= $(shell bender path axi)
 export RTIBEX_DIR       ?= $(shell bender path rt-ibex)
-export OBI_DIR          ?= $(shell bender path obi)
+export OBI_DIR          ?= $(REPO_DIR)/src/ip/obi/
 export REGIF_DIR        ?= $(shell bender path register_interface)
 
-export FPGA_DIR          ?= $(PWD)
-export REPO_DIR          ?= $(realpath $(FPGA_DIR)/..)
+
 export FPGA_BUILD_DIR    ?= $(FPGA_DIR)/build
 export FPGA_PROJECT_DIR  ?= $(FPGA_BUILD_DIR)/$(PROJECT_NAME)
 export FPGA_TCL_DIR      ?= $(FPGA_DIR)/scripts
