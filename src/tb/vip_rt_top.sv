@@ -384,7 +384,7 @@ task automatic run_dbg_mem_test();
   //end : unalligned_loop
 endtask
 
-task automatic gpio_sanity ();
+task automatic gpio_sanity_test ();
   fork
     begin
       wait (gpio_dut_out != '0);
@@ -397,6 +397,15 @@ task automatic gpio_sanity ();
     end
 
   join_any
+endtask
+
+task automatic uart_rx_test ();
+  #100us;
+  i_uart.send_char("T");
+  i_uart.send_char("e");
+  i_uart.send_char("s");
+  i_uart.send_char("t");
+
 endtask
 
 endmodule : vip_rt_top
