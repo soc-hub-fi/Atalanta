@@ -10,7 +10,8 @@
 #define COMMON_ADDR 0x7000
 
 #define NUM_INTERRUPTS 66
-//#define HARDWARE_STACKING  
+#define dummy
+
 /*For risc-v's LOAD IMMEDIATE instruction*/
 #define SHARED_VAR_ADDR_IMM (SHARED_VAR_ADDR >> 4)
 .extern pend_int
@@ -163,7 +164,7 @@ irq_handler_0:
     csrci mstatus, 8 /* disable global interrupts*/
 
     // I expanded stack size to prevent stack overflow due multiple nesting 
-
+    
     lw t0, 28(sp)
     lw t1, 32(sp)
     csrw mcause, t1

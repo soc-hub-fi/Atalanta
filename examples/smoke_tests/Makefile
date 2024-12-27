@@ -25,8 +25,9 @@ LDFLAGS 		  = -T$(L_SCRIPT) -nostartfiles
 
 #-{ Rules for the build }-----------------------------------------------------------
 
-TEST			  ?=
-
+TEST			  			?=
+HARDWARE_STACKING ?=0
+DEFINES     			?=dummy
 
 # Check for toolchain existence and PATH
 .PHONY: env_check
@@ -64,10 +65,10 @@ init: clean
 # Compile $(TEST)
 .PHONY: compile
 compile: init
-	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) -DLANGUAGE_ASSEMBLY $(CRUNTIME).S \
+	$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -D $(DEFINES) -I $(INCLUDE_DIR) -DLANGUAGE_ASSEMBLY $(CRUNTIME).S \
 	-o $(BUILD_DIR)/crt0.o
 
-	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) $(CURDIR)/$(TEST).c \
+	$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) $(CURDIR)/$(TEST).c \
 	-o $(BUILD_DIR)/$(TEST)/$(TEST).o
 
 # Link necessary object files
