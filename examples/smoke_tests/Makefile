@@ -23,6 +23,9 @@ CFLAGS 			 ?=-O0 -ffunction-sections -fdata-sections -g -c
 # Linker flags
 LDFLAGS 		  = -T$(L_SCRIPT) -nostartfiles
 
+# OBJDUMP Options 
+OBJDUMP_OPT   = -Mnumeric -Ssd
+
 #-{ Rules for the build }-----------------------------------------------------------
 
 TEST			  			?=
@@ -80,7 +83,9 @@ link: compile
 # Dump the generated .elf file 
 .PHONY: objdump
 objdump: #link
-	@$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) -Ssd > $(BUILD_DIR)/$(TEST)/$(TEST).dump
+	@$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) > $(BUILD_DIR)/$(TEST)/$(TEST).dump
+
+
 # Delete the build artifacts
 .PHONY: all
 all: link objdump
