@@ -76,8 +76,9 @@ interface uart_bus
     for (i = 0; i < 8; i++) begin
       #(UartBaudPeriod);
       tx = c[i];
-      $display("[UART] Sent %x at time %t",c[i],$time);
     end
+    $display("[UART_TB] Sent %x at time %t", c, $time);
+
 
     // stop bit
     #(UartBaudPeriod);

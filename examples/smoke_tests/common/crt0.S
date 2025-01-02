@@ -192,8 +192,8 @@ uart_handler_1:
     sw t0, 4(sp)
     sw a0, 8(sp)
     sw a1, 12(sp)
-    sw a2, 16(sp)
-    sw a3, 20(sp)
+    sw a4, 16(sp)
+    sw a5, 20(sp)
     sw t1, 24(sp)
     csrr t0, mepc
     csrr t1, mcause
@@ -203,8 +203,8 @@ uart_handler_1:
     
     csrsi mstatus, 8 /* re-enable global interrupts enable recursion */
      
-
-    jal uart_handler
+    
+    call uart_handler
   
 
     csrci mstatus, 8 /* disable global interrupts*/
@@ -219,8 +219,8 @@ uart_handler_1:
     lw t0, 4(sp)
     lw a0, 8(sp)
     lw a1, 12(sp)
-    lw a2, 16(sp)
-    lw a3, 20(sp)
+    lw a4, 16(sp)
+    lw a5, 20(sp)
     lw t1, 24(sp)
     addi sp, sp, (4 * 9)
     mret

@@ -60,3 +60,6 @@ bool circular_buffer_full(struct circular_buffer *cb){
                                     //the next head is equal to buffer size && tail is still 0 (i.e did not pop anything) 
 }
 
+uint8_t circular_buffer_size(struct circular_buffer *cb){
+    return (cb->head - cb->tail);
+};

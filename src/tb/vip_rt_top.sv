@@ -149,7 +149,7 @@ clk_rst_gen #(
 );
 
 uart_bus #(
-  .BAUD_RATE( 3000000 ),
+  .BAUD_RATE( 1500000 ),
   .PARITY_EN(    0 )
 ) i_uart (
   // Note invertion of signals from dut->uart
@@ -401,10 +401,16 @@ endtask
 
 task automatic uart_rx_test ();
   #100us;
+  
+  //$display("[TB UART_RX] Sending characters through uart RX");
   i_uart.send_char("T");
   i_uart.send_char("e");
   i_uart.send_char("s");
   i_uart.send_char("t");
+  i_uart.send_char("1");
+  i_uart.send_char("2");
+  i_uart.send_char("3");
+  i_uart.send_char("4");
 
 endtask
 
