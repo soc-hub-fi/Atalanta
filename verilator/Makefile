@@ -101,7 +101,6 @@ lint:
 	$(VERIL_INCLUDES) \
 	--top-module $(TOP_MODULE) \
 	$(shell bender script flist $(BENDER_TARGETS)) \
-	
 
 .PHONY: verilate
 verilate: clean init
