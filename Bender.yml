@@ -95,4 +95,11 @@ vendor_package:
       - src/obi_xbar.sv
       - include/obi/assign.svh
       - include/obi/typedef.svh
+  
+  - name: verilator-vip
+    target_dir: verilator/vip
+    upstream: { git: "https://github.com/ANurmi/verilator-vip", rev: "5f23264d0666968e61584925f9a95fdbed28a6ad" }
+    include_from_upstream:
+      - src/ClkRstDrv.h
+
 

@@ -1,11 +1,17 @@
+// TODO: make template
 struct SimCtx {
-  Vrt_top_unpacked *dut;
-  VerilatedFstC *trace;
-  vluint64_t &sim_time;
-  SimCtx(Vrt_top_unpacked *dut, VerilatedFstC *trace, vluint64_t &sim_time) :
+    Vrt_top_unpacked *dut;
+    VerilatedFstC *trace;
+    vluint64_t &sim_time;
+    SimCtx(Vrt_top_unpacked *dut, VerilatedFstC *trace, vluint64_t &sim_time) :
         dut(dut),
         trace(trace),
         sim_time(sim_time){}
+    ~SimCtx() {
+        delete dut;
+        delete trace;
+    }
+
 };
 
 void timestep(SimCtx* cx) {

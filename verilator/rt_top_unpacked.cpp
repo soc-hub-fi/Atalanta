@@ -6,6 +6,7 @@
 #include "verilated_fst_c.h"
 #include "verilated.h"
 #include "SimCxt.h"
+#include "vip/src/ClkRstDrv.h"
 
 int main(int argc, char** argv) {
 
@@ -17,6 +18,8 @@ int main(int argc, char** argv) {
   cx.dut->trace(cx.trace, 5);
   cx.trace->open("./waveform.fst");
   //const std::unique_ptr<Vrt_top_unpacked> top{new Vrt_top_unpacked};
+
+  ClkRstDrv* cr_drv = new ClkRstDrv(&cx);
 
   timestep(&cx);
   timestep(&cx);
@@ -34,6 +37,7 @@ int main(int argc, char** argv) {
   //top->final();
 
   cx.trace->close();
+  delete cr_drv;
 
   return 0;
 }
