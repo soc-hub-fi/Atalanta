@@ -29,7 +29,19 @@ int main() {
   // printf("[UART] UART INITIALIZED \n");
   
   //delay
-  while(circular_buffer_size(&rx_circ_buffer) < 7);
+  //while(circular_buffer_size(&rx_circ_buffer) < 7);
+  // while(!pattern_buffer_check_pattern(&payload_patt_buf)){
+  //   volatile uint8_t a = payload_buffer[2];
+  //   volatile uint8_t b = payload_buffer[1];
+  //   volatile uint8_t c = payload_buffer[0];
+  // }
+
+  while(!pattern_buffer_check_pattern(&payload_patt_buf));
+
+  for(int i=0; i<1000; i++){
+    asm("nop");
+  }
+
 
   write_reg_u8(UART_INTERRUPT_ENABLE, 0x2);
   print_uart("THE SIZE OF THE RX BUFFER IS: \n");  

@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include "csr_utils.h"
 #include "circular_buffer.h"
+#include "pattern_buffer.h"
 #include "clic.h"
 
 #define NO_CIRCULAR_BUFFER 0
@@ -27,14 +28,34 @@
 #define UART_LINE_NUM      17
 
 
+#define CHECKPATTERN "SOCHUB"
+#define CHECKPATTER_LEN 6
+
+uint8_t checkpattern[CHECKPATTER_LEN] = {'S', 'O', 'C', 'H', 'U', 'B'};
+
+#define PAYLOAD_PATTERN "CBA"
+#define PAYLOAD_PATTERN_LEN 3
+
+uint8_t payload_pattern[PAYLOAD_PATTERN_LEN] = {'C', 'B', 'A'};
+
+
+
 //STRUCT INSTANTIATION
 #define UART_BUFFER_SIZE 30
 uint8_t buffer[UART_BUFFER_SIZE];
 struct circular_buffer tx_buffer = {.buffer = buffer, .size = UART_BUFFER_SIZE, .head = 0, .tail = 0};
 
-#define UART_RX_BUFFER_CAPACITY 30
+#define UART_RX_BUFFER_CAPACITY 50
 uint8_t rx_buffer[UART_RX_BUFFER_CAPACITY];
 struct circular_buffer rx_circ_buffer = {.buffer = rx_buffer, .size = UART_RX_BUFFER_CAPACITY, .head = 0, .tail = 0};
+
+uint8_t checkpattern_buffer[CHECKPATTER_LEN];
+struct pattern_buffer checkpattern_patt_buf = {.buffer = checkpattern_buffer, .len = CHECKPATTER_LEN, .head = 0, .tail = CHECKPATTER_LEN-1, .pattern = checkpattern};
+
+uint8_t payload_buffer[PAYLOAD_PATTERN_LEN];
+struct pattern_buffer payload_patt_buf = {.buffer = payload_buffer, .len = PAYLOAD_PATTERN_LEN, .head = 0, .tail = PAYLOAD_PATTERN_LEN-1, .pattern = payload_pattern};
+
+
 
 
 //THIS FUBNCTION CONFIGURES UART
@@ -84,9 +105,31 @@ void uart_handler(){
       // print_uart_int(read_reg_u8(UART_RBR));
       // print_uart("\n");
 
-      while(!circular_buffer_full(&rx_circ_buffer) && (get_uart_int_id() == 0x2)){  // consume all the elements in the rx uart fifo
+      while(!circular_buffer_full(&rx_circ_buffer) && ((get_uart_int_id() == 0x2) || (get_uart_int_id() == 0x6))){  // consume all the elements in the rx uart fifo
         uint8_t rx_data = read_reg_u8(UART_RBR);
-        circular_buffer_push(&rx_circ_buffer, rx_data);
+
+        // circular_buffer_push(&rx_circ_buffer, rx_data);  // For debugging purposes
+        pattern_buffer_push(&checkpattern_patt_buf, rx_data);
+
+        // volatile uint8_t a = checkpattern_buffer[checkpattern_patt_buf.head];
+        // a = checkpattern_buffer[4];
+        // a = checkpattern_buffer[3];
+        // a = checkpattern_buffer[2];
+        // a = checkpattern_buffer[1];
+        // a = checkpattern_buffer[0];
+
+        volatile uint8_t a = checkpattern_patt_buf.payload;
+        // volatile uint8_t a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 0) % 6];
+        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 1) % 6];
+        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 2) % 6];
+        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 3) % 6];
+        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 4) % 6];
+        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 5) % 6];
+        
+        if(pattern_buffer_check_pattern(&checkpattern_patt_buf)){   // checkpattern detected 
+          pattern_buffer_push(&payload_patt_buf, checkpattern_patt_buf.payload); // move the payload byte from the checkpattern_buffer to payload_buffer
+          pattern_buffer_reset_buffer(&checkpattern_patt_buf);  // reset the checkpattern buffer for a new packet received
+        }
       }
     }
 }
