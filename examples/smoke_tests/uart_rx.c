@@ -42,12 +42,8 @@ int main() {
     print_uart_int((uint32_t)(circular_buffer_pop(&rx_circ_buffer)));
     print_uart(" ");
   }
-  print_uart("\n");
+  print_uart("\n \n");
 
+  print_uart("[UART] uart_rx [PASSED]\n");
 
-  // uint8_t tmp = *(uint8_t*)(UART_RBR);
-  // printf("[UART] RX char %d\n", tmp);
-  ///*Enable global interrupts*/
-  //csr_read_set(CSR_MSTATUS, (0x1 << 3));
-  //asm("wfi");
 }

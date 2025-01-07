@@ -101,33 +101,18 @@ void uart_handler(){
           start_tx(UART_THR);
       }
     } else {
-      // print_uart("[UART] RX char ");
-      // print_uart_int(read_reg_u8(UART_RBR));
-      // print_uart("\n");
 
       while(!circular_buffer_full(&rx_circ_buffer) && ((get_uart_int_id() == 0x2) || (get_uart_int_id() == 0x6))){  // consume all the elements in the rx uart fifo
         uint8_t rx_data = read_reg_u8(UART_RBR);
 
-        // circular_buffer_push(&rx_circ_buffer, rx_data);  // For debugging purposes
+        circular_buffer_push(&rx_circ_buffer, rx_data);  // For debugging purposes
         pattern_buffer_push(&checkpattern_patt_buf, rx_data);
 
-        // volatile uint8_t a = checkpattern_buffer[checkpattern_patt_buf.head];
-        // a = checkpattern_buffer[4];
-        // a = checkpattern_buffer[3];
-        // a = checkpattern_buffer[2];
-        // a = checkpattern_buffer[1];
-        // a = checkpattern_buffer[0];
-
         volatile uint8_t a = checkpattern_patt_buf.payload;
-        // volatile uint8_t a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 0) % 6];
-        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 1) % 6];
-        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 2) % 6];
-        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 3) % 6];
-        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 4) % 6];
-        // a = checkpattern_patt_buf.buffer[(checkpattern_patt_buf.head + 5) % 6];
-        
+
         if(pattern_buffer_check_pattern(&checkpattern_patt_buf)){   // checkpattern detected 
           pattern_buffer_push(&payload_patt_buf, checkpattern_patt_buf.payload); // move the payload byte from the checkpattern_buffer to payload_buffer
+          circular_buffer_push(&rx_circ_buffer, rx_data); // push to circular buffer 
           pattern_buffer_reset_buffer(&checkpattern_patt_buf);  // reset the checkpattern buffer for a new packet received
         }
       }
