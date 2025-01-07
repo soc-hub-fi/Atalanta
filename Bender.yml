@@ -5,30 +5,40 @@ package:
     - "Abdesattar Kalache <abdesattar.kalache@tuni.fi>"
 
 dependencies:
-  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: master }
+  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "c3a02703a7d1629f24cd58195a8002144818efc5" }
   clic: { git: "https://github.com/pulp-platform/clic.git", version: 2.0.0 }
   riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
-  obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
+  #obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
   axi: { git: "https://github.com/pulp-platform/axi.git", rev: "bfee21757bf090ec8e358456314b0b0fd3c90809" }
   apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4}
-  apb_timer: { git: "https://github.com/pulp-platform/apb_timer", version: 0.1.0}
-  apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio", version: 0.2.0}
-  opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals", version: 0.4.0 }
+  apb_timer: { git: "https://github.com/pulp-platform/apb_timer.git", version: 0.1.0}
+  apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio.git", version: 0.2.0}
+  opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", version: 0.4.0 }
+  nanodma: { git: "https://github.com/ANurmi/NanoDMA.git", rev: "c1bcd56ed3f5a95e42a27098a5ee85495e18f020" }
 
 
 sources:
   files:
     - src/ip/rt_pkg.sv
     - src/ip/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
+    - src/ip/obi/src/obi_pkg.sv
+    - src/ip/obi/src/obi_intf.sv
+    - src/ip/obi/src/obi_mux.sv
+    - src/ip/obi/src/obi_demux.sv
+    - src/ip/obi/src/obi_xbar.sv
     #- src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
+    - src/ip/apb_spi_master/spi_master_apb_if.sv
+    - src/ip/irq_pulse_cdc.sv
     - src/ip/axi_to_obi.sv
+    - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
     - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
     - src/ip/axi_to_obi_intf.sv
     - src/ip/obi_to_axi_intf.sv
     - src/ip/obi_to_apb_intf.sv
     - src/ip/obi_handshake_fsm.sv
     - src/ip/obi_cut_intf.sv
+    - src/ip/obi_join.sv
     - src/ip/obi_sram_intf.sv
     - fpga/hdl/src/xilinx_sp_BRAM.sv
     - src/ip/mock_uart.sv
@@ -41,9 +51,13 @@ sources:
     - src/ip/rt_debug.sv
     - src/ip/rt_top.sv
 
+    - target: verilator
+      files:
+        - src/ip/rt_top_unpacked.sv
+
     - target: any(test, simulation)
       files:
-        - src/tb/cheshire/target/sim/src/elfloader.cpp
+        - src/tb/elfloader.cpp
         - src/tb/riscv_pkg.sv
         - src/tb/uart.sv
         - src/tb/vip_rt_top.sv
@@ -64,9 +78,21 @@ vendor_package:
       - "future/axi_obi/src/obi_to_axi.sv"
       - "future/axi_obi/src/axi_to_detailed_mem_user.sv"
 
-  - name: cheshire
-    target_dir: src/tb/cheshire
-    upstream: { git: "https://github.com/pulp-platform/cheshire.git", rev: "99dd957cfcbcb9b750b9cf00f20b0444c5a05101"}
+  - name: apb_spi_master
+    target_dir: src/ip/apb_spi_master
+    upstream: { git: "https://github.com/pulp-platform/apb_spi_master.git", rev: "3fce81084b15870f4bd9da7806cf950774f9672e"}
     include_from_upstream:
-      - "target/sim/src/elfloader.cpp"
+      - spi_master_apb_if.sv
+
+  - name: obi
+    target_dir: src/ip/obi
+    upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "00304bc2f6d1a67490c639ffab70af0ea9d77c54" }
+    include_from_upstream:
+      - src/obi_pkg.sv
+      - src/obi_intf.sv
+      - src/obi_mux.sv
+      - src/obi_demux.sv
+      - src/obi_xbar.sv
+      - include/obi/assign.svh
+      - include/obi/typedef.svh
 

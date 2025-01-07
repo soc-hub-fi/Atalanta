@@ -1,46 +1,38 @@
-`define FULL_UART 1
-
-`ifdef SYNTHESIS
-  `define NOT_MOCK
-`elsif FPGA
-  `define NOT_MOCK
-`elsif FULL_UART
-  `define NOT_MOCK
-`endif
-
 `include "register_interface/typedef.svh"
 
 module rt_peripherals #(
   parameter int unsigned AddrWidth = 32,
   parameter int unsigned DataWidth = 32,
   parameter int unsigned NSource   = 64,
-  //parameter type         rule_t    = logic,
   localparam int         SrcW      = $clog2(NSource),
   localparam int         StrbWidth = (DataWidth / 8),
   localparam int         GpioPadNum= 4
 )(
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
-  APB.Slave                    apb_i,
-  output logic           [GpioPadNum-1:0] gpio_o,
-  input  logic           [GpioPadNum-1:0] gpio_i,
-  input  logic   [NSource-1:0] irq_src_i,
-  output logic                 irq_valid_o,
-  input  logic                 irq_ready_i,
-  output logic      [SrcW-1:0] irq_id_o,
-  output logic           [7:0] irq_level_o,
-  output logic                 irq_shv_o,
-  output logic           [1:0] irq_priv_o,
-  output logic                 irq_kill_req_o,
-  input  logic                 irq_kill_ack_i,
-  output logic                 uart_tx_o,
-  input  logic                 uart_rx_i
+  input  logic                       clk_i,
+  input  logic                       rst_ni,
+  APB.Slave                          apb_i,
+  output logic      [GpioPadNum-1:0] gpio_o,
+  input  logic      [GpioPadNum-1:0] gpio_i,
+  input  logic   [NSource-1:0]       irq_src_i,
+  output logic                       irq_valid_o,
+  input  logic                       irq_ready_i,
+  output logic      [SrcW-1:0]       irq_id_o,
+  output logic           [7:0]       irq_level_o,
+  output logic                       irq_shv_o,
+  output logic           [1:0]       irq_priv_o,
+  output logic                       irq_kill_req_o,
+  input  logic                       irq_kill_ack_i,
+  output logic                       uart_tx_o,
+  input  logic                       uart_rx_i,
+  input  logic [rt_pkg::NumDMAs-1:0] dma_irqs_i
 );
 
 localparam int unsigned NrApbPerip = 5;
 localparam int unsigned SelWidth   = $clog2(NrApbPerip);
+localparam int unsigned ClkDiv     = 2;
 
-logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
+logic                   irq_ready_slow;
+logic [rt_pkg::NumDMAs-1:0] dma_irqs_q;
 logic                   uart_irq;
 
 logic [SelWidth-1:0] demux_sel;
@@ -56,12 +48,13 @@ APB #(
 
 always_comb
   begin : irq_assign
-    intr_src = irq_src_i;
-    intr_src[17] = uart_irq; // supervisor software irq
-    intr_src[7] = mtimer_irq;
+    intr_src     = irq_src_i;
+    intr_src[17] = uart_irq;   // supervisor software irq
+    intr_src[7]  = mtimer_irq;
     // supervisor external irq 9
     // machine external irq 11
     // platform defined 16-19
+    intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_q; // serve irqs 32-48 for DMAs
     // nmi 31
   end
 
@@ -80,7 +73,7 @@ apb_cdc_intf #(
 `ifndef FPGA
 
   clk_int_div_static #(
-    .DIV_VALUE (2),
+    .DIV_VALUE (ClkDiv),
     .ENABLE_CLOCK_IN_RESET (1'b0)
   ) i_clk_div (
     .clk_i          (clk_i),
@@ -95,7 +88,7 @@ apb_cdc_intf #(
   configurable_clock_divider_fpga i_clk_div (
     .clk_in       (clk_i),
     .rst_n        (rst_ni),
-    .divider_conf (2),
+    .divider_conf (ClkDiv),
     .clk_out      (periph_clk)
   );
 
@@ -112,22 +105,28 @@ apb_demux_intf #(
   .select_i (demux_sel)
 );
 
-// 2x delay logic for irq_ready
-// TODO: make generic
-always_ff @(posedge(clk_i) or negedge(rst_ni))
-  begin : ready_delay
-    if (~rst_ni) begin
-      irq_ready_q       <= 0;
-      irq_ready_delay_q <= 0;
-    end else begin
-      irq_ready_q       <= irq_ready_i;
-      irq_ready_delay_q <= irq_ready_delay;
-    end
-  end
+irq_pulse_cdc #(
+  .Divisor (ClkDiv)
+) i_irq_ready_sync (
+  .rst_ni,
+  .clk_a_i (clk_i),
+  .clk_b_i (periph_clk),
+  .pulse_i (irq_ready_i),
+  .pulse_o (irq_ready_slow)
+);
 
-assign irq_ready_delay = irq_ready_i | irq_ready_q;
-// end 2x delay
-
+for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++)
+  begin : g_dma_sync
+    irq_pulse_cdc #(
+      .Divisor (ClkDiv)
+    ) i_dma_sync (
+      .rst_ni,
+      .clk_a_i (clk_i),
+      .clk_b_i (periph_clk),
+      .pulse_i (dma_irqs_i[ii]),
+      .pulse_o (dma_irqs_q[ii])
+    );
+  end : g_dma_sync
 
 always_comb
   begin : decode // TODO: Make enum for values
@@ -169,7 +168,7 @@ clic_apb #(
   .pslverr_o      (apb_out[3].pslverr),
   .intr_src_i     (intr_src), // 0-31 -> CLINT IRQS
   .irq_valid_o    (irq_valid_o),
-  .irq_ready_i    (irq_ready_delay_q),
+  .irq_ready_i    (irq_ready_slow),
   .irq_id_o       (irq_id_o),
   .irq_level_o    (irq_level_o),
   .irq_shv_o      (irq_shv_o),
@@ -214,6 +213,7 @@ assign apb_out[4].pslverr = spi_rsp.error;
 assign apb_out[4].pready  = spi_rsp.ready;
 //
 
+/*
 spi_host #(
   .reg_req_t (regbus_req_t),
   .reg_rsp_t (regbus_rsp_t)
@@ -228,12 +228,12 @@ spi_host #(
   .cio_csb_en_o     (),
   .cio_sd_o         (),
   .cio_sd_en_o      (),
-  .cio_sd_i         (),
+  .cio_sd_i         ('0),
   .intr_error_o     (),
   .intr_spi_event_o ()
-);
+);*/
 
-`ifdef NOT_MOCK
+`ifndef VERILATOR
 apb_uart i_apb_uart (
   .CLK      (periph_clk),
   .RSTN     (rst_ni),

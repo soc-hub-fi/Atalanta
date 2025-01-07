@@ -16,6 +16,7 @@ localparam addr_rule_t DbgRule  = '{ Start: 32'h0000_0000, End: 32'h0000_1000 };
 localparam addr_rule_t ImemRule = '{ Start: 32'h0000_1000, End: 32'h0000_5000 };
 localparam addr_rule_t DmemRule = '{ Start: 32'h0000_5000, End: 32'h0000_9000 };
 localparam addr_rule_t RomRule  = '{ Start: 32'h0000_9000, End: 32'h0000_9300 };
+localparam addr_rule_t DmaRule  = '{ Start: 32'h0001_0000, End: 32'h0001_0080 };
 localparam addr_rule_t SramRule = '{ Start: 32'h0002_0000, End: 32'h0003_0000 };
 localparam addr_rule_t ApbRule  = '{ Start: 32'h0003_0000, End: 32'h0007_0000 };
 localparam addr_rule_t AxiRule  = '{ Start: 32'hFFFF_0000, End: 32'h0000_0000 };
@@ -34,6 +35,7 @@ localparam int unsigned SpiStartAddr    = 32'h0006_0000;
 localparam int unsigned SpiEndAddr      = 32'h0006_FFFF;
 
 localparam int unsigned NumMemBanks = 1;
+localparam int unsigned NumDMAs     = 1;
 
 localparam xbar_cfg_t CoreXbarCfg = '{
   NumM      : 3,
@@ -42,8 +44,8 @@ localparam xbar_cfg_t CoreXbarCfg = '{
 };
 
 localparam xbar_cfg_t MainXbarCfg = '{
-  NumM      : 3,
-  NumS      : 4 + NumMemBanks,
+  NumM      : 3 + (2*NumDMAs),
+  NumS      : 5 + NumMemBanks,
   MaxTrans  : 3
 };
 

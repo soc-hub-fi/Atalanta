@@ -1,5 +1,4 @@
 // Perform memory accessess of varying allingment and size to data memory, check result
-// TODO: nicer prints
 
 #include <stdint.h>
 #include "include/csr_utils.h"
@@ -36,25 +35,15 @@ uint32_t write_readback_word(uint32_t addr, volatile uint32_t value, char verbos
   volatile uint32_t result = 0;
   // TODO: add prints
   if (verbose){
-    print_uart("Writing value ");
-    print_uart_int(value);
-    print_uart(" to address ");
-    print_uart_int(addr);
-    print_uart("\n");
+    printf("Writing value %x to address %x\n", value, addr);
   }
   *(uint32_t*)(addr) = value;
   result = *(uint32_t*)(addr);
   if (verbose){
-    print_uart("Read back ");
-    print_uart_int(result);
-    print_uart("\n");
+    printf("Read back %x\n", result);
   }
   if(result != value) {
-    print_uart("ERROR: readback unsuccessful\n wrote ");
-    print_uart_int(value);
-    print_uart(", read ");
-    print_uart_int(result);
-    print_uart("\n");
+    printf("ERROR: readback unsuccessful\n wrote %x, read %x\n", value, result);
     error_count++;
   }
   return result;
@@ -66,11 +55,7 @@ uint16_t write_readback_half(uint32_t addr, uint16_t value, char verbose){
   *(uint16_t*)(addr) = value;
   result = *(uint16_t*)(addr);
   if(result != value) {
-    print_uart("ERROR: readback unsuccessful\n wrote ");
-    print_uart_int(value);
-    print_uart(", read ");
-    print_uart_int(result);
-    print_uart("\n");
+    printf("ERROR: readback unsuccessful\n wrote %x, read %x\n", value, result);
     error_count++;
   }
   return result;
@@ -80,34 +65,25 @@ uint8_t write_readback_byte(uint32_t addr, uint8_t value, char verbose){
   volatile uint8_t result = 0;
   // TODO: add prints
   if (verbose){
-    print_uart("Writing value ");
-    print_uart_int(value);
-    print_uart(" to address ");
-    print_uart_int(addr);
-    print_uart("\n");
+    printf("Writing value %x to address %x\n", value, addr);
   }
   *(uint8_t*)(addr) = value;
   result = *(uint8_t*)(addr);
   if (verbose){
-    print_uart("Read back ");
-    print_uart_int(result);
-    print_uart("\n");
+    printf("Read back %x\n", result);
   }
   if(result != value) {
-    print_uart("ERROR: readback unsuccessful\n wrote ");
-    print_uart_int(value);
-    print_uart(", read ");
-    print_uart_int(result);
-    print_uart("\n");
+    printf("ERROR: readback unsuccessful\n wrote %x, read %x\n", value, result);
     error_count++;
   }
   return result;
 }
 
 int main() {  
-  init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
+  init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
   print_uart("[UART] Starting memory_sanity test\n");
 
+<<<<<<< HEAD
   print_uart("[UART] Alligned word accesses to SPM\n");
   for (int it=0; it<ITER_CNT; it++){
     write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), rand(), 0);
@@ -141,6 +117,15 @@ int main() {
   }
 
   print_uart("[UART] Alligned word accesses to SRAM\n");
+=======
+  // Software utilizes SPMs too much to test SPMs with software
+  //print_uart("[UART] Performing alligned word accesses to SPM\n");
+  //for (int it=0; it<ITER_CNT; it++){
+  //  write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), rand(), 1);
+  //}
+
+  print_uart("[UART] Performing alligned word accesses to SRAM\n");
+>>>>>>> main
   for (int it=0; it<ITER_CNT; it++){
     write_readback_word(get_rand_addr(SRAM_BTM, SRAM_TOP, 1), rand(), 0);
   }
@@ -150,9 +135,7 @@ int main() {
     write_readback_byte(get_rand_addr(SRAM_BTM, SRAM_TOP, 0), (uint8_t)rand(), 0);
   }
 
-  print_uart("[UART] Test complete, error count: ");
-  print_uart_int(error_count);
-  print_uart("\n");
+  printf("[UART] Test complete, error count: %x\n", error_count);
   if (error_count == 0)
     print_uart("[PASSED]\n");
 

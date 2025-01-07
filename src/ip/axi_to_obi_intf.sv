@@ -95,4 +95,8 @@ axi_to_obi #(
   .rsp_r_user_i           ('0)
 );
 
+assign obi_out.reqpar     = '0;
+assign obi_out.rready     = '0;
+assign obi_out.rreadypar  = '0;
+
 endmodule : axi_to_obi_intf

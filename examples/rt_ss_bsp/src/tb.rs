@@ -16,7 +16,11 @@ pub const TEST_OK_TAG: &str = "[OK]";
 pub const TEST_FAIL_TAG: &str = "[FAILED]";
 
 #[cfg(any(all(feature = "fpga", feature = "rt"), feature = "panic"))]
-pub(crate) const DEFAULT_BAUD: u32 = 9600;
+pub(crate) const DEFAULT_BAUD: u32 = if cfg!(feature = "rtl-tb") {
+    3_000_000
+} else {
+    9600
+};
 
 /// Format a message and signal that a part of the test was OK
 #[macro_export]
@@ -201,7 +205,6 @@ fn ok_blink() -> ! {
 /// Flashes all leds on and off, slow
 #[cfg(feature = "fpga")]
 fn fail_blink() -> ! {
-
     match () {
         #[cfg(feature = "rtl-tb")]
         () => rtl_testbench_signal_fail(),
@@ -220,6 +223,6 @@ fn fail_blink() -> ! {
                 led_off(Led::Ld3);
                 asm_delay(NOPS_PER_SEC);
             }
-        },
+        }
     }
 }

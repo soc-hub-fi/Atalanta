@@ -2,7 +2,7 @@
 #![no_std]
 
 // Make sure to link in runtime necessities
-use rust_minimal::{read_u8, write_u8};
+use rust_minimal::{read_u8, write_u8, UART_BAUD};
 
 const UART_BASE: usize = 0x30100;
 
@@ -57,7 +57,7 @@ fn putc(c: u8) {
 /// Example entry point
 #[no_mangle]
 pub unsafe extern "C" fn entry() -> ! {
-    init_uart(rust_minimal::CPU_FREQ, 9600);
+    init_uart(rust_minimal::CPU_FREQ, UART_BAUD);
     uart_write("Hello world!");
     loop {}
 }

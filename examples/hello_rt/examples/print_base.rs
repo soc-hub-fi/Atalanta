@@ -6,11 +6,12 @@
 #![no_std]
 
 use bsp::{mmap::CLIC_BASE_ADDR, rt::entry, sprintln, uart::init_uart};
+use hello_rt::UART_BAUD;
 
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, 9600);
+    init_uart(bsp::CPU_FREQ, UART_BAUD);
 
     let clic_base = CLIC_BASE_ADDR;
 

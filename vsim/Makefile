@@ -14,7 +14,7 @@ DUT = tb_rt_ss
 BENDER ?= bender
 
 COMMON_CELLS_DIR ?= $(shell $(BENDER) path common_cells)
-OBI_DIR          ?= $(shell $(BENDER) path obi)
+OBI_DIR          ?= $(BUILD_DIR)/../src/ip/obi/
 AXI_DIR          ?= $(shell $(BENDER) path axi)
 APB_DIR          ?= $(shell $(BENDER) path apb)
 RT_IBEX_DIR      ?= $(shell $(BENDER) path rt-ibex)

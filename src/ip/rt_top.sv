@@ -3,7 +3,6 @@
   authors: Antti Nurmi <antti.nurmi@tuni.fi>
 */
 
-`include "axi/assign.svh"
 `define COMMON_CELLS_ASSERTS_OFF
 
 module rt_top #(
@@ -34,9 +33,13 @@ module rt_top #(
   input  logic [ClicIrqSrcs-1:0] intr_src_i
 );
 
-localparam int unsigned DemuxWidth = 2;
+localparam int unsigned DgbDmuxWidth = 2;
+localparam int unsigned DmaSelWidth  = $clog2(rt_pkg::NumDMAs);
 
-logic ibex_rst_n, ndmreset, debug_req, demux_sel;
+logic ibex_rst_n, ndmreset, debug_req, dbg_dmux_sel;
+logic [DmaSelWidth-1:0] dma_dmux_sel;
+
+logic [rt_pkg::NumDMAs-1:0] dma_irqs;
 
 logic            irq_valid;
 logic            irq_ready;
@@ -46,17 +49,22 @@ logic            irq_shv;
 logic [     1:0] irq_priv;
 
 APB #() apb_bus ();
-OBI_BUS #() axi_mgr_bus ();
-OBI_BUS #() axi_sbr_bus ();
-OBI_BUS #() dbg_mgr_bus ();
-OBI_BUS #() demux_sbr_bus [DemuxWidth] ();
+OBI_BUS #() axi_mgr_bus  ();
+OBI_BUS #() axi_sbr_bus  ();
+OBI_BUS #() dbg_mgr_bus  ();
+OBI_BUS #() dma_mgr_bus  ();
+OBI_BUS #() demux_sbr_bus [DgbDmuxWidth] ();
 OBI_BUS #() core_mgr_bus ();
 OBI_BUS #() core_sbr_bus ();
-OBI_BUS #() dbg_rom_bus ();
+OBI_BUS #() dbg_rom_bus  ();
+OBI_BUS #() dma_dmux_bus [rt_pkg::NumDMAs] ();
+OBI_BUS #() dma_rd_bus   [rt_pkg::NumDMAs] ();
+OBI_BUS #() dma_wr_bus   [rt_pkg::NumDMAs] ();
 
 
 assign ibex_rst_n = rst_ni & ~(ndmreset);
-assign demux_sel = (dbg_rom_bus.addr <= rt_pkg::RomRule.Start);
+assign dbg_dmux_sel = (dbg_rom_bus.addr <= rt_pkg::RomRule.Start);
+assign dma_dmux_sel = (dma_mgr_bus.addr <= rt_pkg::DmaRule.Start);
 
 rt_core #(
   .NumInterrupts (ClicIrqSrcs),
@@ -86,20 +94,48 @@ rt_interconnect #() i_interconnect (
   .core_sbr    (core_mgr_bus),
   .core_mgr    (core_sbr_bus),
   .axi_mgr     (axi_mgr_bus),
+  .dma_mgr     (dma_mgr_bus),
   .axi_sbr     (axi_sbr_bus),
-  .apb_mgr     (apb_bus)
+  .apb_mgr     (apb_bus),
+  .dma_rd_sbr  (dma_rd_bus),
+  .dma_wr_sbr  (dma_wr_bus)
 );
 
+for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++) begin : g_dmas
+  ndma #(
+    .Depth (3)
+  ) i_ndma (
+    .clk_i,
+    .rst_ni,
+    .cfg_req_i     (dma_dmux_bus[ii].req),
+    .cfg_gnt_o     (dma_dmux_bus[ii].gnt),
+    .cfg_we_i      (dma_dmux_bus[ii].we),
+    .cfg_addr_i    (dma_dmux_bus[ii].addr),
+    .cfg_wdata_i   (dma_dmux_bus[ii].wdata),
+    .cfg_rdata_o   (dma_dmux_bus[ii].rdata),
+    .cfg_rvalid_o  (dma_dmux_bus[ii].rvalid),
+    .read_mgr      (dma_rd_bus[ii]),
+    .write_mgr     (dma_wr_bus[ii]),
+    .tx_done_irq_o (dma_irqs)
+  );
+  assign dma_dmux_bus[ii].gntpar    = 0;
+  assign dma_dmux_bus[ii].rvalidpar = 0;
+end : g_dmas
+
+if (rt_pkg::NumDMAs == 1'b1) begin : g_no_demux
+  obi_join i_dma_join (.Dst(dma_dmux_bus[0]), .Src (dma_mgr_bus));
+end else begin : g_dma_demux
 obi_demux_intf #(
-  .NumMgrPorts (DemuxWidth),
+  .NumMgrPorts (rt_pkg::NumDMAs),
   .NumMaxTrans (rt_pkg::MainXbarCfg.MaxTrans)
-) i_dbg_rom_demux (
+) i_dma_demux (
   .clk_i,
   .rst_ni,
-  .sbr_port_select_i (demux_sel),
-  .sbr_port          (dbg_rom_bus),
-  .mgr_ports         (demux_sbr_bus)
+  .sbr_port_select_i (dma_dmux_sel),
+  .sbr_port          (dma_mgr_bus),
+  .mgr_ports         (dma_dmux_bus)
 );
+end : g_dma_demux
 
 rt_ibex_bootrom #() i_rom (
   .clk_i,
@@ -123,7 +159,8 @@ rt_peripherals #() i_peripherals (
   .irq_id_o       (irq_id),
   .irq_src_i      (intr_src_i),
   .gpio_i         (gpio_input_i),
-  .gpio_o         (gpio_output_o)
+  .gpio_o         (gpio_output_o),
+  .dma_irqs_i     (dma_irqs)
 );
 
 rt_debug #(
@@ -139,7 +176,7 @@ rt_debug #(
   .ndmreset_o      (ndmreset),
   .debug_req_irq_o (debug_req),
   .dbg_mst         (dbg_mgr_bus),
-  .dbg_slv         (demux_sbr_bus[1])
+  .dbg_slv         (dbg_rom_bus)
 );
 
 
@@ -165,12 +202,5 @@ obi_to_axi_intf #(
   .axi_out (soc_mst),
   .obi_in  (axi_mgr_bus)
 );
-
-// TEST TIEOFF
-//assign soc_slv.aw_id = '0;
-//assign soc_slv.aw_len = '0;
-//assign soc_slv.aw_atop = '0;
-//assign soc_slv.aw_user = '0;
-//assign soc_slv.aw_qos = '0;
 
 endmodule : rt_top

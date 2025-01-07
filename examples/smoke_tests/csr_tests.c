@@ -298,7 +298,7 @@ uint32_t __mip__(uint32_t reset_value){
 #define NUM_TESTS (11)
 
 
-void main(){
+int main(){
 
     const uint32_t reset_values[NUM_TESTS] = 
     {
@@ -345,7 +345,7 @@ void main(){
         }
     }
 
-    init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
+    init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
 
     if (errors == 0)
         print_uart("[UART] CSR tests [PASSED]\n");
@@ -353,8 +353,6 @@ void main(){
         print_uart("[UART] CSR tests [PASSED]\n");
     }
 
-    // the fact that this makes this pass is concerning...
-    asm("li a0, 0x0");
     return errors;
 
 }

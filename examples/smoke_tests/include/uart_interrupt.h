@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include "csr_utils.h"
 #include "circular_buffer.h"
 #include "clic.h"
@@ -157,20 +158,20 @@ void print_uart_int(uint32_t addr)
         write_serial(hex[1]);
     }
 }
-/*
-void print_uart_addr(uint64_t addr)
-{
-    int i;
-    for (i = 7; i > -1; i--)
-    {
-        uint8_t cur = (addr >> (i * 8)) & 0xff;
-        uint8_t hex[2];
-        bin_to_hex(cur, hex);
-        write_serial(hex[0]);
-        write_serial(hex[1]);
+
+// super bare-bones mock printf
+void printf(const char* str, ...){
+  va_list args; 
+  va_start(args, str);
+  for (int i = 0; str[i] != '\0'; i++){
+    if (str[i] == '%') {
+      print_uart_int(va_arg(args, int));
+      i++;
     }
+    else
+      write_serial(str[i]); 
+  }
 }
-*/
 
 void print_uart_byte(uint8_t byte)
 {

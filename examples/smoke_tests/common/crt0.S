@@ -6,6 +6,7 @@
 #define GPIO_OUTPUT_ADDR 0x00030008
 #define MTIME_CTRL_ADDR  0x00030210
 #define MTIMECMP_LOW_ADDR 0x00030208
+#define DMA_VAR_ADDR 0x25F00
 #define COMMON_ADDR 0x7000
 
 #define NUM_INTERRUPTS 66
@@ -71,41 +72,40 @@ changeStack:
   .4byte irq_handler_0
   .4byte irq_handler_0 
   .4byte irq_handler_0
-  .org 0x80 //0x80
+  .4byte dma_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0    
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0    
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0    
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .org 0x100
   jal x0, reset_handler //// reset vector
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0    
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0    
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0    
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  jal x0, default_handler
 
 
   .org 0x180 //0x84
@@ -115,6 +115,20 @@ loop:
 default_handler:
   mret
 
+//.org 0x170
+.global dma_handler_0
+.func
+dma_handler_0:
+  nop
+  nop
+  la t0, DMA_VAR_ADDR
+  lw t1, 0(t0)
+  addi t1, t1, 1
+  sw t1, 0(t0)
+  nop
+  nop
+  mret
+.endfunc
 
   .org 0x1F0 //0xA0
 .global irq_handler_0

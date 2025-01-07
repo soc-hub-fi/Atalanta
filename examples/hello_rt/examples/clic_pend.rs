@@ -13,6 +13,7 @@ use bsp::{
     sprintln, tb,
     uart::init_uart,
 };
+use hello_rt::UART_BAUD;
 
 const IRQ: Interrupt = Interrupt::MachineSoft;
 
@@ -21,7 +22,7 @@ static mut LAST_IRQ: Option<u16> = None;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, 9600);
+    init_uart(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8
