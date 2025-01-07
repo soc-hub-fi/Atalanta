@@ -43,9 +43,8 @@ env_check:
 
 # Build the entire program
 .PHONY: $(TEST)
-$(TEST): env_check all
-	@echo "ELF generated in "$(BUILD_DIR)/$(TEST)/$(TEST).elf
-	@echo "ELF dumped in" $(BUILD_DIR)/$(TEST)/$(TEST).dump
+$(TEST): env_check init
+	$(MAKE) -C $(TEST) 
 
 
 
@@ -61,39 +60,6 @@ init: clean
 	@mkdir -p $(BUILD_DIR)/$(TEST)
 	@echo "Building" $(TEST)"..."
 
-# Compile $(TEST)
-.PHONY: compile
-compile: init
-	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) -DLANGUAGE_ASSEMBLY $(CRUNTIME).S \
-	-o $(BUILD_DIR)/crt0.o
-
-	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) $(CURDIR)/$(TEST).c \
-	-o $(BUILD_DIR)/$(TEST)/$(TEST).o
-
-# Link necessary object files
-.PHONY: link
-link: compile
-#$(RVLD) $(LDFLAGS) $(BUILD_DIR)/crt0.o $(BUILD_DIR)/$(TEST)/$(TEST).o -o $(BUILD_DIR)/$(TEST).elf
-	@$(RVGCC) $(ARCH_FLAGS) $(LDFLAGS) -I $(INCLUDE_DIR) -o $(BUILD_DIR)/$(TEST)/$(TEST).elf  $(BUILD_DIR)/crt0.o $(BUILD_DIR)/$(TEST)/$(TEST).o
-
-# Dump the generated .elf file 
-.PHONY: objdump
-objdump: #link
-	@$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) -SsdhwD > $(BUILD_DIR)/$(TEST)/$(TEST).dump
-# Delete the build artifacts
-.PHONY: all
-all: link objdump
-	@rm $(BUILD_DIR)/$(TEST)/*.o
-
-#openOCD
-.PHONY: openOCD
-openOCD:
-	@openocd -f ../../fpga/utils/ft232_openocd_RT-SS.cfg
-
-#GDB
-.PHONY: gdb
-gdb:
-	@$(RVGDB) $(BUILD_DIR)/$(TEST)/$(TEST).elf -x ../../fpga/utils/connect-and-load.gdb
 
 
 	

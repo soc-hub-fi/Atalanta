@@ -19,8 +19,8 @@ reset_handler:
 
 
 
-  .global changeStack
-changeStack:
+  .global change_stack
+change_stack:
   mv sp, a2
   jr a1
 

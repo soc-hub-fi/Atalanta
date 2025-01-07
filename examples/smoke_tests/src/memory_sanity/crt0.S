@@ -4,6 +4,7 @@
 .extern uart_handler
 
   .section .text
+
 reset_handler:
   la x2, stack 
   la ra, exit_status
@@ -17,7 +18,8 @@ exit_status:
   sw a0, 0(t0)
   wfi
 
-change_stack:
+  .global changeStack
+changeStack:
   mv sp, a2
   jr a1
 
@@ -73,8 +75,13 @@ uart_handler_1:
     #endif
     
     csrsi mstatus, 8 /* re-enable global interrupts enable recursion */
+     
+
     jal uart_handler
+  
+
     csrci mstatus, 8 /* disable global interrupts*/
+
     // I expanded stack size to prevent stack overflow due multiple nesting 
 
     lw t0, 28(sp)

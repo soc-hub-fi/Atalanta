@@ -1,8 +1,8 @@
 // Perform memory accessess of varying allingment and size to data memory, check result
 
 #include <stdint.h>
-#include "include/csr_utils.h"
-#include "include/uart_interrupt.h"
+#include "../include/csr_utils.h"
+#include "../include/uart_interrupt.h"
 
 #define OUTPUT_REG_ADDR    0x00030008
 #define TIMER_BASE_ADDR    0x00030200
@@ -83,41 +83,6 @@ int main() {
   init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
   print_uart("[UART] Starting memory_sanity test\n");
 
-<<<<<<< HEAD
-  print_uart("[UART] Alligned word accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), rand(), 0);
-  }
-
-  // TODO: FIXME
-  print_uart("[UART] Unaligned word accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-   write_readback_word(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), rand(), 0);
-  }
-
-  print_uart("[UART] Ulligned half-word accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_half(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), (uint16_t)rand(), 0);
-  }
-
-  // TODO: FIXME
-  print_uart("[UART] Unaligned half-word accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-   write_readback_half(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), (uint16_t)rand(), 0);
-  }
-
-    print_uart("[UART] Alligned byte accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_byte(get_rand_addr(RANGE_BTM, RANGE_TOP, 1), (uint8_t)rand(), 0);
-  }
-
-  print_uart("[UART] Unaligned byte accesses to SPM\n");
-  for (int it=0; it<ITER_CNT; it++){
-    write_readback_byte(get_rand_addr(RANGE_BTM, RANGE_TOP, 0), (uint8_t)rand(), 0);
-  }
-
-  print_uart("[UART] Alligned word accesses to SRAM\n");
-=======
   // Software utilizes SPMs too much to test SPMs with software
   //print_uart("[UART] Performing alligned word accesses to SPM\n");
   //for (int it=0; it<ITER_CNT; it++){
@@ -125,7 +90,6 @@ int main() {
   //}
 
   print_uart("[UART] Performing alligned word accesses to SRAM\n");
->>>>>>> main
   for (int it=0; it<ITER_CNT; it++){
     write_readback_word(get_rand_addr(SRAM_BTM, SRAM_TOP, 1), rand(), 0);
   }
