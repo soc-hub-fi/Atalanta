@@ -48,7 +48,7 @@ int cmp_buffer( uint32_t src, uint32_t dst, uint32_t len){
 }
 
 int main() {  
-  init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
+  init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 30 MHz for FPGA
   printf("[UART] DMA test init: populate src buffer\n");
   init_buffer(DMA_SRC, DMA_LEN);
 

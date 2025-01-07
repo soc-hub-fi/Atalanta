@@ -41,7 +41,7 @@ void stamp_print(uint32_t addr_begin, uint16_t num_stamps){
 
 int main(){
 
-  init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
+  init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 40 MHz for FPGA
 
   print_uart("[UART] Hello from mock UART!\n");
   print_uart("[UART] UART_TEST [PASSED]\n");
