@@ -31,7 +31,7 @@
 #define CHECKPATTERN "SOCHUB"
 #define CHECKPATTER_LEN 6
 
-uint8_t checkpattern[CHECKPATTER_LEN] = {'S', 'O', 'C', 'H', 'U', 'B'};
+uint8_t checkpattern[CHECKPATTER_LEN] = {'B', 'U', 'H', 'C', 'O', 'S'};
 
 #define PAYLOAD_PATTERN "CBA"
 #define PAYLOAD_PATTERN_LEN 3
