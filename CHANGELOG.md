@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Core crossbar to partially-connected pseudo-crossbar
 - added "wfi" to timer_test to accommodate for rt-ibex's sleep mode
 - Added support for UART receiver in Atalanta and its TB environment
-- Added UART_RX test case
+- Added UART_RX test case and updated uart baudrate  
 
 ## [v0.1.1] - 2024-12-11
 

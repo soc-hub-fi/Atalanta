@@ -345,7 +345,7 @@ int main(){
         }
     }
 
-    init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
+    init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 30 MHz for FPGA
 
     if (errors == 0)
         print_uart("[UART] CSR tests [PASSED]\n");
