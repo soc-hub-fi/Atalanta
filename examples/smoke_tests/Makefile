@@ -23,10 +23,14 @@ CFLAGS 			 ?=-O0 -ffunction-sections -fdata-sections -g -c
 # Linker flags
 LDFLAGS 		  = -T$(L_SCRIPT) -nostartfiles
 
+# OBJDUMP Options 
+OBJDUMP_OPT   = -Mnumeric -Ssd
+
 #-{ Rules for the build }-----------------------------------------------------------
 
-TEST			  ?=
-
+TEST			  			?=
+HARDWARE_STACKING ?=0
+DEFINES     			?=dummy
 
 # Check for toolchain existence and PATH
 .PHONY: env_check
@@ -64,10 +68,10 @@ init: clean
 # Compile $(TEST)
 .PHONY: compile
 compile: init
-	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) -DLANGUAGE_ASSEMBLY $(CRUNTIME).S \
+	$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -D $(DEFINES) -I $(INCLUDE_DIR) -DLANGUAGE_ASSEMBLY $(CRUNTIME).S \
 	-o $(BUILD_DIR)/crt0.o
 
-	@$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) $(CURDIR)/$(TEST).c \
+	$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) $(CURDIR)/$(TEST).c \
 	-o $(BUILD_DIR)/$(TEST)/$(TEST).o
 
 # Link necessary object files
@@ -79,7 +83,9 @@ link: compile
 # Dump the generated .elf file 
 .PHONY: objdump
 objdump: #link
-	@$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) -Ssd > $(BUILD_DIR)/$(TEST)/$(TEST).dump
+	@$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) > $(BUILD_DIR)/$(TEST)/$(TEST).dump
+
+
 # Delete the build artifacts
 .PHONY: all
 all: link objdump
