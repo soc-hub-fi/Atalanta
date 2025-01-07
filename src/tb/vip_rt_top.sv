@@ -403,15 +403,24 @@ task automatic uart_rx_test ();
   #100us;
   
   //$display("[TB UART_RX] Sending characters through uart RX");
-  i_uart.send_char("T");
-  i_uart.send_char("e");
-  i_uart.send_char("s");
-  i_uart.send_char("t");
-  i_uart.send_char("1");
-  i_uart.send_char("2");
-  i_uart.send_char("3");
-  i_uart.send_char("4");
+  i_uart.send_char("A");
+  uart_send_checkpattern("SOCHUB");
 
+  i_uart.send_char("B");
+  uart_send_checkpattern("SOCHUB");
+
+  i_uart.send_char("C");
+  uart_send_checkpattern("SOCHUB");
+
+endtask
+
+
+task automatic uart_send_checkpattern(string checkpattern);
+  int i = 0;
+
+  while(checkpattern[i] != "\0") begin 
+    i_uart.send_char(checkpattern[i++]);
+  end 
 endtask
 
 endmodule : vip_rt_top
