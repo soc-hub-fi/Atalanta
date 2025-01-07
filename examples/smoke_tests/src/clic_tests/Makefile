@@ -1,8 +1,9 @@
 #-{ Project Relative Paths }--------------------------------------------------------
-INCLUDE_DIR       =../include
+TOP_LEVEL_DIR     =../..
+INCLUDE_DIR       =$(TOP_LEVEL_DIR)/include
 CRUNTIME		  =$(CURDIR)/crt0
-L_SCRIPT  		  =../common/link.ld
-BUILD_DIR 		  =../build
+L_SCRIPT  		  =$(TOP_LEVEL_DIR)/common/link.ld
+BUILD_DIR 		  =$(TOP_LEVEL_DIR)/build
 
 #-{ Toolchain Specifications }------------------------------------------------------ 
 
@@ -25,7 +26,7 @@ LDFLAGS 		  = -T$(L_SCRIPT) -nostartfiles
 
 #-{ Rules for the build }-----------------------------------------------------------
 
-TEST			  ?= memory_sanity
+TEST			  ?= clic_tests
 
 
 # Delete the build artifacts

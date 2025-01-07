@@ -44,7 +44,7 @@ env_check:
 # Build the entire program
 .PHONY: $(TEST)
 $(TEST): env_check init
-	$(MAKE) -C $(TEST) 
+	$(MAKE) -C $(CURDIR)/src/$(TEST) 
 
 
 
