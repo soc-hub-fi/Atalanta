@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include "csr_utils.h"
 #include "circular_buffer.h"
+#include "pattern_buffer.h"
 #include "clic.h"
 
 #define NO_CIRCULAR_BUFFER 0
@@ -26,10 +27,36 @@
 //UART_LINE_NUM
 #define UART_LINE_NUM      17
 
+
+#define CHECKPATTERN "SOCHUB"
+#define CHECKPATTER_LEN 6
+
+uint8_t checkpattern[CHECKPATTER_LEN] = {'B', 'U', 'H', 'C', 'O', 'S'};
+
+#define PAYLOAD_PATTERN "CBA"
+#define PAYLOAD_PATTERN_LEN 3
+
+uint8_t payload_pattern[PAYLOAD_PATTERN_LEN] = {'C', 'B', 'A'};
+
+
+
 //STRUCT INSTANTIATION
 #define UART_BUFFER_SIZE 30
 uint8_t buffer[UART_BUFFER_SIZE];
 struct circular_buffer tx_buffer = {.buffer = buffer, .size = UART_BUFFER_SIZE, .head = 0, .tail = 0};
+
+#define UART_RX_BUFFER_CAPACITY 50
+uint8_t rx_buffer[UART_RX_BUFFER_CAPACITY];
+struct circular_buffer rx_circ_buffer = {.buffer = rx_buffer, .size = UART_RX_BUFFER_CAPACITY, .head = 0, .tail = 0};
+
+uint8_t checkpattern_buffer[CHECKPATTER_LEN];
+struct pattern_buffer checkpattern_patt_buf = {.buffer = checkpattern_buffer, .len = CHECKPATTER_LEN, .head = 0, .tail = CHECKPATTER_LEN-1, .pattern = checkpattern};
+
+uint8_t payload_buffer[PAYLOAD_PATTERN_LEN];
+struct pattern_buffer payload_patt_buf = {.buffer = payload_buffer, .len = PAYLOAD_PATTERN_LEN, .head = 0, .tail = PAYLOAD_PATTERN_LEN-1, .pattern = payload_pattern};
+
+
+
 
 //THIS FUBNCTION CONFIGURES UART
 void write_reg_u8(uintptr_t addr, uint8_t value)
@@ -54,16 +81,45 @@ void start_tx(uintptr_t addr)
     //return read_reg_u8(UART_LINE_STATUS) & 0x20;  
 }
 
+uint8_t get_uart_int_id(){
+    uint8_t uart_int_id = read_reg_u8(UART_INTERRUPT_IDENT);
+    uart_int_id &= 0b00001110; // UART_INTERRUPT_IDENT[3:1]
+    uart_int_id >>= 1; 
+    
+    return uart_int_id;
+}
+
+
 // called from actual uart handler in crt0
 void uart_handler(){
+    uint8_t uart_int_id = get_uart_int_id();
 
-    write_reg_u8(UART_INTERRUPT_ENABLE, 0x00); // Disable uart interrupts, will get enabled again only when a new character is pushed into buffer
-    
-    if(!circular_buffer_empty(&tx_buffer)){
-        start_tx(UART_THR);
+    if(uart_int_id == 0x1){
+      write_reg_u8(UART_INTERRUPT_ENABLE, 0x00); // Disable uart interrupts, will get enabled again only when a new character is pushed into buffer
+      
+      if(!circular_buffer_empty(&tx_buffer)){
+          start_tx(UART_THR);
+      }
+    } else {
+
+      while(!circular_buffer_full(&rx_circ_buffer) && ((get_uart_int_id() == 0x2) || (get_uart_int_id() == 0x6))){  // consume all the elements in the rx uart fifo
+        uint8_t rx_data = read_reg_u8(UART_RBR);
+
+        circular_buffer_push(&rx_circ_buffer, rx_data);  // For debugging purposes
+        pattern_buffer_push(&checkpattern_patt_buf, rx_data);
+
+        volatile uint8_t a = checkpattern_patt_buf.payload;
+
+        if(pattern_buffer_check_pattern(&checkpattern_patt_buf)){   // checkpattern detected 
+          pattern_buffer_push(&payload_patt_buf, checkpattern_patt_buf.payload); // move the payload byte from the checkpattern_buffer to payload_buffer
+          circular_buffer_push(&rx_circ_buffer, rx_data); // push to circular buffer 
+          pattern_buffer_reset_buffer(&checkpattern_patt_buf);  // reset the checkpattern buffer for a new packet received
+        }
+      }
     }
-
 }
+
+
 void init_uart_irq()
 {
     write_word(CLIC_BASE_ADDR, 0x8, 0xFFFFFFFF, 0);
