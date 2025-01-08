@@ -86,7 +86,7 @@ VERIL_FLAGS ?= \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
 	--top-module $(TOP_MODULE) \
 	$(shell bender script flist $(BENDER_TARGETS)) \
-	--Mdir $(VERIL_BUILD_DIR) \
+	--Mdir $(VERIL_BUILD_DIR)/obj_dir \
 	--build \
 	-j `nproc`
 
@@ -109,7 +109,7 @@ verilate: clean init
 .PHONY: simv
 simv: init
 	cd $(VERIL_BUILD_DIR) && \
-	./V$(TOP_MODULE)
+	./obj_dir/V$(TOP_MODULE)
 
 .PHONY: wave
 wave:

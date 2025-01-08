@@ -11,7 +11,7 @@
 #include "Vrt_top_unpacked.h"
 #include "verilated_fst_c.h"
 #include "verilated.h"
-#include "vip/src/testbench.h"
+#include "vip/src/Testbench.h"
 //#include "SimCxt.h"
 //#include "vip/src/ClkRstDrv.h"
 //#include "vip/src/JtagDrv.h"
@@ -40,6 +40,13 @@ int main(int argc, char** argv) {
   tb->reset();
 
   for (int it=0;it<100;it++) tb->tick();
+
+  for (int it=0;it<100;it++) tb->jtag_tick();
+
+  for (int it=0;it<100;it++) tb->tick();
+
+  tb->jtag_connectivity_test();
+
   //uint64_t sim_time = 0;
   //SimCtx cx(new Vrt_top_unpacked, new VerilatedFstC, sim_time);
   //enum Sequence seq = JTAG;

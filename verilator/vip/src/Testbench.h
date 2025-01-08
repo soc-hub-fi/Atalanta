@@ -1,5 +1,6 @@
-// Testbench template, modelled from https://github.com/ZipCPU/zipcpu/blob/master/sim/verilator/testb.h
 
+
+// Testbench template, modelled from https://github.com/ZipCPU/zipcpu/blob/master/sim/verilator/testb.h
 template <class VA>
 class Testbench {
 public:
@@ -64,4 +65,29 @@ public:
     uint64_t tickcount(void) {
 		return m_tickcount;
 	}
+
+    // TODO:separate JTAG functionality to other class/file?
+    virtual void jtag_tick(void) {
+        m_dut->jtag_tck_i = 0;
+        for (int i=0; i<JTAG_CLK_PER; i++) tick();
+        m_dut->jtag_tck_i = 1;
+        for (int i=0; i<JTAG_CLK_PER; i++) tick();
+        m_dut->jtag_tck_i = 0;
+    }
+
+    virtual void jtag_connectivity_test (void) {
+        printf("[JTAG] Performing connectivity tests - tick %ld\n", m_tickcount);
+    }
+    
+    virtual void jtag_memory_test (void) {
+        
+    }
+
+    virtual void jtag_load_elf (void) {
+
+    }
+
+    virtual void jtag_wait_eoc (void) {
+        
+    }
 };
