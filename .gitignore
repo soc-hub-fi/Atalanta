@@ -8,7 +8,6 @@ vsim/modelsim.ini
 transcript
 vsim/wave.wlf
 vsim/*.log
-verilator/vip
 stims/
 **/*.swp
 
