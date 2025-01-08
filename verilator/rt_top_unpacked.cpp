@@ -22,9 +22,7 @@
 //  DONE
 //};
 
-class TbRtTop : public Testbench<Vrt_top_unpacked> {
-
-};
+class TbRtTop : public Testbench<Vrt_top_unpacked> {};
 
 int main(int argc, char** argv) {
 
@@ -38,13 +36,6 @@ int main(int argc, char** argv) {
     tb->tick();
 
   tb->reset();
-
-  for (int it=0;it<100;it++) tb->tick();
-
-  for (int it=0;it<100;it++) tb->jtag_tick();
-
-  for (int it=0;it<100;it++) tb->tick();
-
   tb->jtag_connectivity_test();
 
   //uint64_t sim_time = 0;
