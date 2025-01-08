@@ -1,5 +1,10 @@
+/*Change it if necessary...*/
+/*Make sure it's 16-bytes aligned*/
 #define VTABLE_ADDR 0x0
+#define SHARED_VAR_ADDR 0x5F00
+
 #define NUM_INTERRUPTS 66
+//#define HARDWARE_STACKING  
 
 .extern uart_handler
 
@@ -18,8 +23,7 @@ exit_status:
   sw a0, 0(t0)
   wfi
 
-  .global changeStack
-changeStack:
+change_stack:
   mv sp, a2
   jr a1
 
@@ -33,19 +37,20 @@ changeStack:
   .4byte default_handler
   .4byte default_handler
   .4byte default_handler
+  .4byte default_handler //mtime_handler 
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler    // line 16
   .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1    // line 16
-  .4byte uart_handler_1
-  .org 0x100
+  .org 0x80 //0x80
   jal x0, reset_handler //// reset vector
+  jal x0, default_handler
 
 
   .org 0x180 //0x84
@@ -75,14 +80,8 @@ uart_handler_1:
     #endif
     
     csrsi mstatus, 8 /* re-enable global interrupts enable recursion */
-     
-
     jal uart_handler
-  
-
     csrci mstatus, 8 /* disable global interrupts*/
-
-    // I expanded stack size to prevent stack overflow due multiple nesting 
 
     lw t0, 28(sp)
     lw t1, 32(sp)

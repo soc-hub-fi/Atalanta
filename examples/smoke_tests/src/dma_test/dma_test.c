@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include "include/csr_utils.h"
-#include "include/uart_interrupt.h"
-#include "include/clic.h"
+#include "../include/csr_utils.h"
+#include "../include/uart_interrupt.h"
+#include "../include/clic.h"
 
 #define DMA_SRC 0x00006000
 #define DMA_DST 0x00020000

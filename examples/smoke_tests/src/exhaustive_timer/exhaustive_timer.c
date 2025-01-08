@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#include "include/common.h"
-#include "include/clic.h"
-#include "include/csr_utils.h"
+#include "../include/common.h"
+#include "../include/clic.h"
+#include "../include/csr_utils.h"
 
 
 #define N_SOURCE 63
@@ -40,9 +40,7 @@ void irqs_config(){
             enable_int(id); 
 
         }
-    }
-
-  
+    } 
 }
 
 int main(){
@@ -53,33 +51,26 @@ int main(){
     *((uint32_t *)(NESTED_DEC_ADDR))  = 0x00000010; //control the nesting levels
     *((uint32_t *)(NESTED_ARG_ADDR))  = 0x00000028; //argument passed to pend_int to fire the next interrupt
     *(uint32_t*)(COMMON_ADDR) = 0xAA;
-
     
     irqs_config();
 
- 
-
-  // positive edge triggering
-  set_trig(7, CLIC_TRIG_POSITIVE | CLIC_TRIG_EDGE);
+    // positive edge triggering
+    set_trig(7, CLIC_TRIG_POSITIVE | CLIC_TRIG_EDGE);
 
 
-  //csr_write(CSR_MTVEC, 0x1400);
-  csr_write(CSR_MTVT, 0x1000);
+    //csr_write(CSR_MTVEC, 0x1400);
+    csr_write(CSR_MTVT, 0x1000);
 
-  enable_vectoring(7);
-  enable_int(7);
-  set_priority(7, 0x88);
+    enable_vectoring(7);
+    enable_int(7);
+    set_priority(7, 0x88);
 
+    //enable timer [bit 0] & set prescaler to 00F [bits 20:8]
+    *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00F01;
 
-  
-
-  //enable timer [bit 0] & set prescaler to 00F [bits 20:8]
-  *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00F01;
-
- // enable global interrupts
-  asm("csrsi mstatus, 8");
-  csr_write(CSR_MINTTHRESH, 0x00);
-
+    //enable global interrupts
+    asm("csrsi mstatus, 8");
+    csr_write(CSR_MINTTHRESH, 0x00);
 
     while (1)
         if (*(uint32_t*)(NESTED_DEC_ADDR) == 0) break;
@@ -91,9 +82,7 @@ int main(){
   
         print_uart("Actual: ");    
         print_uart_int(count);
-        print_uart("\n");
-
-        
+        print_uart("\n");        
 
         if(count!= 0xF){
             print_uart("[UART] Test [FAILED]\n");

@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include "include/common.h"
-#include "include/clic.h"
-#include "include/csr_utils.h"
+#include "../include/common.h"
+#include "../include/clic.h"
+#include "../include/csr_utils.h"
 
 
 #define N_SOURCE 64

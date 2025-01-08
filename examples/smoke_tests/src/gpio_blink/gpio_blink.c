@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include "include/clic.h"
-#include "include/uart_interrupt.h"
+#include "../include/clic.h"
+#include "../include/uart_interrupt.h"
 
 #define GPIO_BASE       0x00030000
 #define PADDIR_00_31   (GPIO_BASE + 0x0)

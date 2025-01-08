@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include "include/csr_utils.h"
-#include "include/uart_interrupt.h"
+#include "../include/csr_utils.h"
+#include "../include/uart_interrupt.h"
 
 #define OUTPUT_REG_ADDR    0x00030008
 #define TIMER_BASE_ADDR    0x00030200

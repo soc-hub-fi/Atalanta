@@ -1,5 +1,6 @@
 #define VTABLE_ADDR 0x0
 #define NUM_INTERRUPTS 66
+//#define HARDWARE_STACKING  
 
 .extern uart_handler
 
@@ -33,16 +34,16 @@ changeStack:
   .4byte default_handler
   .4byte default_handler
   .4byte default_handler
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1
-  .4byte uart_handler_1    // line 16
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler
+  .4byte default_handler    // line 16
   .4byte uart_handler_1
   .org 0x100
   jal x0, reset_handler //// reset vector
@@ -75,14 +76,8 @@ uart_handler_1:
     #endif
     
     csrsi mstatus, 8 /* re-enable global interrupts enable recursion */
-     
-
     jal uart_handler
-  
-
     csrci mstatus, 8 /* disable global interrupts*/
-
-    // I expanded stack size to prevent stack overflow due multiple nesting 
 
     lw t0, 28(sp)
     lw t1, 32(sp)

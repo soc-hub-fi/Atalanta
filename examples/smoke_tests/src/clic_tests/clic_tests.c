@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#include "include/common.h"
-#include "include/clic.h"
-#include "include/csr_utils.h"
+#include "../include/common.h"
+#include "../include/clic.h"
+#include "../include/csr_utils.h"
 
 
 #define N_SOURCE 64
@@ -221,7 +221,7 @@ void clic_perf(){
 
 int main(){
     
-    init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
+    init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
     init();
 
     //exhaustive();
