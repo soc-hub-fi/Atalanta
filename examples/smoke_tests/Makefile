@@ -1,7 +1,5 @@
 #-{ Project Relative Paths }--------------------------------------------------------
-INCLUDE_DIR       =$(CURDIR)/include
-CRUNTIME		  =$(CURDIR)/common/crt0
-L_SCRIPT  		  =$(CURDIR)/common/link.ld
+
 BUILD_DIR 		  =$(CURDIR)/build
 
 #-{ Toolchain Specifications }------------------------------------------------------ 
@@ -13,20 +11,9 @@ RVGCC			  =$(TOOLCHAIN_PREFIX)gcc
 RVOBJDUMP		  =$(TOOLCHAIN_PREFIX)objdump
 RVGDB		      =$(TOOLCHAIN_PREFIX)gdb
 
-# Object copy (for converting formats if needed) 
-OBJCOPY		      =$(TOOLCHAIN_PREFIX)objcopy
-
-# Architecture and Compiler flags
-ARCH_FLAGS       ?=-march=rv32emc_zicsr -mabi=ilp32e
-CFLAGS 			 ?=-O0 -ffunction-sections -fdata-sections -g -c
-
-# Linker flags
-LDFLAGS 		  = -T$(L_SCRIPT) -nostartfiles
-
-#-{ Rules for the build }-----------------------------------------------------------
+#-{ TEST }-----------------------------------------------------------
 
 TEST			  ?=
-
 
 # Check for toolchain existence and PATH
 .PHONY: env_check
@@ -39,14 +26,10 @@ env_check:
 	done
 	@echo "All tools found in PATH."
 
-
-
 # Build the entire program
 .PHONY: $(TEST)
 $(TEST): env_check init
 	$(MAKE) -C $(CURDIR)/src/$(TEST) 
-
-
 
 # Delete the build directory
 .PHONY: clean
