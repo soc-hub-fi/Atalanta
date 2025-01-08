@@ -149,7 +149,7 @@ clk_rst_gen #(
 );
 
 uart_bus #(
-  .BAUD_RATE( 3000000 ),
+  .BAUD_RATE( 1500000 ),
   .PARITY_EN(    0 )
 ) i_uart (
   // Note invertion of signals from dut->uart
@@ -384,7 +384,7 @@ task automatic run_dbg_mem_test();
   //end : unalligned_loop
 endtask
 
-task automatic gpio_sanity ();
+task automatic gpio_sanity_test ();
   fork
     begin
       wait (gpio_dut_out != '0);
@@ -397,6 +397,30 @@ task automatic gpio_sanity ();
     end
 
   join_any
+endtask
+
+task automatic uart_rx_test ();
+  #100us;
+  
+  //$display("[TB UART_RX] Sending characters through uart RX");
+  i_uart.send_char("A");
+  uart_send_checkpattern("SOCHUB");
+
+  i_uart.send_char("B");
+  uart_send_checkpattern("SOCHUB");
+
+  i_uart.send_char("C");
+  uart_send_checkpattern("SOCHUB");
+
+endtask
+
+
+task automatic uart_send_checkpattern(string checkpattern);
+  int i = 0;
+
+  while(checkpattern[i] != "\0") begin 
+    i_uart.send_char(checkpattern[i++]);
+  end 
 endtask
 
 endmodule : vip_rt_top

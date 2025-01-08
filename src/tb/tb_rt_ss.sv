@@ -12,7 +12,7 @@ localparam int unsigned AxiDw = 32;
 localparam int unsigned AxiIw = 9;
 localparam int unsigned AxiUw = 4;
 
-localparam time             ExtraRunTime  = 10us;
+localparam time             ExtraRunTime  = 100us;
 localparam time             ClockPerSys   = 10ns;
 localparam time             ClockPerJtag  = 30ns;
 localparam longint unsigned RstClkCycles  = 347;
@@ -51,7 +51,9 @@ initial begin : tb_process
     else
       $fatal(1, "ERROR: unsupported LOAD, exiting");
     if (TestName == "gpio_blink") begin
-      vip.gpio_sanity();
+      vip.gpio_sanity_test();
+    end else if (TestName == "uart_rx") begin
+      vip.uart_rx_test();
     end
     vip.jtag_wait_for_eoc();
   end
