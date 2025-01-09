@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     tb->tick();
 
   tb->reset();
-  tb->jtag_connectivity_test();
+  tb->jtag_init();
 
   //uint64_t sim_time = 0;
   //SimCtx cx(new Vrt_top_unpacked, new VerilatedFstC, sim_time);
