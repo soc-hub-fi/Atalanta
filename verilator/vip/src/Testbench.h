@@ -94,9 +94,36 @@ public:
             int tmp = (instr >> i) & 0x1;
             m_dut->jtag_td_i = tmp;
             jtag_tick();
-            jtag_tick();
         }
     }
+
+    virtual void goto_shift_dr (void) {
+        m_dut->jtag_tms_i   = 1;
+        m_dut->jtag_trst_ni = 1;
+        m_dut->jtag_td_i    = 0;
+        jtag_tick();
+        m_dut->jtag_tms_i   = 0;
+        jtag_tick();
+        jtag_tick();
+    }
+
+    virtual std::vector<uint32_t> shift_nbits_shift_dr (std::vector<uint32_t> data, uint32_t size) {
+        std::vector<uint32_t> result = {0};
+        const uint32_t NumBits = size * 32;
+        m_dut->jtag_trst_ni = 1;
+        m_dut->jtag_tms_i   = 0;
+        for (int i=0; i<NumBits; i++){
+            int idx = i / 32;
+            if (i == NumBits-1){
+                m_dut->jtag_tms_i = 1;
+            }
+            m_dut->jtag_td_i = (data[idx] >> i) & 0x1;
+            jtag_tick();
+            result[idx] |= (m_dut->jtag_td_o) << i;
+        }
+        return result;
+    }
+
     virtual void idle(void) {
         m_dut->jtag_tms_i   = 1;
         m_dut->jtag_td_i    = 0;
@@ -110,6 +137,15 @@ public:
         goto_shift_ir();
         shift_shift_ir(instr);
         idle();
+    }
+
+    virtual std::vector<uint32_t> shift(std::vector<uint32_t> data, uint32_t size) {
+        std::vector<uint32_t> result = {0};
+        if (data.empty()) printf("ERROR: data empty");
+        goto_shift_dr();
+        result = shift_nbits_shift_dr(data, size);
+        idle();
+        return result;
     }
 
     virtual void jtag_reset (void) {
@@ -135,7 +171,6 @@ public:
         printf("[JTAG] Performing bypass test    \t-\ttick %ld\n", m_tickcount);
         const uint32_t LocalSize     = 8;
         const uint32_t JtagSoCBypass = 0b11111;
-        //JtagReg jtag_bypass(LocalSize, JtagSoCBypass);
         std::vector<uint32_t> test_data = { 
             0x00001111,
             0xEEEEFFFF,
@@ -148,6 +183,35 @@ public:
         };
 
         set_ir(JtagSoCBypass);
+        std::vector<uint32_t> result_data = shift(test_data, LocalSize);
+
+        printf("Pre shift\n");
+        for (int i=0;i<LocalSize;i++) {
+            printf("[JTAG] test[%d]: %08x result[%d]: %08x \n",i, test_data[i], i, result_data[i]);
+        }
+
+
+        // shift whole array right 1 place, account for partitioning
+        bool tmp_bit = 0;
+        for (int i=0; i<LocalSize; i++) {
+            //uint32_t tmp = result_data[i+1] & 0x1;
+            //if (i == LocalSize-1) tmp = 0x1;
+            //result_data[i] = (result_data[i] >> 1) | tmp << 31;
+            if (i == LocalSize-1){
+                tmp_bit = 1;
+            } else {
+                tmp_bit = result_data[i+1] & 0x1;
+            }
+            result_data[i] = result_data[i] >> 1 | (tmp_bit << 31);
+
+        }
+
+        printf("post shift\n");
+        // Check result
+        for (int i=0;i<LocalSize;i++) {
+            printf("[JTAG] test[%d]: %08x result[%d]: %08x \n",i, test_data[i], i, result_data[i]);
+        }
+
 
     }
     virtual void jtag_get_idcode (void) {
