@@ -36,6 +36,7 @@ int main(int argc, char** argv) {
     tb->tick();
 
   tb->reset();
+  tb->jtag_reset_master();
   tb->jtag_init();
 
   //uint64_t sim_time = 0;
