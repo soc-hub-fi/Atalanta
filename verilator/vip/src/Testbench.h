@@ -160,7 +160,9 @@ public:
         uint64_t write_data = 0;
         write_data |= (DtmWrite << 0);  // op
         write_data |= (data     << 2);  // data
-        write_data |= ((uint64_t) csr_addr << 34); // addr
+        write_data |= (((uint64_t) csr_addr) << 34); // addr
+        printf("Csr addr %x\n", csr_addr);
+        printf("write data: %lx, %ld\n", write_data, m_tickcount);
         set_ir(DmiAccess);
         shift_dr();
         write_bits(write_data, DMIWidth, 1);
@@ -286,16 +288,18 @@ public:
         const uint8_t  DMControlAddr = 0x10;
         uint32_t       DMControlData = 0;
         DMControlData               |= 0x1; // set dmactive [bit 0] 
-        jtag_write(DMControlAddr, DMControlData);
+        printf("[JTAG] write      \t-\t time %ld\n", m_tickcount);
+        //jtag_write(DMControlAddr, DMControlData);
+        jtag_write(DMControlAddr, 0);
         uint32_t dmcontrol = 0; 
         bool  dmcontrol_active = 0;
         int test = 0;
-        do{
-            dmcontrol = jtag_read_dmi_exp_backoff(DMControlAddr);
-            dmcontrol_active = dmcontrol & 0x1;
-            printf("dmcontrol: %08x\n", dmcontrol);
-            test++;
-        }while(test<10);//!dmcontrol_active);
+        //do{
+        //    dmcontrol = jtag_read_dmi_exp_backoff(DMControlAddr);
+        //    dmcontrol_active = dmcontrol & 0x1;
+        //    printf("dmcontrol: %08x\n", dmcontrol);
+        //    test++;
+        //}while(test<10);//!dmcontrol_active);
 
 
 
