@@ -1,9 +1,14 @@
 #-{ Project Relative Paths }--------------------------------------------------------
 TOP_LEVEL_DIR     =../..
 INCLUDE_DIR       =$(TOP_LEVEL_DIR)/include
-CRUNTIME		  =$(CURDIR)/crt0
 L_SCRIPT  		  =$(TOP_LEVEL_DIR)/common/link.ld
 BUILD_DIR 		  =$(TOP_LEVEL_DIR)/build
+
+ifneq ($(wildcard $(CURDIR)/crt0.S),)
+CRUNTIME		  =$(CURDIR)/crt0
+else 
+CRUNTIME		  =$(TOP_LEVEL_DIR)/common/crt0
+endif
 
 #-{ Toolchain Specifications }------------------------------------------------------ 
 

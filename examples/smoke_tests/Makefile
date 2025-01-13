@@ -13,7 +13,7 @@ RVGDB		      =$(TOOLCHAIN_PREFIX)gdb
 
 #-{ TEST }-----------------------------------------------------------
 
-TEST			  ?=
+#-{ Rules for the build }-----------------------------------------------------------
 
 # Check for toolchain existence and PATH
 .PHONY: env_check

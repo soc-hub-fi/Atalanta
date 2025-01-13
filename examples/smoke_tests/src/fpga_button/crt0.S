@@ -48,9 +48,8 @@ change_stack:
   .4byte default_handler
   .4byte default_handler    // line 16
   .4byte default_handler     //uart_handler_1
-  .org 0x80 //0x80
+  .org 0x100
   jal x0, reset_handler //// reset vector
-  jal x0, default_handler
 
 
   .org 0x180 //0x84

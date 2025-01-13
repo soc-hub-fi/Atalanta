@@ -80,7 +80,7 @@ uint8_t write_readback_byte(uint32_t addr, uint8_t value, char verbose){
 }
 
 int main() {  
-  init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
+  init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 30 MHz for FPGA
   print_uart("[UART] Starting memory_sanity test\n");
 
   // Software utilizes SPMs too much to test SPMs with software

@@ -7,7 +7,7 @@
 
 
 int main() {  
-  init_uart(100000000/2, 1500000); // 50 MHz for simulation, 30 MHz for FPGA
+  init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 30 MHz for FPGA
 
   write_reg_u8(UART_INTERRUPT_ENABLE, 0);
   write_reg_u8(UART_INTERRUPT_ENABLE, 0x1 << 0);  // enable Receiver data available interrupt and character timeout indication interrupt enable.

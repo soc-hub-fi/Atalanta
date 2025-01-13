@@ -221,7 +221,7 @@ void clic_perf(){
 
 int main(){
     
-    init_uart(100000000/2, 3000000); // 50 MHz for simulation, 30 MHz for FPGA
+    init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 30 MHz for FPGA
     init();
 
     //exhaustive();

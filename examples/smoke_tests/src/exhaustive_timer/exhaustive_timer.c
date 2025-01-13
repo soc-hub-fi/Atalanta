@@ -45,7 +45,7 @@ void irqs_config(){
 
 int main(){
     
-    init_uart(100000000/2, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
+    init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 30 MHz for FPGA
     init(); //init shared variables
     
     *((uint32_t *)(NESTED_DEC_ADDR))  = 0x00000010; //control the nesting levels

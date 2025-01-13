@@ -6,6 +6,7 @@
 #define GPIO_OUTPUT_ADDR 0x00030008
 #define MTIME_CTRL_ADDR  0x00030210
 #define MTIMECMP_LOW_ADDR 0x00030208
+#define DMA_VAR_ADDR 0x25F00
 #define COMMON_ADDR 0x7000
 
 #define NUM_INTERRUPTS 66
@@ -35,7 +36,7 @@ change_stack:
   mv sp, a2
   jr a1
 
-  .section .vectors, "ax"
+    .section .vectors, "ax"
   .option norvc;
   .org VTABLE_ADDR
   jal x0, reset_handler
@@ -70,41 +71,40 @@ change_stack:
   .4byte irq_handler_0
   .4byte irq_handler_0 
   .4byte irq_handler_0
-  .org 0x80 //0x80
+  .4byte dma_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0    
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0    
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0    
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .4byte irq_handler_0
+  .org 0x100
   jal x0, reset_handler //// reset vector
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0    
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0    
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0    
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  .4byte irq_handler_0
-  jal x0, default_handler
 
 
   .org 0x180 //0x84
@@ -114,6 +114,20 @@ loop:
 default_handler:
   mret
 
+//.org 0x170
+.global dma_handler_0
+.func
+dma_handler_0:
+   nop
+   nop
+   la t0, DMA_VAR_ADDR
+   lw t1, 0(t0)
+   addi t1, t1, 1
+   sw t1, 0(t0)
+   nop
+   nop
+   mret
+.endfunc
 
   .org 0x1F0 //0xA0
 .global irq_handler_0
@@ -166,7 +180,7 @@ irq_handler_0:
 
 
 
-  .org 0x2F0 //0xA0
+    .org 0x2F0 //0xA0
 .global uart_handler_1
 .func
 uart_handler_1:
@@ -176,8 +190,8 @@ uart_handler_1:
     sw t0, 4(sp)
     sw a0, 8(sp)
     sw a1, 12(sp)
-    sw a2, 16(sp)
-    sw a3, 20(sp)
+    sw a4, 16(sp)
+    sw a5, 20(sp)
     sw t1, 24(sp)
     csrr t0, mepc
     csrr t1, mcause
@@ -187,8 +201,8 @@ uart_handler_1:
     
     csrsi mstatus, 8 /* re-enable global interrupts enable recursion */
      
-
-    jal uart_handler
+    
+    call uart_handler
   
 
     csrci mstatus, 8 /* disable global interrupts*/
@@ -203,12 +217,14 @@ uart_handler_1:
     lw t0, 4(sp)
     lw a0, 8(sp)
     lw a1, 12(sp)
-    lw a2, 16(sp)
-    lw a3, 20(sp)
+    lw a4, 16(sp)
+    lw a5, 20(sp)
     lw t1, 24(sp)
     addi sp, sp, (4 * 9)
     mret
 .endfunc
+
+
 
 
 
@@ -234,18 +250,6 @@ mtimer_handler:
 
 
     csrsi mstatus, 8 /* re-enable global interrupts enable recursion */
-
-    la t0, MTIME_CTRL_ADDR  // This block of code is relevent to timer_test.c
-    sw x0, 0(t0)
-    la t0, COMMON_ADDR
-    lw t1, 0(t0) 
-    addi t1, t1, -1
-    sw t1, 0(t0)
-    li a1, 0xFE
-    beq t1, a1, quit
-
-
-
     la a2, 0x5E00
     lw a3, 0(a2)
     addi a3, a3, -1
