@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added "wfi" to timer_test to accommodate for rt-ibex's sleep mode
 - Added support for UART receiver in Atalanta and its TB environment
 - Added UART_RX test case and updated uart baudrate  
+- Refactor smoke_tests and handling of crt0.s in SW flow 
 
 ## [v0.1.1] - 2024-12-11
 
