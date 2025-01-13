@@ -5,8 +5,9 @@ public:
     VA             *m_dut;
     VerilatedFstC*  m_trace;
     uint64_t        m_tickcount;
+    uint8_t         m_jtag_ir;
 
-    Testbench(void) : m_trace(NULL), m_tickcount(01) {
+    Testbench(void) : m_trace(NULL), m_tickcount(01), m_jtag_ir(0xFF) {
         m_dut = new VA;
         Verilated::traceEverOn(true);
 		m_dut->clk_i = 0;
@@ -66,11 +67,12 @@ public:
 
     // TODO:separate JTAG functionality to other class/file?
     virtual void jtag_tick(void) {
-        m_dut->jtag_tck_i = 0;
-        for (int i=0; i<JTAG_CLK_PER; i++) tick();
-        m_dut->jtag_tck_i = 1;
-        for (int i=0; i<JTAG_CLK_PER; i++) tick();
-        m_dut->jtag_tck_i = 0;
+        const uint8_t HalfPer = JTAG_CLK_PER;
+        // drive jtag_clk risign edge slightly before input
+        for (int i=0;i<HalfPer*2; i++){
+            m_dut->jtag_tck_i = (i < HalfPer - 1 | i == (HalfPer*2) -1);
+            tick();
+        }
     }
 
     virtual void jtag_reset(void) {
@@ -80,6 +82,7 @@ public:
         jtag_tick();
         jtag_tick();
         m_dut->jtag_trst_ni = 1;
+        m_jtag_ir = 0xFF;
         jtag_tick();
     }
     virtual void jtag_softreset(void) {
@@ -88,6 +91,9 @@ public:
         for(int i=0;i<6;i++) jtag_tick();
         m_dut->jtag_tms_i   = 0;
         jtag_tick();
+        // After softreset the IR should be reset to IDCODE so we have to mirror
+        // this in our internal state.
+        m_jtag_ir = 0xFF;
     }
 
     virtual void jtag_reset_master (void) {
@@ -100,7 +106,7 @@ public:
         jtag_tick();
     }
 
-    virtual void write_bits (uint32_t wdata, uint32_t size, bool tms_last) {
+    virtual void write_bits (uint64_t wdata, uint32_t size, bool tms_last) {
         for (int i = 0; i < size; i++){
             m_dut->jtag_td_i = (wdata >> i) & 0x1;
             if (i == size-1) m_dut->jtag_tms_i = tms_last;
@@ -110,6 +116,10 @@ public:
     }
 
     virtual void set_ir(uint32_t opcode) {
+        const uint32_t mask_5b = 0b11111;
+        // check whether IR is already set to the right value
+        if( (opcode & mask_5b) == (m_jtag_ir & mask_5b) )
+            return;
         write_tms(1); // select DR scan
         write_tms(1); // select IR scan
         write_tms(0); // capture IR
@@ -155,14 +165,12 @@ public:
 
     virtual void jtag_write_dmi(uint8_t csr_addr, uint32_t data) {
         const uint32_t DMIWidth = 7 + 2 + 32; // addr + op + data
-        const uint8_t  DtmWrite  = 0b11;
+        const uint8_t  DtmWrite  = 0b10;
         const uint32_t DmiAccess = 0b10001;
         uint64_t write_data = 0;
         write_data |= (DtmWrite << 0);  // op
         write_data |= (data     << 2);  // data
         write_data |= (((uint64_t) csr_addr) << 34); // addr
-        printf("Csr addr %x\n", csr_addr);
-        printf("write data: %lx, %ld\n", write_data, m_tickcount);
         set_ir(DmiAccess);
         shift_dr();
         write_bits(write_data, DMIWidth, 1);
@@ -227,7 +235,6 @@ public:
         set_ir(DmiAccess);
         // send read command
         shift_dr();
-        printf("writedata1 : %016lx\n", write_data);
         write_bits(write_data, DMIWidth, 1);
         update_dr(0);
         wait_idle(wait_cycles);
@@ -237,10 +244,8 @@ public:
         write_data |= (DtmNop << 0);  // op
         //write_data |= (data << 2);  // data = 0
         write_data |= ((uint64_t) addr << 34); // addr
-        printf("writedata1 : %016lx\n", write_data);
         uint64_t data_out = readwrite_bits(write_data, DMIWidth, 1);
         update_dr(0);
-        printf("data out: %x\n", data_out);
 
         return data_out;
     }
@@ -273,12 +278,13 @@ public:
 
     virtual void jtag_init (void) {
         printf("[JTAG] perform init \t-\t time %ld\n", m_tickcount);
-        const uint32_t IdCodeInstr = 0b00001;
+        const uint32_t IdCodeInstr = 0b11111;
         const uint32_t IdCode      = 0xfeedc0d3;
+        const uint8_t  SbcsAddr    = 0x38;
+        const uint32_t SbcsData    = 0x58000;
 
-        for (int i=0;i<100;i++) jtag_tick();
+        for (int i=0;i<10;i++) jtag_tick();
         uint32_t idcode = get_idcode(IdCodeInstr);
-
         if (idcode != IdCode)
             printf("[JTAG] idcode ERROR: read %x, expected %x\n", idcode, IdCode);
         else
@@ -287,22 +293,16 @@ public:
         // Activate, wait for debug module
         const uint8_t  DMControlAddr = 0x10;
         uint32_t       DMControlData = 0;
-        DMControlData               |= 0x1; // set dmactive [bit 0] 
-        printf("[JTAG] write      \t-\t time %ld\n", m_tickcount);
-        //jtag_write(DMControlAddr, DMControlData);
-        jtag_write(DMControlAddr, 0);
+        DMControlData               |= 0x1; // set dmactive [bit 0]
+        jtag_write(DMControlAddr, DMControlData);
         uint32_t dmcontrol = 0; 
         bool  dmcontrol_active = 0;
-        int test = 0;
-        //do{
-        //    dmcontrol = jtag_read_dmi_exp_backoff(DMControlAddr);
-        //    dmcontrol_active = dmcontrol & 0x1;
-        //    printf("dmcontrol: %08x\n", dmcontrol);
-        //    test++;
-        //}while(test<10);//!dmcontrol_active);
+        do{
+            dmcontrol = jtag_read_dmi_exp_backoff(DMControlAddr);
+            dmcontrol_active = dmcontrol & 0x1;
+        }while(!dmcontrol_active);
 
-
-
+        jtag_write(SbcsAddr, SbcsData, 0, 1);
         printf("[JTAG] init ok      \t-\t time %ld\n", m_tickcount);
 
     }
