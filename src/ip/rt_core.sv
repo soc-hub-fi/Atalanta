@@ -145,7 +145,7 @@ ibex_top #(
 `ifdef FPGA          //ASIC Implementation
   .RegFile          (ibex_pkg::RegFileFPGA),
 `else                 // FPGA Implementation
-  .RegFile          ( ibex_pkg::RegFileFF),
+  .RegFile          ( ibex_pkg::RegFilePCS),
   //.RegFile          ( ibex_pkg::RegFileLatch),
 `endif
   .ICache           (0),
