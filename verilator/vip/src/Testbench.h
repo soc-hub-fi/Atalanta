@@ -307,12 +307,36 @@ public:
 
     }
 
-    virtual uint32_t jtag_mm_read (uint32_t addr) {
-        uint32_t res = 0;
-        return res;
+    virtual uint32_t jtag_mm_read (uint64_t addr, uint32_t wait_cycles = 20) {
+        const uint32_t sbcs    = 0x140000; // sbaccess : 2, sbreadonaddr : 1
+        const uint32_t addr_lo = (uint32_t) addr;
+        const uint32_t addr_hi = (uint32_t)(addr << 32);
+        const uint8_t  SBCS    = 0x38;
+        const uint8_t  SbAddr1 = 0x3A;
+        const uint8_t  SbAddr0 = 0x39;
+        const uint8_t  SbData0 = 0x3C;
+        jtag_write(SBCS, sbcs, 0, 1);
+        jtag_write(SbAddr1, addr_hi);
+        jtag_write(SbAddr0, addr_lo);
+        wait_idle(wait_cycles);
+        uint32_t rdata = jtag_read_dmi_exp_backoff(SbData0);
+        return rdata;
     }
-    virtual void jtag_mm_write (uint32_t addr, uint32_t data, bool verbose = 1) {
-        if (verbose) printf("[JTAG] write %08x to addr %08x\n", data, addr);
+    virtual void jtag_mm_write (uint64_t addr, uint32_t data, 
+                uint32_t wait_cycles = 20,  bool verbose = 1) {
+        const uint8_t  SBCS    = 0x38; // sbaccess : 2
+        const uint8_t  SbAddr1 = 0x3A;
+        const uint8_t  SbAddr0 = 0x39;
+        const uint8_t  SbData0 = 0x3C;
+        const uint32_t sbcs    = 0x40000; // sbaccess : 2
+        if (verbose) printf("[JTAG] write %08x to   %08lx\n", data, addr);
+        const uint32_t addr_lo = (uint32_t) addr;
+        const uint32_t addr_hi = (uint32_t)(addr << 32);
+        jtag_write(SBCS, sbcs, 0, 1);
+        jtag_write(SbAddr1, addr_hi);
+        jtag_write(SbAddr0, addr_lo);
+        jtag_write(SbData0, data);
+        wait_idle(wait_cycles);
     }
 
     
@@ -320,11 +344,14 @@ public:
         const uint32_t SpmSize  = 0x8000;
         const uint32_t SpmStart = 0x1000;
         printf("[JTAG] Performing memory-mapped access test\n");
-        for (int i=0; i<100; i++) {
-            uint32_t random_data = rand();
-            uint32_t random_addr = (rand() % SpmSize) + SpmStart;
+        for (int i=0; i<5; i++) {
+            uint32_t random_data = rand();            // word alling
+            uint32_t random_addr = ((rand() % SpmSize) & 0xFFFFFFFC ) + SpmStart;
+            printf("Rand data: %08x\n", random_data);
             jtag_mm_write(random_addr, random_data);
+            jtag_tick();
             uint32_t result_data = jtag_mm_read(random_addr);
+            printf("[JTAG] read  %08x from %08x\n", result_data, random_addr);
         }
     }
 
