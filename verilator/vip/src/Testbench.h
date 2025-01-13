@@ -277,7 +277,7 @@ public:
     }
 
     virtual void jtag_init (void) {
-        printf("[JTAG] perform init \t-\t time %ld\n", m_tickcount);
+        printf("[JTAG] Perform init \t-\t time %ld\n", m_tickcount);
         const uint32_t IdCodeInstr = 0b11111;
         const uint32_t IdCode      = 0xfeedc0d3;
         const uint8_t  SbcsAddr    = 0x38;
@@ -307,16 +307,33 @@ public:
 
     }
 
+    virtual uint32_t jtag_mm_read (uint32_t addr) {
+        uint32_t res = 0;
+        return res;
+    }
+    virtual void jtag_mm_write (uint32_t addr, uint32_t data, bool verbose = 1) {
+        if (verbose) printf("[JTAG] write %08x to addr %08x\n", data, addr);
+    }
+
     
     virtual void jtag_memory_test (void) {
-        
+        const uint32_t SpmSize  = 0x8000;
+        const uint32_t SpmStart = 0x1000;
+        printf("[JTAG] Performing memory-mapped access test\n");
+        for (int i=0; i<100; i++) {
+            uint32_t random_data = rand();
+            uint32_t random_addr = (rand() % SpmSize) + SpmStart;
+            jtag_mm_write(random_addr, random_data);
+            uint32_t result_data = jtag_mm_read(random_addr);
+        }
     }
 
     virtual void jtag_load_elf (void) {
-
+        printf("[JTAG] Loding ELF\n");
     }
 
     virtual void jtag_wait_eoc (void) {
+        printf("[JTAG] Waiting for end of computation\n");
         
     }
 };
