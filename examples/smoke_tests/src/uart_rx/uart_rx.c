@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include "include/csr_utils.h"
-#include "include/uart_interrupt.h"
-#include "include/clic.h"
+#include "../include/csr_utils.h"
+#include "../include/uart_interrupt.h"
+#include "../include/clic.h"
 
 #define UART_IRQ 17
 

@@ -236,4 +236,3 @@ void print_uart_byte(uint8_t byte)
     write_serial(hex[0]);
     write_serial(hex[1]);
 }
-
