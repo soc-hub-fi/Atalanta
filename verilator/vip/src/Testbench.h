@@ -118,8 +118,9 @@ public:
     virtual void set_ir(uint32_t opcode) {
         const uint32_t mask_5b = 0b11111;
         // check whether IR is already set to the right value
-        if( (opcode & mask_5b) == (m_jtag_ir & mask_5b) )
+        if( (opcode & mask_5b) == (m_jtag_ir & mask_5b) ) {
             return;
+        }
         write_tms(1); // select DR scan
         write_tms(1); // select IR scan
         write_tms(0); // capture IR
@@ -127,6 +128,7 @@ public:
         write_bits(opcode, 5, 1);
         write_tms(1); // update IR
         write_tms(0); // run test idle
+        m_jtag_ir = opcode;
     }
 
     virtual void shift_dr(void) {
@@ -136,13 +138,15 @@ public:
     }
 
     virtual uint64_t readwrite_bits(uint64_t wdata, uint32_t size, bool tms_last) {
-        uint32_t res = 0;
-
-        for (int i = 0; i < size; i++) {
-            m_dut->jtag_td_i = (wdata >> i) & 0x1;
-            if (i == size-1) m_dut->jtag_tms_i = tms_last;
+        uint64_t res = 0;
+        // make everything u64 so shifting works
+        const uint64_t one = 1;
+        for (uint64_t i = 0; i < size; i++) {
+            m_dut->jtag_td_i = (wdata >> i) & one;
+            if (i == size-1) 
+                m_dut->jtag_tms_i = tms_last;
             jtag_tick();
-            res |= (m_dut->jtag_td_o << i) & (0x1 << i);
+            res |= (((uint64_t)m_dut->jtag_td_o) << i) & (one << i);
         }
         return res;
     }
@@ -169,7 +173,7 @@ public:
         const uint32_t DmiAccess = 0b10001;
         uint64_t write_data = 0;
         write_data |= (DtmWrite << 0);  // op
-        write_data |= (data     << 2);  // data
+        write_data |= (((uint64_t) data    ) << 2);  // data
         write_data |= (((uint64_t) csr_addr) << 34); // addr
         set_ir(DmiAccess);
         shift_dr();
@@ -231,7 +235,7 @@ public:
         uint64_t write_data = 0;
         write_data |= (DtmRead << 0);  // op
         //write_data |= (data  << 2);  // data = 0
-        write_data |= ((uint64_t) addr << 34); // addr
+        write_data |= (((uint64_t) addr) << 34); // addr
         set_ir(DmiAccess);
         // send read command
         shift_dr();
@@ -243,7 +247,7 @@ public:
         write_data = 0;
         write_data |= (DtmNop << 0);  // op
         //write_data |= (data << 2);  // data = 0
-        write_data |= ((uint64_t) addr << 34); // addr
+        write_data |= (((uint64_t) addr) << 34); // addr
         uint64_t data_out = readwrite_bits(write_data, DMIWidth, 1);
         update_dr(0);
 
@@ -347,9 +351,7 @@ public:
         for (int i=0; i<5; i++) {
             uint32_t random_data = rand();            // word alling
             uint32_t random_addr = ((rand() % SpmSize) & 0xFFFFFFFC ) + SpmStart;
-            printf("Rand data: %08x\n", random_data);
             jtag_mm_write(random_addr, random_data);
-            jtag_tick();
             uint32_t result_data = jtag_mm_read(random_addr);
             printf("[JTAG] read  %08x from %08x\n", result_data, random_addr);
         }
