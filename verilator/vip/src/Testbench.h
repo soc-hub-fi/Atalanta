@@ -347,18 +347,31 @@ public:
     virtual void jtag_memory_test (void) {
         const uint32_t SpmSize  = 0x8000;
         const uint32_t SpmStart = 0x1000;
+        const uint32_t NumAccs  = 20;
+        uint32_t  error_counter = 0;
         printf("[JTAG] Performing memory-mapped access test\n");
-        for (int i=0; i<5; i++) {
+        for (uint32_t i=0; i<NumAccs; i++) {
             uint32_t random_data = rand();            // word alling
             uint32_t random_addr = ((rand() % SpmSize) & 0xFFFFFFFC ) + SpmStart;
             jtag_mm_write(random_addr, random_data);
             uint32_t result_data = jtag_mm_read(random_addr);
-            printf("[JTAG] read  %08x from %08x\n", result_data, random_addr);
+            if (result_data != random_data) {
+                printf("[JTAG] Write-read ERROR! Wrote %08x, read %08x\n",
+                                            random_data, result_data);
+                error_counter++;
+            }
         }
+        if (!error_counter)
+            printf("[JTAG] Completed %d write-reads successfully\n", NumAccs);
+        else
+            printf("[JTAG] Write-read test failed with %d unsuccessful accesses\n",
+                                            error_counter);
     }
 
     virtual void jtag_load_elf (void) {
         printf("[JTAG] Loding ELF\n");
+        read_elf("asdas");
+
     }
 
     virtual void jtag_wait_eoc (void) {

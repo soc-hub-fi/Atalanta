@@ -83,6 +83,7 @@ VERIL_FLAGS ?= \
 	--exe $(VERIL_TOP) \
 	--cc \
 	--unroll-count 4 \
+	$(VERIL_DIR)/../src/tb/elfloader.cpp \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
 	--top-module $(TOP_MODULE) \
 	$(shell bender script flist $(BENDER_TARGETS)) \

@@ -6,12 +6,15 @@
 #define RST_DELAY    80
 #define CLK_DELAY    20
 #define JTAG_START   120
-#define JTAG_CLK_PER 5
+#define JTAG_CLK_PER 3
+
+extern "C" char read_elf(const char *filename);
 
 #include "Vrt_top_unpacked.h"
 #include "verilated_fst_c.h"
 #include "verilated.h"
 #include "vip/src/Testbench.h"
+
 
 class TbRtTop : public Testbench<Vrt_top_unpacked> {};
 
@@ -29,6 +32,8 @@ int main(int argc, char** argv) {
   tb->jtag_memory_test();
   tb->jtag_load_elf();
   tb->jtag_wait_eoc();
+
+
 
   delete tb;
 
