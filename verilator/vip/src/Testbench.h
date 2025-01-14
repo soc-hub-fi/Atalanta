@@ -368,8 +368,13 @@ public:
                                             error_counter);
     }
 
+    virtual uint32_t jtag_elf_halt_load () {
+        
+    }
+
     virtual void jtag_load_elf (void) {
         printf("[JTAG] Loding ELF\n");
+        jtag_elf_halt_load();
         read_elf("asdas");
 
     }
