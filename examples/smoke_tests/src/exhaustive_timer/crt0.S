@@ -2,17 +2,12 @@
 /*Change it if necessary...*/
 /*Make sure it's 16-bytes aligned*/
 #define VTABLE_ADDR 0x0
-#define SHARED_VAR_ADDR 0x5F00
-#define GPIO_OUTPUT_ADDR 0x00030008
 #define MTIME_CTRL_ADDR  0x00030210
 #define MTIMECMP_LOW_ADDR 0x00030208
-#define DMA_VAR_ADDR 0x25F00
-#define COMMON_ADDR 0x7000
 
 #define NUM_INTERRUPTS 66
 //#define HARDWARE_STACKING  
-/*For risc-v's LOAD IMMEDIATE instruction*/
-#define SHARED_VAR_ADDR_IMM (SHARED_VAR_ADDR >> 4)
+
 .extern pend_int
 .extern uart_handler
 
@@ -36,7 +31,7 @@ change_stack:
   mv sp, a2
   jr a1
 
-    .section .vectors, "ax"
+  .section .vectors, "ax"
   .option norvc;
   .org VTABLE_ADDR
   jal x0, reset_handler
@@ -71,7 +66,7 @@ change_stack:
   .4byte irq_handler_0
   .4byte irq_handler_0 
   .4byte irq_handler_0
-  .4byte dma_handler_0
+  .4byte irq_handler_0
   .4byte irq_handler_0
   .4byte irq_handler_0
   .4byte irq_handler_0
@@ -114,20 +109,6 @@ loop:
 default_handler:
   mret
 
-//.org 0x170
-.global dma_handler_0
-.func
-dma_handler_0:
-   nop
-   nop
-   la t0, DMA_VAR_ADDR
-   lw t1, 0(t0)
-   addi t1, t1, 1
-   sw t1, 0(t0)
-   nop
-   nop
-   mret
-.endfunc
 
   .org 0x1F0 //0xA0
 .global irq_handler_0
@@ -149,19 +130,12 @@ irq_handler_0:
     #endif
     
     csrsi mstatus, 8 /* re-enable global interrupts enable recursion */
-     
-
     addi gp, x0, 0x500   
     slli gp, gp, 4
     lw t0, 0(gp) 
     addi t0, t0, 0x1      // increment the counter(shared varibale)  
     sw t0, 0(gp)
-
-  
-
     csrci mstatus, 8 /* disable global interrupts*/
-
-    // I expanded stack size to prevent stack overflow due multiple nesting 
 
     lw t0, 28(sp)
     lw t1, 32(sp)
@@ -177,7 +151,6 @@ irq_handler_0:
     addi sp, sp, (4 * 9)
     mret
 .endfunc
-
 
 
     .org 0x2F0 //0xA0
@@ -250,12 +223,12 @@ mtimer_handler:
 
 
     csrsi mstatus, 8 /* re-enable global interrupts enable recursion */
+
     la a2, 0x5E00
     lw a3, 0(a2)
     addi a3, a3, -1
     sw a3, 0(a2)
     beq a3, x0, quit    // exit when dec_count reaches 0
-
 
     #Disable timer [bit 0] & set prescaler to 00F [bits 20:8]
     li t0, 0x00F00              
@@ -263,7 +236,6 @@ mtimer_handler:
     sw t0, 0(t1) 
     nop                 //stalling is needed here (ibex issue)
     beq a3, x0, quit    // exit when dec_count reaches 0
-
 
 
     la t1, MTIMECMP_LOW_ADDR     
@@ -283,10 +255,6 @@ mtimer_handler:
     sw a0, 0(gp)
     jal pend_int        // (pend the next interrupt line) 
 
-    nop 
-    nop 
-    nop 
-    nop  
     nop 
     nop 
     nop 
