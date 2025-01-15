@@ -121,8 +121,12 @@ smoke_compile: test_check
 # Verilator
 #####################
 
+.PHONY: $(TEST)
+$(TEST):
+	$(MAKE) -C $(CURDIR)/examples/smoke_tests $(TEST)
+
 .PHONY: verilate
-verilate:
+verilate: $(TEST)
 	$(MAKE) -C verilator verilate
 
 .PHONY: simv

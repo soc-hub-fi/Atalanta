@@ -25,21 +25,23 @@ int main(int argc, char** argv) {
 
   Verilated::commandArgs(argc, argv);
   TbRtTop* tb = new TbRtTop();
-  std::string test = xstr(TEST);
+  std::string TestName = xstr(TEST);
 
   tb->open_trace("./waveform.fst");
   for (int it=0;it<100;it++) tb->tick();
 
-  if (test == "none") {
+  if (TestName == "") {
     printf("TEST not set, exiting\n");
   } else {
-
-  tb->reset();
-  tb->jtag_reset_master();
-  tb->jtag_init();
-  tb->jtag_memory_test();
-  tb->jtag_load_elf();
-  tb->jtag_wait_eoc();
+    tb->reset();
+    tb->jtag_reset_master();
+    tb->jtag_init();
+    if (TestName == "jtag_access") {
+      tb->jtag_memory_test();
+    } else { // software test
+      tb->jtag_elf_run();
+      tb->jtag_wait_eoc();      
+    }
   }
 
   delete tb;

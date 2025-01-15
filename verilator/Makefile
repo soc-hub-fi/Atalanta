@@ -14,11 +14,11 @@ BUILD_DIR       ?= $(realpath $(CURDIR))/../build
 VERIL_DIR       ?= $(realpath $(CURDIR))/../verilator
 VERIL_BUILD_DIR ?= $(BUILD_DIR)/verilator_build
 
-TEST            ?= none
-
-
 TOP_MODULE       = rt_top_unpacked
 VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
+
+SW_ROOT          = examples/smoke_tests
+ELF_PATH         = $(realpath $(CURDIR))/../$(SW_ROOT)/build/$(TEST)/$(TEST).elf
 
 # if VERILATOR_ROOT is undefined, assume that it is in PATH
 ifeq ($(VERILATOR_ROOT),)
@@ -107,8 +107,13 @@ lint:
 	--top-module $(TOP_MODULE) \
 	$(shell bender script flist $(BENDER_TARGETS)) \
 
+.PHONY: $(TEST)
+$(TEST):
+	cp $(ELF_PATH) $(VERIL_BUILD_DIR)/tmp_elf
+	@echo "Created temporary copy \"tmp_elf\" of \"$(TEST).elf\" in $(VERIL_BUILD_DIR)/tmp_elf"
+
 .PHONY: verilate
-verilate: clean init
+verilate: clean init $(TEST)
 	$(VERILATOR) $(VERIL_FLAGS)
 
 .PHONY: simv
