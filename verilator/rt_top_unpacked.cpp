@@ -1,7 +1,9 @@
 #include <iostream>
 #include <memory>
 #include <stdio.h>
-#include <svdpi.h>
+//#include <svdpi.h>
+#include <vector>
+#include <map>
 
 
 // preprocessor hack to deal with strings
@@ -17,8 +19,13 @@
 extern "C" char read_elf(const char *filename);
 extern "C" char get_entry(long long *entry_ret);
 extern "C" char get_section(long long *address_ret, long long *len_ret);
-extern "C" char read_section(long long address, const svOpenArrayHandle buffer, long long len);
+//extern "C" char read_section(long long address, const svOpenArrayHandle buffer, long long len);
 
+// address and size
+extern std::vector<std::pair<uint64_t, uint64_t>> sections;
+
+// memory based address and content
+extern std::map<uint64_t, std::vector<uint8_t>> mems;
 
 #include "Vrt_top_unpacked.h"
 #include "verilated_fst_c.h"

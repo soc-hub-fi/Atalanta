@@ -368,6 +368,31 @@ public:
                                             error_counter);
     }
 
+    // simplified version with no svdpi
+    virtual uint8_t read_section(long long address, uint8_t* buf, long long len) {
+        
+        // check that the address points to a section
+        if (!mems.count(address)) {
+          printf("[ELF] ERROR: No section found for address %p\n", address);
+          return -1;
+        }
+
+        printf("buffer: %x\n", *buf);
+        printf("mems.count %d\n", mems.count(address));
+
+        // copy array
+        long long int len_tmp = len;
+        for (auto &datum : mems.find(address)->second) {
+          if(len_tmp-- == 0){
+            printf("[ELF] ERROR: Copied 0x%lx bytes. Buffer is full but there is still data available.\n", len);
+            return -1;
+          }
+
+          *buf++ = datum;
+        }
+
+        return 0;
+    }
 
     virtual uint32_t jtag_elf_preload(const std::string binary) {
         const uint8_t  SBCS         = 0x38;
@@ -404,7 +429,6 @@ public:
             }
             delete bf;
         }
-        
         long long entry = 0;
         (void)(get_entry(&entry));
         printf("[JTAG] Preload complete\n");
