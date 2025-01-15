@@ -328,7 +328,7 @@ public:
     }
     virtual void jtag_mm_write (uint64_t addr, uint32_t data, 
                 uint32_t wait_cycles = 20,  bool verbose = 1) {
-        const uint8_t  SBCS    = 0x38; // sbaccess : 2
+        const uint8_t  SBCS    = 0x38;
         const uint8_t  SbAddr1 = 0x3A;
         const uint8_t  SbAddr0 = 0x39;
         const uint8_t  SbData0 = 0x3C;
@@ -368,13 +368,66 @@ public:
                                             error_counter);
     }
 
-    virtual uint32_t jtag_elf_halt_load () {
 
+    virtual uint32_t jtag_elf_preload(const std::string binary) {
+        const uint8_t  SBCS         = 0x38;
+        const uint8_t  SbAddr0      = 0x39;
+        const uint8_t  SbData0      = 0x3C;
+        const uint32_t JtagInitSbcs = 0x58000;
+
+        long long sec_addr;
+        long long sec_len;
+
+        printf("[JTAG] Preloading ELF binary %s\n", binary.c_str());
+        if(read_elf(binary.c_str())) {
+            printf("[JTAG] Failed to load ELF!\n");
+            throw std::runtime_error( "File not found" );
+        }
+        while (get_section(&sec_addr, &sec_len)){
+            uint8_t* bf = new uint8_t[sec_len];
+            printf("[JTAG] Preloading section at 0x%x (%0d bytes)\n", sec_addr, sec_len);
+            if (read_section(sec_addr, bf, sec_len)){
+                printf("[JTAG] Failed to read ELF section!\n");
+                throw std::runtime_error( "File not found" );
+            }
+            jtag_write( SBCS, JtagInitSbcs, 1, 1 );
+            jtag_write( SbAddr0, (uint32_t)sec_addr );
+            for (uint64_t i=0; i<= sec_len; i += 4 ){
+                bool checkpoint = (i != 0 && i % 512 == 0);
+                if (checkpoint) printf("[JTAG] - %0d/%0d bytes (%0d%%)\n",
+                i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+                uint32_t data = 0;
+                for (int x=0; x<4; x++){
+                    data |= ((uint32_t)bf[i+x]) << 8*x;
+                }
+                jtag_write(SbData0, data, checkpoint, checkpoint);
+            }
+            delete bf;
+        }
+        
+        long long entry = 0;
+        (void)(get_entry(&entry));
+        printf("[JTAG] Preload complete\n");
+        return (uint32_t)entry;
     }
 
-    virtual void jtag_elf_run (void) {
-        printf("[JTAG] Loding ELF\n");
-        jtag_elf_halt_load();
+    virtual uint32_t jtag_elf_halt_load (const std::string binary) {
+        const uint32_t DmCmd = 0x80000001; // haltreq = 1, dmactive = 1
+        const uint8_t  DmControlAddr = 0x10;
+        const uint8_t  DmStatusAddr  = 0x11;
+        // halt hart 0
+        jtag_write(DmControlAddr, DmCmd);
+        uint32_t status = 0;
+        do status = jtag_read_dmi_exp_backoff(DmControlAddr);
+        while (status & 0x200);
+        printf("[JTAG] Halted hart 0\n");
+        uint32_t entry = jtag_elf_preload(binary);
+        return entry;
+    }
+
+    virtual void jtag_elf_run (const std::string binary) {
+        printf("[JTAG] Attempting to halt hart 0\n");
+        uint32_t entry = jtag_elf_halt_load(binary);
         read_elf("asdas");
 
     }
