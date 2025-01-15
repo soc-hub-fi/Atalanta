@@ -14,6 +14,9 @@ BUILD_DIR       ?= $(realpath $(CURDIR))/../build
 VERIL_DIR       ?= $(realpath $(CURDIR))/../verilator
 VERIL_BUILD_DIR ?= $(BUILD_DIR)/verilator_build
 
+TEST            ?= none
+
+
 TOP_MODULE       = rt_top_unpacked
 VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
 
@@ -82,6 +85,7 @@ VERIL_FLAGS ?= \
 	--hierarchical \
 	--exe $(VERIL_TOP) \
 	--cc \
+	-CFLAGS -DTEST=$(TEST) \
 	--unroll-count 4 \
 	$(VERIL_DIR)/../src/tb/elfloader.cpp \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
