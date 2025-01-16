@@ -14,7 +14,7 @@
 #define RST_DELAY    80
 #define CLK_DELAY    20
 #define JTAG_START   120
-#define JTAG_CLK_PER 3
+#define JTAG_CLK_PER 1
 
 extern "C" char read_elf(const char *filename);
 extern "C" char get_entry(long long *entry_ret);
