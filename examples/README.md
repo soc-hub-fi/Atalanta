@@ -32,7 +32,7 @@ Then, you'll just need a compiler with a RV32E backend. Currently, there are two
     cargo build --examples -Ffpga
     ```
 
-## VS Code settings for Rust
+### VS Code settings for Rust
 
 ```json
 // .vscode/settings.json
@@ -59,7 +59,7 @@ Then, you'll just need a compiler with a RV32E backend. Currently, there are two
 Additionally, we recommend you turn off `tamasfe.even-better-toml` extension for VS Code which
 creates a false positive on our custom RVE toolchain configuration in "rust-toolchain.toml".
 
-## FPGA verification flight check for Rust
+### FPGA verification flight check for Rust
 
 1. Flash bitstream onto board
 2. Connect OpenOCD

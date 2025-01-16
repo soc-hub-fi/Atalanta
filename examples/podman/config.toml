@@ -1,0 +1,52 @@
+# Includes one of the default files in src/bootstrap/defaults
+profile = "dist"
+change-id = 133207
+
+[build]
+target = [
+    # Build the host as target to enable building proc-macros and build scripts
+    "x86_64-unknown-linux-gnu",
+    # Build RVE cross-compilers
+    "riscv32e-unknown-none-elf",
+    "riscv32em-unknown-none-elf",
+    "riscv32emc-unknown-none-elf",
+    # Build the IMC target for the occasional A/B testing
+    "riscv32imc-unknown-none-elf",
+]
+
+# Enable a build of the extended Rust tool set which is not only the compiler
+# but also tools such as Cargo.
+extended = true
+
+# Set of tools to be included in the installation.
+#
+# If `extended = false`, the only one of these built by default is rustdoc.
+#
+# If `extended = true`, they are all included.
+tools = [
+    "cargo",
+    "clippy",
+    "rustdoc",
+    "rustfmt",
+    "rust-analyzer",
+    "rust-analyzer-proc-macro-srv",
+    "analysis",
+    "src",
+]
+
+# Replace the default compiler for our targets, as the autoresolver seems to fail us here
+[target.riscv32imc-unknown-none-elf]
+cc = "/root/riscv/bin/riscv32-unknown-elf-gcc"
+
+[target.riscv32e-unknown-none-elf]
+cc = "/root/riscv/bin/riscv32-unknown-elf-gcc"
+
+[target.riscv32em-unknown-none-elf]
+cc = "/root/riscv/bin/riscv32-unknown-elf-gcc"
+
+[target.riscv32emc-unknown-none-elf]
+cc = "/root/riscv/bin/riscv32-unknown-elf-gcc"
+
+[llvm]
+# We don't need to customize LLVM so we can build faster by using a prebuilt version from CI
+download-ci-llvm = true
