@@ -29,10 +29,10 @@ We need to build the Rust compiler from source to adequately support our build t
     ```sh
     # Specify install target location for the compiler.
     # This can be anything you like.
-    `export DESTDIR="$HOME/.local/install/  compilers/rust-1.84.0"
+    export DESTDIR="$HOME/.local/install/  compilers/rust-1.84.0"
 
     # Build the compiler
-    `BOOTSTRAP_SKIP_TARGET_SANITY=1 ./x install -i compiler/rustc cargo rust-analyzer rustfmt src clippy`
+    BOOTSTRAP_SKIP_TARGET_SANITY=1 ./x install -i compiler/rustc cargo rust-analyzer rustfmt src clippy
     ```
 
 6. Link the installed compiler for rustup so that we can use it easily from anywhere on the system
