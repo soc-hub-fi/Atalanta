@@ -12,53 +12,20 @@ See the main [README.md](../README.md) at the root of the repository.
 
 ## Rust
 
-### Requirements for compiling Rust
+### Requirements
 
-As of 2024-04-30, the RV32E base ISA is not supported by the Rust compiler. While it will catch up
-eventually, for now we need to use our own toolchain.
+- Install [rustup](https://rustup.rs) the Rust toolchain manager
+- A [RISC-V compiler](https://github.com/riscv-collab/riscv-gnu-toolchain)
 
-You can pull the latest container with functioning setup using `podman` or `docker`. N.b., `podman`
-& `docker` commands are interchangeable.
+Then, you'll just need a compiler with a RV32E backend. Currently, there are two options:
 
-```sh
-podman pull docker.io/heksaheksa/rust-rv32e:0.2-devel
-```
-
-See also the container sources at <https://github.com/soc-hub-fi/rust-rv32emc-docker> for further
-advice on how to use and customize the container, or read the Containerfile to understand how to
-configure the toolchain locally for an improved user experience.
-
-Boot up the container and attach to it:
-
-```sh
-podman run --name rust-rv32e -dt rust-rv32e:0.2-devel
-podman exec -it rust-rv32e /bin/bash
-```
-
-### Compiling Rust
-
-- Change directory to home
-  - `cd`
-- Copy your SSH keys to the container, e.g.,
-  - `podman cp ~/.ssh/id_ed25519 rust-rv32e:/root/.ssh/id_ed25519`
-- Clone the repository on the booted container / virtual machine, e.g.,
-  - `git clone ssh://git@github.com/soc-hub-fi/Atalanta.git`
-- Change to the project directory (with a Cargo.toml file), e.g.,
-  - `cd Atalanta/examples/rust_minimal`
-
-Then, `cargo` works as usual:
-
-```sh
-# Compile all examples in release mode (small binaries, less debug utilities)
-cargo build --release --examples
-
-# Run an example on a connected FPGA, make sure you have an active OpenOCD connection or similar
-cargo run --release --example led
-```
+1. [Install Rust from source](./doc/rust-from-source.md) (recommended)
+2. [Install a container with RVE support](./doc/rust-rv32e-container.md)
 
 ## VS Code settings for Rust
 
 ```json
+// .vscode/settings.json
 {
     "rust-analyzer.linkedProjects": [
         "examples/rust_minimal/Cargo.toml",
