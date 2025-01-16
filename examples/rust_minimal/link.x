@@ -28,7 +28,7 @@ SECTIONS
 
   .text :
   {
-    . = ORIGIN(IMEM) + 0x80;
+    . = ORIGIN(IMEM) + 0x100;
     _stext = .;
     KEEP(*(.init));
     *(.text .text.*);

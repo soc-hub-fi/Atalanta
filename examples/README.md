@@ -12,7 +12,7 @@ See the main [README.md](../README.md) at the root of the repository.
 
 ## Rust
 
-### Requirements
+### Requirements for compiling Rust
 
 - Install [rustup](https://rustup.rs) the Rust toolchain manager
 - A [RISC-V compiler](https://github.com/riscv-collab/riscv-gnu-toolchain)
@@ -22,6 +22,16 @@ Then, you'll just need a compiler with a RV32E backend. Currently, there are two
 1. [Install Rust from source](./doc/rust-from-source.md) (recommended)
 2. [Install a container with RVE support](./doc/rust-rv32e-container.md)
 
+### Compiling Rust
+
+- Compile all available examples
+
+    ```sh
+    cd hello_rt
+    # Hello RT must be compiled with either -Ffpga or -Frtl-tb based on target platform
+    cargo build --examples -Ffpga
+    ```
+
 ## VS Code settings for Rust
 
 ```json
@@ -30,6 +40,11 @@ Then, you'll just need a compiler with a RV32E backend. Currently, there are two
     "rust-analyzer.linkedProjects": [
         "examples/rust_minimal/Cargo.toml",
         "examples/hello_rt/Cargo.toml"
+    ],
+    "rust-analyzer.cargo.features": [
+        // hello-rt must be compiled with either `fpga` or `rtl-tb` depending on target platform
+        "hello-rt/fpga",
+        //"hello-rt/rtl-tb",
     ],
     "rust-analyzer.cargo.target": "riscv32emc-unknown-none-elf",
     // check.allTargets & cargo.extraArgs helps us avoid the superfluous error on "can't find crate
