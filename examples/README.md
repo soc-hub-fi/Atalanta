@@ -12,7 +12,7 @@ See the main [README.md](../README.md) at the root of the repository.
 
 ## Rust
 
-### Requirements
+### Requirements for compiling Rust
 
 - Install [rustup](https://rustup.rs) the Rust toolchain manager
 - A [RISC-V compiler](https://github.com/riscv-collab/riscv-gnu-toolchain)
@@ -21,6 +21,16 @@ Then, you'll just need a compiler with a RV32E backend. Currently, there are two
 
 1. [Install Rust from source](./doc/rust-from-source.md) (recommended)
 2. [Install a container with RVE support](./doc/rust-rv32e-container.md)
+
+### Compiling Rust
+
+- Compile all available examples
+
+    ```sh
+    cd hello_rt
+    # Hello RT must be compiled with either -Ffpga or -Frtl-tb based on target platform
+    cargo build --examples -Ffpga
+    ```
 
 ## VS Code settings for Rust
 
