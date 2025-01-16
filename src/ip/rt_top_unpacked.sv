@@ -247,4 +247,10 @@ rt_top #(
   .intr_src_i
 );
 
+`ifndef SYNTHESIS
+initial begin
+  // TODO: ADD memory preload
+end
+`endif
+
 endmodule : rt_top_unpacked

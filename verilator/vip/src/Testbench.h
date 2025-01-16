@@ -450,7 +450,19 @@ public:
     virtual void jtag_elf_run (const std::string binary) {
         printf("[JTAG] Attempting to halt hart 0\n");
         uint32_t entry = jtag_elf_halt_load(binary);
-        read_elf("asdas");
+        // repoint execution
+        const uint8_t  Data0     = 0x04;
+        const uint8_t  Command   = 0x17;
+        const uint32_t ImemStart = 0x1000;
+        const uint16_t CsrDpc    = 0x7b1 // 12
+        const uint32_t DmiCmd    = 0x2307B1;
+        jtag_write(Data0, ImemStart);
+        jtag_write(Command, DmiCmd);
+        // resume hart
+        const uint8_t  DmControlAddr = 0x10;
+        const uint32_t DmCmd         = 0x40000001;
+        jtag_write(DmControlAddr, DmCmd);
+        printf("[JTAG] Resumed hart 0 from 0x%x\n", entry);
 
     }
 
