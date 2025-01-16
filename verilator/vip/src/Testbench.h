@@ -404,11 +404,7 @@ public:
             printf("[JTAG] Failed to load ELF!\n");
             throw std::runtime_error( "File not found" );
         }
-        uint32_t prof1 = 0;
-        uint32_t prof2 = 0;
-        uint32_t prof3 = 0;
         while (get_section(&sec_addr, &sec_len)){
-            printf("profi1 %d\n", prof1);
             uint8_t* bf = new uint8_t[sec_len];
             printf("[JTAG] Preloading section at 0x%x (%0d bytes)\n", sec_addr, sec_len);
             if (read_section(sec_addr, bf, sec_len)){
@@ -419,22 +415,18 @@ public:
             jtag_write( SbAddr0, (uint32_t)sec_addr );
 
             for (uint64_t i=0; i<= sec_len; i += 4 ){
-                printf("profi2 %d\n", prof2);
                 bool checkpoint = (i != 0 && i % 512 == 0);
                 if (checkpoint) printf("[JTAG] - %0d/%0d bytes (%0d%%)\n",
                 i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
-                uint32_t data = 0;
-                for (int x=0; x<4; x++){
-                    printf("profi3 %d\n", prof3);
-                    data |= ((uint32_t)bf[i+x]) << 8*x;
-                    prof3++;
-                }
+                uint32_t data = ((uint32_t)bf[i+3]) << 24
+                               |((uint32_t)bf[i+2]) << 16
+                               |((uint32_t)bf[i+1]) << 8
+                               |((uint32_t)bf[i  ]);
                 jtag_write(SbData0, data, checkpoint, checkpoint);
-                prof2++;
             }
             delete bf;
-            prof1++;
         }
+
         long long entry = 0;
         (void)(get_entry(&entry));
         printf("[JTAG] Preload complete\n");
