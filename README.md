@@ -36,32 +36,6 @@ from the repository root.
 
 
 
-## Citing
-
-If you use our work, please consider citing it as 
-```
-@InProceedings{AN2024,
- author="Nurmi, Antti
- and Lindgren, Per
- and Kalache, Abdesattar
- and Lunnikivi, Henri
- and H{\"a}m{\"a}l{\"a}inen, Timo D.",
- editor="Fey, Dietmar
- and Stabernack, Benno
- and Lankes, Stefan
- and Pacher, Mathias
- and Pionteck, Thilo",
- title="Atalanta: Open-Source RISC-V Microcontroller for Rust-Based Hard Real-Time Systems",
- booktitle="Architecture of Computing Systems",
- year="2024",
- publisher="Springer Nature Switzerland",
- address="Cham",
- pages="316--330",
- isbn="978-3-031-66146-4"
-}
-
-```
-
 
 
 ## FPGA
@@ -133,23 +107,32 @@ The `.gdb` file automates connecting GDB to the debug module and loading the ELF
 
 ## Software Compilation
 
-The functional testing of the subsystem is performed with software-based tests. The source code for C tests is located in `./examples/smoke_tests`, along with a common, minimal `crt0.S` and a linker script `link.ld`. The Python3 requirements for `compile.py` are stored in `./examples/smoke_tests/scripts/requirements.txt`.
-To Compile a test, run
+Software compulation is implicitly included in the simulator invocation. Artifacts are generated under `examples/build`.
 
-```sh
-./examples/smoke_tests/scripts/compile.py ./examples/smoke_tests/<test_name>.c
+
+## Citing
+
+If you use our work, please consider citing it as 
+```
+@InProceedings{AN2024,
+ author="Nurmi, Antti
+ and Lindgren, Per
+ and Kalache, Abdesattar
+ and Lunnikivi, Henri
+ and H{\"a}m{\"a}l{\"a}inen, Timo D.",
+ editor="Fey, Dietmar
+ and Stabernack, Benno
+ and Lankes, Stefan
+ and Pacher, Mathias
+ and Pionteck, Thilo",
+ title="Atalanta: Open-Source RISC-V Microcontroller for Rust-Based Hard Real-Time Systems",
+ booktitle="Architecture of Computing Systems",
+ year="2024",
+ publisher="Springer Nature Switzerland",
+ address="Cham",
+ pages="316--330",
+ isbn="978-3-031-66146-4"
+}
+
 ```
 
-if compiling with a local riscv32-gcc or
-
-```sh
-./examples/smoke_tests/scripts/compile.py ./examples/smoke_tests/<test_name>.c --riscv-xlen 64
-```
-
-if working on the Tulitikli environment. The compiled programs are formatted to `.hex` and stored in `./stims/` and the `.elf` is stored in `./elf/`.
-
-**NOTE**: The compilation of stim-files for tests is part of the CI pipeline and thus the files are not tracked in Git. **Do not add new files to `./stims/` in Git**.
-
-## Contributing
-
-As RT-Ibex is still in an experimental state and under internal development, we do currently not take external contributions.
