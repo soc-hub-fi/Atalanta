@@ -5,8 +5,8 @@ the right backends already exist in LLVM & Rust, so we only need to configure Ru
 
 1. Assert that a 32-bit RISC-V toolchain is available on PATH
     - `which riscv32-unknown-elf-gcc`
-2. Install build-time requirements (Ubuntu 24.04.1 LTS)
-    - `sudo apt install cmake libssl-dev ninja-build pkg-config python3`
+2. Install build-time requirements (Ubuntu 20.04 & 22.04)
+    - `sudo apt install cmake gawk libssl-dev ninja-build pkg-config python3`
 3. Clone Rust from source
     - `git clone --branch 1.84.0 --depth 1 https://github.com/rust-lang/rust rust-1.84.0`
 4. Copy the compiler configuration file [`config.toml`](../podman/config.toml) from ../podman/config.toml to the root of the cloned Rust compiler
