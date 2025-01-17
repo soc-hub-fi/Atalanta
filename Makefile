@@ -18,6 +18,7 @@ FPGA_DIR   = $(realpath $(CURDIR))/fpga
 
 START_TIME=`date +%F_%H:%M`
 SHELL=bash
+VERILATOR_CFLAGS="-Os -ffunction-sections -fdata-sections -g -c -DVERILATOR"
 
 BENDER ?= bender
 
@@ -121,8 +122,12 @@ smoke_compile: test_check
 # Verilator
 #####################
 
+.PHONY: $(TEST)
+$(TEST):
+	$(MAKE) -C $(CURDIR)/examples/smoke_tests $(TEST) CFLAGS=$(VERILATOR_CFLAGS)
+
 .PHONY: verilate
-verilate:
+verilate: $(TEST)
 	$(MAKE) -C verilator verilate
 
 .PHONY: simv

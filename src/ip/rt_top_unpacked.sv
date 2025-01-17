@@ -247,4 +247,12 @@ rt_top #(
   .intr_src_i
 );
 
+`ifndef SYNTHESIS
+// TODO: Add passive VIPs here
+
+initial begin
+  // TODO: Add memory preload
+end
+`endif
+
 endmodule : rt_top_unpacked

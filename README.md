@@ -1,8 +1,39 @@
-# Atalanta, a RISC-V Microcontroller
+# Atalanta, a Predictable RISC-V Microcontroller
 
-## Disclaimer
+## Getting started
+Dependencies are managed with [Bender](https://github.com/pulp-platform/bender) and can be fetched by calling
+```
+make repository_init
+```
 
-This project is still in an experimental state and under internal development, therefore we do not take contributions yet. However, we're happy to address any issues with our design in https://github.com/soc-hub-fi/atalanta/issues.
+## Simulation
+
+### Dependencies
+
+- The Verilator features used here depend on GCC 10 or newer, or Clang (untested). Ensure your compiler is suitable before proceeding.
+- This build is developed on top of version *5.008*. Currently, this requires a manual [installation](https://verilator.org/guide/latest/install.html#git-quick-install).
+
+### with Verilator
+
+Verilator simulations can be invoked from the repository root with
+```
+make verilate simv TEST=<name of test, e.g. 'uart_sanity'>
+```
+This will clean and compile the design and the software test, then invoke the simulation. An Instruction trace and a `.fst` waveform are always generated under `build/verilator_build`.
+
+
+### with Questa
+
+RTL simulation is tested with QuestaSim-64 10.7g and 24.2
+
+To compile the design and run batch simulations, use
+
+```sh
+make compile elaborate simulate TEST=<name of test, e.g. 'uart_sanity'>
+```
+
+from the repository root.
+
 
 
 ## Citing
@@ -31,64 +62,7 @@ If you use our work, please consider citing it as
 
 ```
 
-## Simulation with Questa
 
-RTL simulation is tested with QuestaSim-64 10.7g
-
-To compile the design for `vsim`, use
-
-```sh
-make repository_init #if starting fresh
-make compile
-make elaborate
-```
-
-from the repository root.
-
-To enable the Ibex execution trace, substitute `make compile` with `make compile_debug`, then continue with the regular targets.
-
-To run tests in batch more, use
-
-```sh
-make simulate TEST=<TestName>
-```
-
-`TestName` can be set to `jtag_test` to test the functionality of the debug module, or matched with a test name from `./stims/`. For example, 
-
-```sh
-make simulate TEST=uart_test
-```
-will reference `./stims/uart_test_imem.hex` and `./stims/uart_test_dmem.hex`.
-By default, `vsim` tests will use the JTAG interface to load programs. To set memory loading to use SystemVerilog's `$readmemh` task, set `LOAD=READMEM` when using this Makefile.
-
- `make simulate` will generate the waveform of the simulation in both `vcd` and `wlf` format.
-
-```sh
-make wave
-```
-
-is a shortcut for `gtkwave waveform.vcd` that can be used to open the `vcd` file with GTKWave. The `wlf` file can be viewed in Questa with `vsim wave.wlf`.
-
-## Simulation with Verilator [Experimental]
-
-### Dependencies
-
-- The Verilator features used here depend on GCC 10 or newer, or Clang (untested). Ensure your compiler is suitable before proceeding.
-- This build is developed on top of version *5.008*. Currently, this requires a manual [installation](https://verilator.org/guide/latest/install.html#git-quick-install).
-- Waveforms are viewed with GTKWave, install with ```sudo apt install gtkwave``` if necessary.
-
-### Simulation
-
-Verilator-specific files are within ./verilator.
-After navigating to the directory, simulations can be controlled with the following commands:
-
-```sh
-make verilate TEST=<TESTNAME> [TRACE=1]# Compile testbench with parameters for <TESTNAME>. 
-#<TESTNAME> should match with a stim file pair in ./stims/, e.g. 'TEST=gpio_blink' uses './stims/gpio_blink_imem.hex' and './stims/gpio_blink_dmem.hex'. Set TRACE=1 for CPU trace.
-make simv TEST=<TESTNAME>     # Run compiled test in batch mode and produce vcd waveform.
-make wave # Open waveform in GTKWave.
-make clean # Remove build/build_verilator.
-```
 
 ## FPGA
 

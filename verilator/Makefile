@@ -17,6 +17,9 @@ VERIL_BUILD_DIR ?= $(BUILD_DIR)/verilator_build
 TOP_MODULE       = rt_top_unpacked
 VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
 
+SW_ROOT          = examples/smoke_tests
+ELF_PATH         = $(realpath $(CURDIR))/../$(SW_ROOT)/build/$(TEST)/$(TEST).elf
+
 # if VERILATOR_ROOT is undefined, assume that it is in PATH
 ifeq ($(VERILATOR_ROOT),)
 VERILATOR = verilator
@@ -82,11 +85,13 @@ VERIL_FLAGS ?= \
 	--hierarchical \
 	--exe $(VERIL_TOP) \
 	--cc \
+	-CFLAGS -DTEST=$(TEST) \
 	--unroll-count 4 \
+	$(VERIL_DIR)/../src/tb/elfloader.cpp \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
 	--top-module $(TOP_MODULE) \
 	$(shell bender script flist $(BENDER_TARGETS)) \
-	--Mdir $(VERIL_BUILD_DIR) \
+	--Mdir $(VERIL_BUILD_DIR)/obj_dir \
 	--build \
 	-j `nproc`
 
@@ -101,16 +106,20 @@ lint:
 	$(VERIL_INCLUDES) \
 	--top-module $(TOP_MODULE) \
 	$(shell bender script flist $(BENDER_TARGETS)) \
-	
+
+.PHONY: $(TEST)
+$(TEST):
+	cp $(ELF_PATH) $(VERIL_BUILD_DIR)/tmp_elf
+	@echo "Created temporary copy \"tmp_elf\" of \"$(TEST).elf\" in $(VERIL_BUILD_DIR)/tmp_elf"
 
 .PHONY: verilate
-verilate: clean init
+verilate: clean init $(TEST)
 	$(VERILATOR) $(VERIL_FLAGS)
 
 .PHONY: simv
 simv: init
 	cd $(VERIL_BUILD_DIR) && \
-	./V$(TOP_MODULE)
+	./obj_dir/V$(TOP_MODULE)
 
 .PHONY: wave
 wave:
