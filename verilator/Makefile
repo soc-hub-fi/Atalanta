@@ -87,6 +87,7 @@ VERIL_FLAGS ?= \
 	--exe $(VERIL_TOP) \
 	--cc \
 	-CFLAGS "-DTEST=$(TEST) -DJTAG_LOAD=$(JTAG_LOAD)" \
+	-GJtagLoad=$(JTAG_LOAD) \
 	--unroll-count 4 \
 	$(VERIL_DIR)/../src/tb/elfloader.cpp \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
