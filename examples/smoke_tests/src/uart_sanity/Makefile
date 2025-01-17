@@ -24,7 +24,7 @@ OBJCOPY		      =$(TOOLCHAIN_PREFIX)objcopy
 
 # Architecture and Compiler flags
 ARCH_FLAGS       ?=-march=rv32emc_zicsr -mabi=ilp32e
-CFLAGS 			 ?=-O0 -ffunction-sections -fdata-sections -g -c
+CFLAGS 			 ?=-Os -ffunction-sections -fdata-sections -g -c
 
 # Linker flags
 LDFLAGS 		  = -T$(L_SCRIPT) -nostartfiles

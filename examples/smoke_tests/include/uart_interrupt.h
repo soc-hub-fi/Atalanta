@@ -8,7 +8,11 @@
 #include "pattern_buffer.h"
 #include "clic.h"
 
-#define NO_CIRCULAR_BUFFER 0
+#ifdef VERILATOR
+    #define NO_CIRCULAR_BUFFER 1
+#else
+    #define NO_CIRCULAR_BUFFER 0
+#endif
 
 #define UART_BASE 0x00030100
 
