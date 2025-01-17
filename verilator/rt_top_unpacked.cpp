@@ -19,7 +19,6 @@
 extern "C" char read_elf(const char *filename);
 extern "C" char get_entry(long long *entry_ret);
 extern "C" char get_section(long long *address_ret, long long *len_ret);
-//extern "C" char read_section(long long address, const svOpenArrayHandle buffer, long long len);
 
 // address and size
 extern std::vector<std::pair<uint64_t, uint64_t>> sections;
@@ -53,7 +52,7 @@ int main(int argc, char** argv) {
     if (TestName == "jtag_access") {
       tb->jtag_memory_test();
     } else { // software test
-      tb->jtag_elf_run(ElfPath);
+      tb->jtag_elf_run(ElfPath, JTAG_LOAD);
       tb->jtag_wait_eoc();
     }
   }

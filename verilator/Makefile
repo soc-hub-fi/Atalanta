@@ -19,6 +19,7 @@ VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
 
 SW_ROOT          = examples/smoke_tests
 ELF_PATH         = $(realpath $(CURDIR))/../$(SW_ROOT)/build/$(TEST)/$(TEST).elf
+JTAG_LOAD        = 0
 
 # if VERILATOR_ROOT is undefined, assume that it is in PATH
 ifeq ($(VERILATOR_ROOT),)
@@ -85,7 +86,7 @@ VERIL_FLAGS ?= \
 	--hierarchical \
 	--exe $(VERIL_TOP) \
 	--cc \
-	-CFLAGS -DTEST=$(TEST) \
+	-CFLAGS "-DTEST=$(TEST) -DJTAG_LOAD=$(JTAG_LOAD)" \
 	--unroll-count 4 \
 	$(VERIL_DIR)/../src/tb/elfloader.cpp \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
