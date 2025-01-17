@@ -46,7 +46,7 @@ const TEST_IRQS: &[Interrupt] = &[
 ];
 
 /// An array of 32 bits, one for each possible interrupt 0..32
-static mut IRQ_RECVD: u32 = 0;
+static mut IRQ_RECVD: u64 = 0;
 
 /// Example entry point
 #[entry]
@@ -75,7 +75,7 @@ fn main() -> ! {
     // Assert each interrupt was raised
     let mut failures = 0;
     for &irq in TEST_IRQS {
-        let bit: u32 = 0b1 << irq.number();
+        let bit: u64 = 0b1 << irq.number();
         if unsafe { ptr::read_volatile(addr_of!(IRQ_RECVD) as *const _) & bit } == bit {
             tb::signal_partial_ok!("{:?} = {}", irq, irq.number());
         } else {
@@ -121,6 +121,6 @@ fn interrupt_handler() {
 
     // Record that the particular line was raised
     let mut val = unsafe { ptr::read_volatile(addr_of!(IRQ_RECVD) as *const _) };
-    val |= 0b1u32 << irq_code;
+    val |= 0b1u64 << irq_code;
     unsafe { ptr::write_volatile(addr_of_mut!(IRQ_RECVD) as *mut _, val) };
 }
