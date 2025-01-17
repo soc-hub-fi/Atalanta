@@ -11,6 +11,7 @@ module rt_top_unpacked #(
   parameter int unsigned AxiDataWidth   = 32,
   parameter int unsigned ClicIrqSrcs    = 64,
   parameter bit          IbexRve        = 1,
+  parameter bit          JtagLoad       = 1,
   localparam int SrcW = $clog2(ClicIrqSrcs),
   localparam int unsigned AxiStrbWidth = AxiDataWidth / 8,
   parameter int unsigned AxiIdWidth   = 9,
@@ -251,7 +252,16 @@ rt_top #(
 // TODO: Add passive VIPs here
 
 initial begin
-  // TODO: Add memory preload
+  if(!JtagLoad) begin
+    @(posedge rst_ni);
+    $display("Initializing program with $readmemh");
+    $display("APPLICABLE TO SIMULATED DESIGNS ONLY");
+    $readmemh("../../build/verilator_build/imem_stim.hex",
+      i_rt_top.i_core.i_imem.i_sram.sram);
+    $readmemh("../../build/verilator_build/dmem_stim.hex",
+      i_rt_top.i_core.i_dmem.i_sram.sram);
+  end else
+    $display("Initializing program with JTAG loader");
 end
 `endif
 

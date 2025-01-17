@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Verilator support after long stale period
 
 ### Added
+- Readmem-program loading for Verilator
 - C++ port of elfloader for Verilator
 - "wfi" to timer_test to accommodate for rt-ibex's sleep mode
 - Support for UART receiver in Atalanta and its TB environment

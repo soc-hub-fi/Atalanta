@@ -433,7 +433,7 @@ public:
         return (uint32_t)entry;
     }
 
-    virtual uint32_t jtag_elf_halt_load (const std::string binary) {
+    virtual uint32_t jtag_elf_halt_load (const std::string binary, bool jtag_load) {
         const uint32_t DmCmd = 0x80000001; // haltreq = 1, dmactive = 1
         const uint8_t  DmControlAddr = 0x10;
         const uint8_t  DmStatusAddr  = 0x11;
@@ -443,13 +443,15 @@ public:
         do status = jtag_read_dmi_exp_backoff(DmControlAddr);
         while (status & 0x200);
         printf("[JTAG] Halted hart 0\n");
-        uint32_t entry = jtag_elf_preload(binary);
+        uint32_t entry = 0x1000; // default IMEM base
+        if(jtag_load)
+            entry = jtag_elf_preload(binary);
         return entry;
     }
 
-    virtual void jtag_elf_run (const std::string binary) {
+    virtual void jtag_elf_run (const std::string binary, bool jtag_load) {
         printf("[JTAG] Attempting to halt hart 0\n");
-        uint32_t entry = jtag_elf_halt_load(binary);
+        uint32_t entry = jtag_elf_halt_load(binary, jtag_load);
         // repoint execution
         const uint8_t  Data0     = 0x04;
         const uint8_t  Command   = 0x17;
