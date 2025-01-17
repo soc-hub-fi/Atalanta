@@ -1,0 +1,103 @@
+# Ubuntu 22.04, a.k.a. jammy
+FROM ubuntu:jammy AS builder
+LABEL stage=builder
+
+# Update package database
+RUN apt update
+
+# Install requirements for RISC-V toolchain
+RUN apt install -y \
+  build-essential \
+  curl
+
+# Download RISC-V GCC
+WORKDIR /root/
+ENV RISCV="/root/riscv/"
+RUN \
+  curl -LO https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2025.01.17/riscv32-elf-ubuntu-22.04-gcc-nightly-2025.01.17-nightly.tar.xz && \
+  mkdir -p ${RISCV} && \
+  tar -xf riscv32-elf-ubuntu-22.04-gcc-nightly-2025.01.17-nightly.tar.xz -C riscv --strip-components=1
+ENV PATH="${RISCV}/bin:${PATH}"
+
+# Install requirements for Rust
+RUN apt install -y \
+  cmake \
+  git \
+  libssl-dev \
+  ninja-build \
+  pkg-config \
+  python3
+
+# Clone Rust from source
+RUN git clone --branch 1.84.0 --depth 1 https://github.com/rust-lang/rust rust-src
+WORKDIR /root/rust-src/
+COPY config.toml .
+
+# Skip pre-compile sanity check for our immature target
+ENV BOOTSTRAP_SKIP_TARGET_SANITY=1
+
+ENV DESTDIR="/root/rust-1.84.0/"
+
+# Fix arguments for RVE GCC which are resolved incorrectly for some reason
+ENV \
+  CFLAGS_riscv32e_unknown_none_elf="-march=rv32e -mabi=ilp32e" \
+  CFLAGS_riscv32em_unknown_none_elf="-march=rv32em -mabi=ilp32e" \
+  CFLAGS_riscv32emc_unknown_none_elf="-march=rv32emc -mabi=ilp32e"
+
+# Build stage 1 compiler, which we'll use to build the distributable stage 2 compiler with our
+# preferred cross-compilers. This intermediary step isn't strictly necessary, but speeds up
+# consequent container builds when used with `--keep-stage 1` for the stage 2 compiler.
+RUN ./x build -i library
+
+# Build & install distributable stage 2 compiler with our preferred cross-compilers
+RUN ./x install --keep-stage 1 -i \
+  compiler/rustc \
+  library/std
+
+# New machine with only the built tools, to save space & to verify we are not dependent on any
+# transient configurations.
+FROM ubuntu:jammy AS deploy
+
+# Update package database
+RUN apt update
+
+# Copy RISC-V cross-compiler & linker
+ENV RISCV="/root/riscv/"
+COPY --from=builder ${RISCV} ${RISCV}
+ENV PATH="${RISCV}/bin:${PATH}"
+
+# Copy Rust compiler
+ENV RUST="/root/rust-1.84.0/"
+COPY --from=builder ${RUST} ${RUST}
+
+# Install rustup
+RUN apt install -y \
+    curl
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Hook the new compiler into rustup
+RUN \
+  rustup toolchain link rve ${RUST}/usr/local/ && \
+  rustup default rve
+
+
+# A more refined image for further development & build validation
+FROM deploy as devel
+
+# Add optional tools for end-user
+RUN apt install -y \
+  binutils \
+  build-essential \
+  git \
+  python3 \
+  tmux \
+  vim \
+  zsh
+
+WORKDIR /root/
+RUN git clone https://github.com/soc-hub-fi/Atalanta.git
+
+WORKDIR /root/Atalanta/examples/rust_minimal
+RUN cargo check --examples
+RUN cargo build --examples
