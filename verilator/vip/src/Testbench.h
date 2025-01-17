@@ -454,7 +454,7 @@ public:
         const uint8_t  Data0     = 0x04;
         const uint8_t  Command   = 0x17;
         const uint32_t ImemStart = 0x1000;
-        const uint16_t CsrDpc    = 0x7b1 // 12
+        const uint16_t CsrDpc    = 0x7b1; // 12
         const uint32_t DmiCmd    = 0x2307B1;
         jtag_write(Data0, ImemStart);
         jtag_write(Command, DmiCmd);
@@ -468,6 +468,19 @@ public:
 
     virtual void jtag_wait_eoc (void) {
         printf("[JTAG] Waiting for end of computation\n");
-        
+        const uint8_t Data0 = 0x04;
+        uint32_t exit_code = 0;
+        while (!(exit_code & 0x80000000)){
+          exit_code = jtag_read_dmi_exp_backoff(Data0);
+        }
+
+        for(int i=0; i<20; i++) tick();
+
+        if (!(exit_code & ~(0x80000000)))
+          printf("[TB] Program returned EXIT_SUCCESS\n");
+        else {
+          printf("[TB] Exit code: %x\n", exit_code);
+          printf("[TB] Program execution [FAILED]!\n");
+        }
     }
 };

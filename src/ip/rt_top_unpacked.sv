@@ -248,8 +248,10 @@ rt_top #(
 );
 
 `ifndef SYNTHESIS
+// TODO: Add passive VIPs here
+
 initial begin
-  // TODO: ADD memory preload
+  // TODO: Add memory preload
 end
 `endif
 

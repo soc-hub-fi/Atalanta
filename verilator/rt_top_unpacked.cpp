@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
       tb->jtag_memory_test();
     } else { // software test
       tb->jtag_elf_run(ElfPath);
-      tb->jtag_wait_eoc();      
+      tb->jtag_wait_eoc();
     }
   }
 
