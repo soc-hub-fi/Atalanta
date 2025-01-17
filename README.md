@@ -19,7 +19,11 @@ Verilator simulations can be invoked from the repository root with
 ```
 make verilate simv TEST=<name of test, e.g. 'uart_sanity'>
 ```
-This will clean and compile the design and the software test, then invoke the simulation. An Instruction trace and a `.fst` waveform are always generated under `build/verilator_build`.
+This will clean and compile the design and the software test, then invoke the simulation.
+
+By default, programs are loaded with `$readmemh` (applicable to simulations only). JTAG-based serial loading is supported and can be invoked by appending `JTAG_LOAD=1` to the above command.
+
+An Instruction trace and a `.fst` waveform are always generated under `build/verilator_build`.
 
 
 ### with Questa
@@ -107,7 +111,7 @@ The `.gdb` file automates connecting GDB to the debug module and loading the ELF
 
 ## Software Compilation
 
-Software compulation is implicitly included in the simulator invocation. Artifacts are generated under `examples/build`.
+Software compulation is implicitly included in the simulator invocation. Artifacts are generated under `examples/*/build`.
 
 
 ## Citing
