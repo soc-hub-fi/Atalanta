@@ -20,6 +20,9 @@ VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
 SW_ROOT          = examples/smoke_tests
 ELF_PATH         = $(realpath $(CURDIR))/../$(SW_ROOT)/build/$(TEST)/$(TEST).elf
 JTAG_LOAD        = 0
+## TODO: Makefile magic to make DMEM_START = IMEM_SIZE+1
+IMEM_SIZE        = 4096
+DMEM_START       = 4097
 
 # if VERILATOR_ROOT is undefined, assume that it is in PATH
 ifeq ($(VERILATOR_ROOT),)
@@ -113,6 +116,15 @@ lint:
 $(TEST):
 	cp $(ELF_PATH) $(VERIL_BUILD_DIR)/tmp_elf
 	@echo "Created temporary copy \"tmp_elf\" of \"$(TEST).elf\" in $(VERIL_BUILD_DIR)/tmp_elf"
+	@echo "Creting hex stims from ELF"
+	riscv32-unknown-elf-elf2hex \
+	--bit-width 32 \
+	--input $(VERIL_BUILD_DIR)/tmp_elf \
+	--output $(VERIL_BUILD_DIR)/tmp_full.hex
+	head -$(IMEM_SIZE) $(VERIL_BUILD_DIR)/tmp_full.hex > \
+	$(VERIL_BUILD_DIR)/imem_stim.hex
+	tail -n +$(DMEM_START) $(VERIL_BUILD_DIR)/tmp_full.hex > \
+	$(VERIL_BUILD_DIR)/dmem_stim.hex
 
 .PHONY: verilate
 verilate: clean init $(TEST)
