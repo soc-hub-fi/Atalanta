@@ -17,6 +17,9 @@ the right backends already exist in LLVM & Rust, so we only need to configure Ru
     export DESTDIR="$HOME/.local/install/compilers/rust-1.84.0"
 
     # Build the compiler
+    CFLAGS_riscv32e_unknown_none_elf="-march=rv32e -mabi=ilp32e" \
+    CFLAGS_riscv32em_unknown_none_elf="-march=rv32em -mabi=ilp32e" \
+    CFLAGS_riscv32emc_unknown_none_elf="-march=rv32emc -mabi=ilp32e" \
     BOOTSTRAP_SKIP_TARGET_SANITY=1 ./x install compiler/rustc library/std
     ```
 
