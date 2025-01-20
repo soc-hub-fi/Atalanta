@@ -80,6 +80,10 @@
 #define CLIC_CLICINTIE_IE_BIT  8
 #define CLIC_CLICINTIE_IE_MASK  0x1
 
+/* CLIC PCS id enable */
+#define CLIC_CLICINTIE_PCS_BIT  12
+#define CLIC_CLICINTIE_PCS_MASK  0x1
+
 /* CLIC interrupt id attributes */
 #define CLIC_CLICINTATTR_SHV_MASK 0x1 
 #define CLIC_CLICINTATTR_SHV_BIT	16
@@ -136,6 +140,13 @@ void disable_int(intId id){
     write_word(CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id), 0x0, CLIC_CLICINTIE_IE_MASK, CLIC_CLICINTIE_IE_BIT);
 }
 
+void enable_pcs(intId id) {
+    write_word(CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id). 0x1, CLIC_CLICINTIE_PCS_MASK, CLIC_CLICINTIE_PCS_BIT);
+}
+
+void disable_pcs(intId id) {
+    write_word(CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id). 0x0, CLIC_CLICINTIE_PCS_MASK, CLIC_CLICINTIE_PCS_BIT);
+}
 
 void pend_int(intId id){
     write_word(CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id), 0x1, CLIC_CLICINTIE_IP_MASK, CLIC_CLICINTIE_IP_BIT);   

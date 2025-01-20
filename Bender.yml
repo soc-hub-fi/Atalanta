@@ -33,8 +33,8 @@ sources:
     - src/ip/axi_to_obi.sv
     - src/vendor/safety_island/future/axi_obi/src/obi_to_axi.sv
     - src/vendor/safety_island/future/axi_obi/src/obi_to_axi.sv
-    - src/vendor/clic/src/clicint_reg_pkg.sv
-    - src/vendor/clic/src/clicint_reg_top.sv
+    - src/ip/clicint_reg_pkg.sv
+    - src/ip/clicint_reg_top.sv
     - src/vendor/clic/src/mclic_reg_pkg.sv
     - src/vendor/clic/src/mclic_reg_top.sv
     - src/vendor/clic/src/clic_reg_adapter.sv
@@ -109,8 +109,6 @@ vendor_package:
     target_dir: src/vendor/clic
     upstream: { git: "https://github.com/pulp-platform/clic.git", rev: "8ed76ffc779a435d0ed034f3068e4c3334fe2ecf"}
     include_from_upstream:
-      - src/clicint_reg_pkg.sv
-      - src/clicint_reg_top.sv
       - src/mclic_reg_pkg.sv
       - src/mclic_reg_top.sv
       - src/clic_reg_adapter.sv
