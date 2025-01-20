@@ -67,7 +67,7 @@ VERIL_INCLUDES ?= \
 	+incdir+$(shell bender path apb)/include \
 	+incdir+$(shell bender path axi)/include \
 	+incdir+$(shell bender path register_interface)/include \
-	+incdir+$(VERIL_DIR)/../src/ip/obi/include \
+	+incdir+$(VERIL_DIR)/../src/vendor/obi/include \
 	+incdir+$(shell bender path rt-ibex)/vendor/lowrisc_ip/dv/sv/dv_utils \
 	+incdir+$(shell bender path rt-ibex)/vendor/lowrisc_ip/ip/prim/rtl \
 	+incdir+$(shell bender path rt-ibex)/rtl
