@@ -109,7 +109,11 @@ init:
 .PHONY: lint
 lint:
 	$(VERILATOR) --lint-only \
+	$(VERIL_DEFINES) \
 	$(VERIL_INCLUDES) \
+	$(VERIL_PARAMS) \
+	$(VERIL_WARN_SUPPRESS) \
+	--timing \
 	--top-module $(TOP_MODULE) \
 	$(shell bender script flist $(BENDER_TARGETS)) \
 
