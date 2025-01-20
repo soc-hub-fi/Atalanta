@@ -37,6 +37,9 @@ int main() {
   // enable global interrupts
   asm("csrsi mstatus, 8");
 
+  // set mtime as pcs-irq
+  enable_pcs(7);
+
   // positive edge triggering
   set_trig(7, CLIC_TRIG_POSITIVE | CLIC_TRIG_EDGE);
 

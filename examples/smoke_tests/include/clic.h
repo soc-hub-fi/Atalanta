@@ -141,11 +141,11 @@ void disable_int(intId id){
 }
 
 void enable_pcs(intId id) {
-    write_word(CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id). 0x1, CLIC_CLICINTIE_PCS_MASK, CLIC_CLICINTIE_PCS_BIT);
+    write_word(CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id), 0x1, CLIC_CLICINTIE_PCS_MASK, CLIC_CLICINTIE_PCS_BIT);
 }
 
 void disable_pcs(intId id) {
-    write_word(CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id). 0x0, CLIC_CLICINTIE_PCS_MASK, CLIC_CLICINTIE_PCS_BIT);
+    write_word(CLIC_BASE_ADDR + CLIC_INTREG_OFFSET(id), 0x0, CLIC_CLICINTIE_PCS_MASK, CLIC_CLICINTIE_PCS_BIT);
 }
 
 void pend_int(intId id){
