@@ -41,6 +41,7 @@ VERIL_WARN_SUPPRESS ?= \
   -Wno-UNSIGNED        \
   -Wno-WIDTHCONCAT     \
   -Wno-WIDTHTRUNC      \
+  -Wno-MISINDENT	   \
   -Wno-COMBDLY         \
   -Wno-LATCH           \
   -Wno-LITENDIAN       \
