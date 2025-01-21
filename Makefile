@@ -18,7 +18,7 @@ FPGA_DIR   = $(realpath $(CURDIR))/fpga
 
 START_TIME=`date +%F_%H:%M`
 SHELL=bash
-VERILATOR_CFLAGS="-Os -ffunction-sections -fdata-sections -g -c -DVERILATOR"
+VERILATOR_CFLAGS="-O0 -ffunction-sections -fdata-sections -g -c -DVERILATOR"
 
 BENDER ?= bender
 
