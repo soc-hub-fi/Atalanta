@@ -41,7 +41,6 @@ VERIL_WARN_SUPPRESS ?= \
   -Wno-UNSIGNED        \
   -Wno-WIDTHCONCAT     \
   -Wno-WIDTHTRUNC      \
-  -Wno-MISINDENT	   \
   -Wno-COMBDLY         \
   -Wno-LATCH           \
   -Wno-LITENDIAN       \
@@ -106,10 +105,12 @@ init:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(VERIL_BUILD_DIR)
 
+## Target for internal CI on verilator 5.024
 .PHONY: lint
 lint:
 	$(VERILATOR) --lint-only \
 	$(VERIL_DEFINES) \
+	-Wno-MISINDENT	 \
 	$(VERIL_INCLUDES) \
 	$(VERIL_PARAMS) \
 	$(VERIL_WARN_SUPPRESS) \

@@ -11,8 +11,10 @@ make repository_init
 ### Dependencies
 
 - The Verilator features used here depend on GCC 10 or newer, or Clang (untested). Ensure your compiler is suitable before proceeding.
-- This build is developed on top of version *5.024*. Currently, this requires a manual [installation](https://verilator.org/guide/latest/install.html#git-quick-install).
+- This build is developed on top of version *5.008*. Currently, this requires a manual [installation](https://verilator.org/guide/latest/install.html#git-quick-install).
 - [Elf2Hex](https://github.com/sifive/elf2hex) is used to create hex-stims from ELF-binaries when loading programs with `$readmemh`.
+
+> **_NOTE:_**  The design is compatible with at least Verilator 5.024, but 5.008 is preferded due to our experienced better compilation performance.
 
 ### with Verilator
 
