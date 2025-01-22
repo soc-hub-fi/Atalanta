@@ -6,7 +6,7 @@ package:
 
 dependencies:
   rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "c3a02703a7d1629f24cd58195a8002144818efc5" }
-  clic: { git: "https://github.com/ANurmi/clic.git", rev: "fbfde20412a3dfa151dfb19fec352b8600862732" }
+  clic: { git: "https://github.com/ANurmi/clic.git", rev: "5fa3836c2660347aaa7e0b20f7ec820a0aefec6f" }
   riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
   #obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
