@@ -117,6 +117,13 @@ pub fn unmask_u32(addr: usize, unmask: u32) {
     unsafe { core::ptr::write_volatile(addr as *mut _, r & !unmask) }
 }
 
+#[inline(always)]
+pub fn toggle_u32(addr: usize, toggle_bits: u32) {
+    let mut r = read_u32(addr);
+    r ^= toggle_bits;
+    write_u32(addr, r);
+}
+
 /// # Safety
 ///
 /// Unaligned writes may fail to produce expected results on RISC-V.
