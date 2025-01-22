@@ -18,8 +18,8 @@ pub enum UartInterrupt {
     /// * (fifo enabled) trigger level has been reached (sa. [UART_IIR_FCR_OFS])
     /// * character timeout has been reached error or break interrupt
     OnData = 0b1,
-    /// Interrupt is raised when [UART_RBR_THR_DLL_OFS] is empty, i.e., when
-    /// character has been consumed by polling.
+    /// Interrupt is raised when character has been consumed by polling, i.e.,
+    /// when [UART_RBR_THR_DLL_OFS] is empty.
     OnEmpty = 0b1 << 1,
     /// Interrupt is raised on overrun error, parity error, framing error or
     /// break interrupt
@@ -129,6 +129,26 @@ impl<const BASE_ADDR: usize> ApbUartHal<BASE_ADDR> {
 
         // SAFETY: UART0_ADDR is 4-byte aligned
         unsafe { read_u8(BASE_ADDR) }
+    }
+
+    /// Assert bit to cause hardware to raise an interrupt on specified UART
+    /// interrupt.
+    #[inline]
+    pub fn listen(&mut self, int: UartInterrupt) {
+        unsafe {
+            // Save LCR for restoration
+            let p_lcr = read_u8(BASE_ADDR + UART_LCR_OFS);
+
+            // Deassert `LCR[7]` => IER_DLM is IER
+            let lcr = p_lcr & (0b1 << 7);
+            write_u8(BASE_ADDR + UART_LCR_OFS, lcr);
+
+            // Set IER
+            write_u8(BASE_ADDR + UART_IER_DLM_OFS, int as u8);
+
+            // Restore `LCR`
+            write_u8(BASE_ADDR + UART_LCR_OFS, p_lcr);
+        }
     }
 
     #[inline]
