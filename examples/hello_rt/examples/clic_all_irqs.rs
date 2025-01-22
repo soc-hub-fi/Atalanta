@@ -15,7 +15,7 @@ use bsp::{
     print_example_name, riscv,
     rt::entry,
     sprintln, tb,
-    uart::init_uart,
+    uart::ApbUart,
 };
 use hello_rt::UART_BAUD;
 
@@ -51,7 +51,7 @@ static mut IRQ_RECVD: u64 = 0;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, UART_BAUD);
+    let mut serial = ApbUart::init(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8
@@ -89,9 +89,9 @@ fn main() -> ! {
     }
 
     if failures == 0 {
-        tb::signal_pass(true);
+        tb::signal_pass(Some(&mut serial));
     } else {
-        tb::signal_fail(true);
+        tb::signal_fail(Some(&mut serial));
     }
 }
 

@@ -21,7 +21,7 @@ use bsp::{
     print_example_name, riscv,
     rt::entry,
     sprintln, tb,
-    uart::init_uart,
+    uart::ApbUart,
     write_u32, CPU_FREQ,
 };
 use hello_rt::UART_BAUD;
@@ -33,7 +33,7 @@ static mut LOCK: bool = true;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, UART_BAUD);
+    let mut serial = ApbUart::init(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8
@@ -62,7 +62,7 @@ fn main() -> ! {
     tear_irq(MTIMER_IRQ);
     riscv::interrupt::disable();
 
-    tb::signal_pass(true)
+    tb::signal_pass(Some(&mut serial))
 }
 
 fn wait_on_lock() {

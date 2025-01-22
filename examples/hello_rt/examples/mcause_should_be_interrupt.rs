@@ -6,7 +6,7 @@
 #![no_main]
 #![no_std]
 
-use bsp::{print_example_name, riscv, rt::entry, sprintln, tb, uart::init_uart};
+use bsp::{print_example_name, riscv, rt::entry, sprintln, tb, uart::ApbUart};
 use hello_rt::{clic::*, UART_BAUD};
 
 // 3 == MSI
@@ -17,7 +17,7 @@ static mut LAST_IRQ: Option<u32> = None;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, UART_BAUD);
+    let mut serial = ApbUart::init(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8
@@ -35,12 +35,12 @@ fn main() -> ! {
         assert!(IRQ_ID == irq);
         tear_irq(IRQ_ID);
 
-        tb::signal_pass(true)
+        tb::signal_pass(Some(&mut serial))
     }
     // If execution gets here in spite of pending the IRQ, we have failed
     else {
         tear_irq(IRQ_ID);
-        tb::signal_fail(true)
+        tb::signal_fail(Some(&mut serial))
     }
 }
 
