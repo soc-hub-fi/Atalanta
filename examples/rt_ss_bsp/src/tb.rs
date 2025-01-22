@@ -103,6 +103,11 @@ pub(crate) fn rtl_testbench_signal_fail() -> ! {
     led_off(Led::Ld1);
     led_on(Led::Ld0);
 
+    // Signal fail to Verilator / Questa testbench
+    const OK_BIT: u32 = 0b1 << 31;
+    const FAIL_BIT: u32 = 0b1;
+    crate::write_u32(0x380, OK_BIT | FAIL_BIT);
+
     // We must end on a timeout for the testbench and therefore cannot do any
     // work after signaling failure
     loop {}
@@ -115,6 +120,10 @@ fn rtl_testbench_signal_ok() -> ! {
     // case is considered passing
     led_on(Led::Ld1);
     led_on(Led::Ld0);
+
+    // Signal OK to Verilator / Questa testbench
+    const OK_BIT: u32 = 0b1 << 31;
+    crate::write_u32(0x380, OK_BIT);
 
     loop {}
 }
