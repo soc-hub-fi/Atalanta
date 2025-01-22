@@ -319,7 +319,7 @@ task automatic jtag_elf_run(input string binary);
   word entry;
   jtag_elf_halt_load(binary, entry);
   // Repoint execution
-  write_reg_abstract_cmd(dm::CSR_DPC, rt_pkg::ImemRule.Start);
+  write_reg_abstract_cmd(dm::CSR_DPC, entry);
   // Resume hart 0
   jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
   $display("[JTAG] Resumed hart 0 from 0x%h", entry);

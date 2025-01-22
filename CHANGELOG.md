@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Verilator support after long stale period
+- Erronious hard-coded program entry address
 
 ### Added
 - Readmem-program loading for Verilator
