@@ -174,7 +174,7 @@ clic_apb #(
   .irq_shv_o      (irq_shv_o),
   .irq_priv_o     (irq_priv_o),
   .irq_kill_req_o (irq_kill_req_o),
-  .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
+  .irq_kill_ack_i (irq_kill_ack_i)
 );
 
 apb_gpio #(

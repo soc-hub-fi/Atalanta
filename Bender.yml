@@ -6,7 +6,7 @@ package:
 
 dependencies:
   rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "c3a02703a7d1629f24cd58195a8002144818efc5" }
-  #clic: { git: "https://github.com/pulp-platform/clic.git", version: 2.0.0 }
+  clic: { git: "https://github.com/ANurmi/clic.git", rev: "fbfde20412a3dfa151dfb19fec352b8600862732" }
   riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
   #obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
@@ -33,15 +33,6 @@ sources:
     - src/ip/axi_to_obi.sv
     - src/vendor/safety_island/future/axi_obi/src/obi_to_axi.sv
     - src/vendor/safety_island/future/axi_obi/src/obi_to_axi.sv
-    - src/ip/clicint_reg_pkg.sv
-    - src/ip/clicint_reg_top.sv
-    - src/vendor/clic/src/mclic_reg_pkg.sv
-    - src/vendor/clic/src/mclic_reg_top.sv
-    - src/vendor/clic/src/clic_reg_adapter.sv
-    - src/vendor/clic/src/clic_target.sv
-    - src/vendor/clic/src/clic_gateway.sv
-    - src/vendor/clic/src/clic.sv
-    - src/vendor/clic/src/clic_apb.sv
     - src/ip/axi_to_obi_intf.sv
     - src/ip/obi_to_axi_intf.sv
     - src/ip/obi_to_apb_intf.sv
@@ -104,16 +95,3 @@ vendor_package:
       - src/obi_xbar.sv
       - include/obi/assign.svh
       - include/obi/typedef.svh
-  
-  - name: clic
-    target_dir: src/vendor/clic
-    upstream: { git: "https://github.com/pulp-platform/clic.git", rev: "8ed76ffc779a435d0ed034f3068e4c3334fe2ecf"}
-    include_from_upstream:
-      - src/mclic_reg_pkg.sv
-      - src/mclic_reg_top.sv
-      - src/clic_reg_adapter.sv
-      - src/clic_target.sv
-      - src/clic_gateway.sv
-      - src/clic.sv
-      - src/clic_apb.sv
-
