@@ -1,3 +1,6 @@
+// Allowed for extra clarity in certain cases
+#![allow(clippy::identity_op)]
+
 //! CLIC interrupt pending register.
 use riscv_peripheral::common::{Reg, RW};
 

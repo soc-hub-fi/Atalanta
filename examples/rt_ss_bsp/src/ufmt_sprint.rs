@@ -1,14 +1,12 @@
-use crate::uart::uart_write;
-
-pub struct Uart;
+use crate::uart::ApbUartHal;
 
 #[macro_export]
 macro_rules! sprint {
     ($s:expr) => {{
-        ufmt::uwrite!($crate::sprint::Uart {}, $s).unwrap()
+        ufmt::uwrite!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }> {}, $s).unwrap()
     }};
     ($($tt:tt)*) => {{
-        ufmt::uwrite!($crate::sprint::Uart, $($tt)*).unwrap()
+        ufmt::uwrite!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }>, $($tt)*).unwrap()
     }};
 }
 
@@ -26,11 +24,11 @@ macro_rules! sprintln {
     }};
 }
 
-impl ufmt::uWrite for Uart {
+impl<const BASE_ADDR: usize> ufmt::uWrite for ApbUartHal<BASE_ADDR> {
     type Error = core::convert::Infallible;
 
     fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
-        uart_write(s);
+        ApbUartHal::write_str(self, s);
         Ok(())
     }
 }

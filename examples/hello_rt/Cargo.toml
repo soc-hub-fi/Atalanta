@@ -8,13 +8,15 @@ edition = "2021"
 [dependencies]
 bsp = { package = "rt_ss_bsp", path = "../rt_ss_bsp", features = [
     "rt",
-    "ufmt",
     "clic-smclic",
     "clic-smclicshv",
 ] }
 ufmt = "0.2.0"
 
 [features]
+default = ["ufmt"]
+ufmt = ["bsp/ufmt", "heapless/ufmt"]
+
 # Use this feature when using cosimulators such as QuestaSim
 rtl-tb = ["bsp/rtl-tb"]
 # Use this feature when deploying on FPGA
@@ -32,3 +34,6 @@ debug = true
 [profile.'bloat']
 inherits = "release"
 strip = false
+
+[dev-dependencies]
+heapless = "0.8.0"

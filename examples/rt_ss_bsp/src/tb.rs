@@ -7,7 +7,7 @@
 
 use crate::{
     led::{led_off, led_on, Led},
-    uart::uart_write,
+    uart::ApbUart,
 };
 
 pub const TEST_PASS_TAG: &str = "[PASSED]";
@@ -45,11 +45,15 @@ macro_rules! signal_partial_fail {
 pub use signal_partial_fail;
 
 /// Signal that everything is alright and test case is considered passing
+///
+/// Optionally pass in an initialized UART for printouts.
 #[inline]
-pub fn signal_pass(use_uart: bool) -> ! {
-    if use_uart {
-        uart_write(TEST_PASS_TAG);
-        uart_write("\r\n");
+pub fn signal_pass(serial: Option<&mut ApbUart>) -> ! {
+    if let Some(serial) = serial {
+        // Safety: we've hacked around to make sure ApbUart is usually initialized at
+        // this point
+        serial.write_str(TEST_PASS_TAG);
+        serial.write_str("\r\n");
     }
 
     match () {
@@ -61,11 +65,13 @@ pub fn signal_pass(use_uart: bool) -> ! {
 }
 
 /// Signal general failure
+///
+/// Optionally pass in an initialized UART for printouts.
 #[inline]
-pub fn signal_fail(use_uart: bool) -> ! {
-    if use_uart {
-        uart_write(TEST_FAIL_TAG);
-        uart_write("\r\n");
+pub fn signal_fail(serial: Option<&mut ApbUart>) -> ! {
+    if let Some(serial) = serial {
+        serial.write_str(TEST_FAIL_TAG);
+        serial.write_str("\r\n");
     }
 
     match () {
@@ -119,15 +125,19 @@ fn rtl_testbench_signal_ok() -> ! {
 #[export_name = "ExceptionHandler"]
 #[cfg(all(feature = "fpga", feature = "rt"))]
 fn blink_exception(_trap_frame: &riscv_rt::TrapFrame) -> ! {
-    use crate::{asm_delay, led::led_set, sprintln, uart::init_uart, NOPS_PER_SEC};
+    use crate::{asm_delay, led::led_set, sprintln, NOPS_PER_SEC};
 
     // Initialize UART if not initialized
-    if !unsafe { crate::uart::UART_IS_INIT } {
-        init_uart(crate::CPU_FREQ, DEFAULT_BAUD);
-    }
+    let mut uart = if !unsafe { crate::uart::UART_IS_INIT } {
+        ApbUart::init(crate::CPU_FREQ, DEFAULT_BAUD)
+    } else {
+        // Safety: UART is initialized, and no one is going to use it after this
+        // exception
+        unsafe { ApbUart::instance() }
+    };
 
-    uart_write(TEST_FAIL_TAG);
-    uart_write("\r\n");
+    uart.write_str(TEST_FAIL_TAG);
+    uart.write_str("\r\n");
 
     let code = riscv::register::mcause::read().code();
     sprintln!("\r\nException: {}", code);
