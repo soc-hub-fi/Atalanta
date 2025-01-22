@@ -15,7 +15,7 @@ ufmt = "0.2.0"
 
 [features]
 default = ["ufmt"]
-ufmt = ["bsp/ufmt"]
+ufmt = ["bsp/ufmt", "heapless/ufmt"]
 
 # Use this feature when using cosimulators such as QuestaSim
 rtl-tb = ["bsp/rtl-tb"]
@@ -34,3 +34,6 @@ debug = true
 [profile.'bloat']
 inherits = "release"
 strip = false
+
+[dev-dependencies]
+heapless = "0.8.0"
