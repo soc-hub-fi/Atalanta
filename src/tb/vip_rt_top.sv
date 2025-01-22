@@ -303,8 +303,7 @@ task automatic jtag_elf_halt_load(input string binary, output word entry);
   while (~status.allhalted);
   $display("[JTAG] Halted hart 0");
   // Preload binary
-  //jtag_elf_preload(binary, entry);
-  jtag_elf_preload("/home/antti/uart-halfbaud", entry);
+  jtag_elf_preload(binary, entry);
 endtask
 
 
