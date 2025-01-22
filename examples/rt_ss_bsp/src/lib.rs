@@ -4,6 +4,7 @@
 pub mod clic;
 #[cfg(not(feature = "ufmt"))]
 mod core_sprint;
+pub mod gpio;
 pub mod interrupt;
 pub mod led;
 pub mod mmap;
@@ -126,6 +127,10 @@ pub fn mask_u8(addr: usize, mask: u8) {
 }
 
 /// Unmasks specified bits from given register
+///
+/// # Safety
+///
+/// Unaligned writes may fail to produce expected results on RISC-V.
 #[inline(always)]
 pub fn unmask_u8(addr: usize, unmask: u8) {
     let r = unsafe { core::ptr::read_volatile(addr as *const u8) };
