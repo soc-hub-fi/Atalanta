@@ -86,7 +86,11 @@ fn load_trap(arch: RiscvArch) -> String {
 #[proc_macro_attribute]
 /// Attribute to declare an interrupt handler. The function must have the
 /// signature `[unsafe] fn() [-> !]`. This macro generates the interrupt trap
-/// handler in assembly for RISC-V 32 E targets.
+/// handler in assembly for 32-bit RISC-V E targets.
+///
+/// Use [riscv_rt::interrupt] instead if you don't need nesting.
+///
+/// N.b., this won't work with `export_name`.
 pub fn nested_interrupt_riscv32e(args: TokenStream, input: TokenStream) -> TokenStream {
     nested_interrupt(args, input, RiscvArch::Rv32E)
 }
@@ -94,7 +98,11 @@ pub fn nested_interrupt_riscv32e(args: TokenStream, input: TokenStream) -> Token
 #[proc_macro_attribute]
 /// Attribute to declare an interrupt handler. The function must have the
 /// signature `[unsafe] fn() [-> !]`. This macro generates the interrupt trap
-/// handler in assembly for RISC-V 32 E targets.
+/// handler in assembly for 32-bit RISC-V I targets.
+///
+/// Use [riscv_rt::interrupt] instead if you don't need nesting.
+///
+/// N.b., this won't work with `export_name`.
 pub fn nested_interrupt_riscv32i(args: TokenStream, input: TokenStream) -> TokenStream {
     nested_interrupt(args, input, RiscvArch::Rv32I)
 }
