@@ -13,6 +13,7 @@
 #define MTIME_CTRL_ADDR    (TIMER_BASE_ADDR + 16)
 #define COMMON_ADDR 0x7000
 
+#define MTIME_IRQ_ID 7
 
 #define COMMON_ADDR 0x7000
 
@@ -38,18 +39,18 @@ int main() {
   asm("csrsi mstatus, 8");
 
   // set mtime as pcs-irq
-  enable_pcs(7);
+  enable_pcs(MTIME_IRQ_ID);
 
   // positive edge triggering
-  set_trig(7, CLIC_TRIG_POSITIVE | CLIC_TRIG_EDGE);
+  set_trig(MTIME_IRQ_ID, CLIC_TRIG_POSITIVE | CLIC_TRIG_EDGE);
 
 
   //csr_write(CSR_MTVEC, 0x1400);
   csr_write(CSR_MTVT, 0x1000);
 
-  enable_vectoring(7);
-  enable_int(7);
-  set_priority(7, 0x88);
+  enable_vectoring(MTIME_IRQ_ID);
+  enable_int(MTIME_IRQ_ID);
+  set_priority(MTIME_IRQ_ID, 0x88);
 
   //enable timer [bit 0] & set prescaler to 00F [bits 20:8]
   *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00F01;
