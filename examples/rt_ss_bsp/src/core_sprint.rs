@@ -1,14 +1,14 @@
-use crate::uart::ApbUart;
+use crate::uart::ApbUartHal;
 
 #[macro_export]
 macro_rules! sprint {
     ($s:expr) => {{
         use core::fmt::Write;
-        write!($crate::uart::ApbUart {}, $s).unwrap()
+        write!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }> {}, $s).unwrap()
     }};
     ($($tt:tt)*) => {{
         use core::fmt::Write;
-        write!($crate::uart::ApbUart, $($tt)*).unwrap()
+        write!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }>, $($tt)*).unwrap()
     }};
 }
 
@@ -26,9 +26,9 @@ macro_rules! sprintln {
     }};
 }
 
-impl core::fmt::Write for ApbUart {
+impl<const BASE_ADDR: usize> core::fmt::Write for ApbUartHal<BASE_ADDR> {
     fn write_str(&mut self, s: &str) -> Result<(), core::fmt::Error> {
-        ApbUart::write_str(self, s);
+        ApbUartHal::write_str(self, s);
         Ok(())
     }
 }

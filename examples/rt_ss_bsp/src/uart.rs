@@ -26,19 +26,22 @@ pub enum UartInterrupt {
     OnError = 0b1 << 2,
 }
 
-/// HAL driver for PULP APB UART
+/// Relocatable HAL driver for PULP APB UART
 ///
 /// The type parameter represents the base address for the UART.
-pub struct ApbUart;
+pub struct ApbUartHal<const BASE_ADDR: usize>;
 
-impl ApbUart {
+/// [ApbUartHal]
+pub type ApbUart = ApbUartHal<UART_BASE>;
+
+impl<const BASE_ADDR: usize> ApbUartHal<BASE_ADDR> {
     /// # Parameters
     ///
     /// * `freq` - SoC frequency, used to calculate BAUD rate together with a
     ///   divisor
     /// * `baud` - target BAUD (sa. UART protocol)
     #[inline]
-    pub fn init(freq: u32, baud: u32) -> ApbUart {
+    pub fn init(freq: u32, baud: u32) -> Self {
         // This is the hardware default value; it could be made configurable
         const PERIPH_CLK_DIV: u32 = 2;
         let divisor: u32 = freq / PERIPH_CLK_DIV / (baud << 4);
@@ -47,21 +50,21 @@ impl ApbUart {
         // always valid
         unsafe {
             // Disable all interrupts
-            write_u8(UART_IER_DLM, 0x00);
+            write_u8(BASE_ADDR + UART_IER_DLM_OFS, 0x00);
 
             // Enable DLAB (set baud rate divisor)
-            mask_u8(UART_LCR, 0x80);
+            mask_u8(BASE_ADDR + UART_LCR_OFS, 0x80);
             // Divisor (lo byte)
-            write_u8(UART_DLAB_LSB, divisor as u8);
+            write_u8(BASE_ADDR + UART_DLAB_LSB_OFS, divisor as u8);
             // Divisor (hi byte)
-            write_u8(UART_DLAB_MSB, (divisor >> 8) as u8);
+            write_u8(BASE_ADDR + UART_DLAB_MSB_OFS, (divisor >> 8) as u8);
             // 8 bits, no parity, one stop bit
-            write_u8(UART_LCR, UartLcrDataBits::Bits8 as u8);
+            write_u8(BASE_ADDR + UART_LCR_OFS, UartLcrDataBits::Bits8 as u8);
             // Restore DLAB state
-            unmask_u8(UART_LCR, UART_LCR_DLAB_BIT);
+            unmask_u8(BASE_ADDR + UART_LCR_OFS, UART_LCR_DLAB_BIT);
 
             write_u8(
-                UART_IIR_FCR,
+                BASE_ADDR + UART_IIR_FCR_OFS,
                 // Enable FIFO
                 UART_FCR_FIFO_EN_BIT
                     // Clear RX & TX
@@ -72,7 +75,7 @@ impl ApbUart {
                     | UART_FCR_TRIG_RX_MSB,
             );
             // Autoflow mode
-            write_u8(UART_MCR, 0x20);
+            write_u8(BASE_ADDR + UART_MCR_OFS, 0x20);
         }
 
         #[cfg(any(all(feature = "fpga", feature = "rt"), feature = "panic"))]
@@ -86,7 +89,7 @@ impl ApbUart {
     /// # Safety
     ///
     /// Returns a potentially uninitialized instance of APB UART. On ASIC, make
-    /// sure to call [ApbUart::init] prior to this call, otherwise the UART
+    /// sure to call [ApbUartHal::init] prior to this call, otherwise the UART
     /// won't behave properly.
     pub const unsafe fn instance() -> Self {
         Self {}
@@ -116,21 +119,21 @@ impl ApbUart {
     fn putc(&mut self, c: u8) {
         while !self.is_transmit_empty() {}
         // Safety: UART_THR is 4-byte aligned
-        unsafe { write_u8(UART_RBR_THR_DLL, c) };
+        unsafe { write_u8(BASE_ADDR + UART_RBR_THR_DLL_OFS, c) };
     }
 
     #[inline]
     pub fn getc(&mut self) -> u8 {
         // Wait for data to become ready
-        while unsafe { read_u8(UART_LSR) } & UART_LSR_RX_FIFO_VALID_BIT == 0 {}
+        while unsafe { read_u8(BASE_ADDR + UART_LSR_OFS) } & UART_LSR_RX_FIFO_VALID_BIT == 0 {}
 
         // SAFETY: UART0_ADDR is 4-byte aligned
-        unsafe { read_u8(UART_BASE) }
+        unsafe { read_u8(BASE_ADDR) }
     }
 
     #[inline]
     fn is_transmit_empty(&self) -> bool {
         // Safety: UART_LINE_STATUS is 4-byte aligned
-        unsafe { (read_u8(UART_LSR) & 0x20) != 0 }
+        unsafe { (read_u8(BASE_ADDR + UART_LSR_OFS) & 0x20) != 0 }
     }
 }

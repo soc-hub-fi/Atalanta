@@ -22,8 +22,8 @@ pub const UART_BASE: usize = 0x3_0100;
 ///
 /// Reads or writes the 8 LSBs of the divisor that --- together with clock
 /// frequency --- determines resultant BAUD rate.
-pub const UART_RBR_THR_DLL: usize = UART_BASE + 0;
-pub const UART_DLAB_LSB: usize = UART_RBR_THR_DLL;
+pub const UART_RBR_THR_DLL_OFS: usize = 0;
+pub const UART_DLAB_LSB_OFS: usize = UART_RBR_THR_DLL_OFS;
 
 /// Interrupt Enable Register (IER) / Divisor Latch MSB (DLM)
 ///
@@ -44,8 +44,8 @@ pub const UART_DLAB_LSB: usize = UART_RBR_THR_DLL;
 ///
 /// Reads or writes the 8 MSBs of the divisor that --- together with clock
 /// frequency --- determines resultant BAUD rate.
-pub const UART_IER_DLM: usize = UART_BASE + 4;
-pub const UART_DLAB_MSB: usize = UART_IER_DLM;
+pub const UART_IER_DLM_OFS: usize = 4;
+pub const UART_DLAB_MSB_OFS: usize = UART_IER_DLM_OFS;
 
 /// Interrupt Identification Register (IIR) / FIFO Control Register (FCR)
 ///
@@ -60,7 +60,7 @@ pub const UART_DLAB_MSB: usize = UART_IER_DLM;
 ///     - `0b01`: trigger level is high when there are 4 elements in the fifo
 ///     - `0b10`: trigger level is high when there are 8 elements in the fifo
 ///     - `0b11`: trigger level is high when there are 14 elements in the fifo
-pub const UART_IIR_FCR: usize = UART_BASE + 8;
+pub const UART_IIR_FCR_OFS: usize = 8;
 
 pub const UART_FCR_FIFO_EN_BIT: u8 = 0b1;
 pub const UART_FCR_FIFO_RX_RESET_BIT: u8 = 0b1 << 1;
@@ -86,7 +86,7 @@ pub const UART_FCR_TRIG_RX_MSB: u8 = 0b1 << 7;
 /// - `[7]`: divisor latch access bit (DLAB)
 ///     - `0b0`: RBR, THR and IER accessible
 ///     - `0b1`: DLL and DLM accessible
-pub const UART_LCR: usize = UART_BASE + 12;
+pub const UART_LCR_OFS: usize = 12;
 
 /// Data configuration bits
 #[repr(u8)]
@@ -101,7 +101,7 @@ pub enum UartLcrDataBits {
 pub const UART_LCR_DLAB_BIT: u8 = 0b1 << 7;
 
 /// Modem Control
-pub const UART_MCR: usize = UART_BASE + 16;
+pub const UART_MCR_OFS: usize = 16;
 
 /// Line Status Register
 ///
@@ -112,12 +112,12 @@ pub const UART_MCR: usize = UART_BASE + 16;
 /// - `[4]`: *not used*
 /// - `[5]`: the TX FIFO is empty
 /// - `[6]`: shift register and TX FIFO are empty
-pub const UART_LSR: usize = UART_BASE + 20;
+pub const UART_LSR_OFS: usize = 20;
 
 // The following registers may or may not be implemented
 /*
-pub const UART_MODEM_STATUS_OFFSET: usize = UART_BASE + 24;
-pub const UART_SCRATCH_OFFSET: usize = UART_BASE + 28;
+pub const UART_MODEM_STATUS_OFFSET_OFS: usize = 24;
+pub const UART_SCRATCH_OFFSET_OFs: usize = 28;
 */
 
 pub const UART_LSR_RX_FIFO_VALID_BIT: u8 = 0b1;
