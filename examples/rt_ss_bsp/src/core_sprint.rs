@@ -1,16 +1,14 @@
-use crate::uart::uart_write;
-
-pub struct Uart;
+use crate::uart::ApbUart;
 
 #[macro_export]
 macro_rules! sprint {
     ($s:expr) => {{
         use core::fmt::Write;
-        write!($crate::sprint::Uart {}, $s).unwrap()
+        write!($crate::uart::ApbUart {}, $s).unwrap()
     }};
     ($($tt:tt)*) => {{
         use core::fmt::Write;
-        write!($crate::sprint::Uart, $($tt)*).unwrap()
+        write!($crate::uart::ApbUart, $($tt)*).unwrap()
     }};
 }
 
@@ -28,9 +26,9 @@ macro_rules! sprintln {
     }};
 }
 
-impl core::fmt::Write for Uart {
+impl core::fmt::Write for ApbUart {
     fn write_str(&mut self, s: &str) -> Result<(), core::fmt::Error> {
-        uart_write(s);
+        ApbUart::write_str(self, s);
         Ok(())
     }
 }

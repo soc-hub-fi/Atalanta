@@ -2,12 +2,6 @@
 #![no_std]
 
 pub mod clic;
-pub mod sprint {
-    #[cfg(not(feature = "ufmt"))]
-    pub use crate::core_sprint::*;
-    #[cfg(feature = "ufmt")]
-    pub use crate::ufmt_sprint::*;
-}
 #[cfg(not(feature = "ufmt"))]
 mod core_sprint;
 pub mod interrupt;
@@ -116,7 +110,7 @@ pub fn modify_u32(addr: usize, val: u32, mask: u32, bit_pos: usize) {
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     // Initialize UART if not initialized
     if !unsafe { crate::uart::UART_IS_INIT } {
-        crate::uart::init_uart(crate::CPU_FREQ, crate::tb::DEFAULT_BAUD);
+        crate::uart::ApbUart::init(crate::CPU_FREQ, crate::tb::DEFAULT_BAUD);
     }
 
     #[cfg(not(feature = "ufmt"))]
