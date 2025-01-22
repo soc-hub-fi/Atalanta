@@ -35,6 +35,14 @@ packages:
     - common_cells
     - common_verification
     - tech_cells_generic
+  clic:
+    revision: fbfde20412a3dfa151dfb19fec352b8600862732
+    version: null
+    source:
+      Git: https://github.com/ANurmi/clic.git
+    dependencies:
+    - common_cells
+    - register_interface
   common_cells:
     revision: c27bce39ebb2e6bae52f60960814a2afca7bd4cb
     version: 1.37.0
@@ -69,7 +77,7 @@ packages:
     revision: 146501d80052b61475cdc333d3aab4cd769fd5dc
     version: 0.3.9
     source:
-      Git: https://github.com/pulp-platform/register_interface
+      Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
     - apb
     - axi
