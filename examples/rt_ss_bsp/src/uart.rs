@@ -12,19 +12,19 @@ pub fn init_uart(freq: u32, baud: u32) {
     // always valid
     unsafe {
         // Disable all interrupts
-        write_u8(UART_INTERRUPT_ENABLE, 0x00);
+        write_u8(UART_IER_DLM, 0x00);
         // Enable DLAB (set baud rate divisor)
-        write_u8(UART_LINE_CONTROL, 0x80);
+        write_u8(UART_LCR, 0x80);
         // Divisor (lo byte)
         write_u8(UART_DLAB_LSB, divisor as u8);
         // Divisor (hi byte)
         write_u8(UART_DLAB_MSB, (divisor >> 8) as u8);
         // 8 bits, no parity, one stop bit
-        write_u8(UART_LINE_CONTROL, 0x03);
+        write_u8(UART_LCR, 0x03);
         // Enable FIFO, clear them, with 14-byte threshold
-        write_u8(UART_FIFO_CONTROL, 0xC7);
+        write_u8(UART_IIR_FCR, 0xC7);
         // Autoflow mode
-        write_u8(UART_MODEM_CONTROL, 0x20);
+        write_u8(UART_MCR, 0x20);
     }
 
     #[cfg(any(all(feature = "fpga", feature = "rt"), feature = "panic"))]
@@ -41,11 +41,11 @@ pub fn uart_write(s: &str) {
 
 pub fn is_transmit_empty() -> bool {
     // Safety: UART_LINE_STATUS is 4-byte aligned
-    unsafe { (read_u8(UART_LINE_STATUS) & 0x20) != 0 }
+    unsafe { (read_u8(UART_LSR) & 0x20) != 0 }
 }
 
 pub fn putc(c: u8) {
     while !is_transmit_empty() {}
     // Safety: UART_THR is 4-byte aligned
-    unsafe { write_u8(UART_THR, c) };
+    unsafe { write_u8(UART_RBR_THR_DLL, c) };
 }
