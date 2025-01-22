@@ -120,6 +120,15 @@ impl ApbUart {
     }
 
     #[inline]
+    pub fn getc(&mut self) -> u8 {
+        // Wait for data to become ready
+        while unsafe { read_u8(UART_LSR) } & UART_LSR_RX_FIFO_VALID_BIT == 0 {}
+
+        // SAFETY: UART0_ADDR is 4-byte aligned
+        unsafe { read_u8(UART_BASE) }
+    }
+
+    #[inline]
     fn is_transmit_empty(&self) -> bool {
         // Safety: UART_LINE_STATUS is 4-byte aligned
         unsafe { (read_u8(UART_LSR) & 0x20) != 0 }
