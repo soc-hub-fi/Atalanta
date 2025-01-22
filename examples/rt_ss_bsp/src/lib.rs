@@ -103,6 +103,19 @@ pub fn modify_u32(addr: usize, val: u32, mask: u32, bit_pos: usize) {
     write_u32(addr, tmp | (val << bit_pos));
 }
 
+#[inline(always)]
+pub fn mask_u32(addr: usize, mask: u32) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u32) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r | mask) }
+}
+
+/// Unmasks specified bits from given register
+#[inline(always)]
+pub fn unmask_u32(addr: usize, unmask: u32) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u32) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r & !unmask) }
+}
+
 /// # Safety
 ///
 /// Unaligned writes may fail to produce expected results on RISC-V.
