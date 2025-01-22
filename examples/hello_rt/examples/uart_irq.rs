@@ -6,13 +6,14 @@
 // SAFETY: this example does not provide any safety regarding peripheral sharing, and the correct
 // implementation depends on the target platform.
 #![allow(static_mut_refs)]
+#![allow(non_snake_case)]
 
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use bsp::{
     clic::Clic,
-    riscv,
-    rt::entry,
+    riscv::{self},
+    rt::{entry, interrupt},
     sprintln,
     uart::{ApbUart, UartInterrupt},
     Interrupt, CPU_FREQ,
@@ -60,8 +61,8 @@ fn main() -> ! {
     loop {}
 }
 
-#[export_name = "DefaultHandler"]
-fn receive_byte() {
+#[interrupt]
+fn Uart() {
     sprintln!("enter receive_byte");
 
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
@@ -75,5 +76,5 @@ fn receive_byte() {
             unsafe { RUNNING.store(false, Ordering::Release) };
         }
     }
-    sprintln!("exit receive_byte");
+    sprintln!("leave receive_byte");
 }
