@@ -9,7 +9,7 @@ use bsp::{
 pub mod clic;
 
 pub const UART_BAUD: u32 = if cfg!(feature = "rtl-tb") {
-    3_000_000
+    1_500_000
 } else {
     9600
 };
