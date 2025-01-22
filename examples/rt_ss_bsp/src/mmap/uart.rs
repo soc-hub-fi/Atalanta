@@ -62,6 +62,12 @@ pub const UART_DLAB_MSB: usize = UART_IER_DLM;
 ///     - `0b11`: trigger level is high when there are 14 elements in the fifo
 pub const UART_IIR_FCR: usize = UART_BASE + 8;
 
+pub const UART_FCR_FIFO_EN_BIT: u8 = 0b1;
+pub const UART_FCR_FIFO_RX_RESET_BIT: u8 = 0b1 << 1;
+pub const UART_FCR_FIFO_TX_RESET_BIT: u8 = 0b1 << 2;
+pub const UART_FCR_TRIG_RX_LSB: u8 = 0b1 << 6;
+pub const UART_FCR_TRIG_RX_MSB: u8 = 0b1 << 7;
+
 /// Line Control Register
 ///
 /// LCR configures the main operation of the uart. It configures the width of
@@ -82,6 +88,18 @@ pub const UART_IIR_FCR: usize = UART_BASE + 8;
 ///     - `0b1`: DLL and DLM accessible
 pub const UART_LCR: usize = UART_BASE + 12;
 
+/// Data configuration bits
+#[repr(u8)]
+pub enum UartLcrDataBits {
+    Bits5 = 0b00,
+    Bits6 = 0b01,
+    Bits7 = 0b10,
+    Bits8 = 0b11,
+}
+
+/// Divisor Latch Access Bit
+pub const UART_LCR_DLAB_BIT: u8 = 0b1 << 7;
+
 /// Modem Control
 pub const UART_MCR: usize = UART_BASE + 16;
 
@@ -95,3 +113,12 @@ pub const UART_MCR: usize = UART_BASE + 16;
 /// - `[5]`: the TX FIFO is empty
 /// - `[6]`: shift register and TX FIFO are empty
 pub const UART_LSR: usize = UART_BASE + 20;
+
+// The following registers may or may not be implemented
+/*
+pub const UART_MODEM_STATUS_OFFSET: usize = UART_BASE + 24;
+pub const UART_SCRATCH_OFFSET: usize = UART_BASE + 28;
+*/
+
+pub const UART_LSR_RX_FIFO_VALID_BIT: u8 = 0b1;
+pub const UART_LSR_TX_FIFO_EMPTY_BIT: u8 = 1 << 5;

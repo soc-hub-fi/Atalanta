@@ -103,6 +103,22 @@ pub fn modify_u32(addr: usize, val: u32, mask: u32, bit_pos: usize) {
     write_u32(addr, tmp | (val << bit_pos));
 }
 
+/// # Safety
+///
+/// Unaligned writes may fail to produce expected results on RISC-V.
+#[inline(always)]
+pub fn mask_u8(addr: usize, mask: u8) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u8) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r | mask) }
+}
+
+/// Unmasks specified bits from given register
+#[inline(always)]
+pub fn unmask_u8(addr: usize, unmask: u8) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u8) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r & !unmask) }
+}
+
 /// Blinks the leds fast in a confused fashion (3 -> 1 -> 2 -> 0 -> 3)
 #[cfg(feature = "panic")]
 #[panic_handler]
