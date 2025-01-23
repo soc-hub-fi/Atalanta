@@ -44,18 +44,21 @@ fn main() -> ! {
     let prescaler = 0xf;
 
     // Set mtimecmp to something non-zero to produce a delayed interrupt
-    write_u32(MTIMECMP_LOW_ADDR, 2 * (CPU_FREQ / prescaler));
+    write_u32(
+        MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS,
+        2 * (CPU_FREQ / prescaler),
+    );
 
     // Enable timer [bit 0] & set prescaler [bits 20:8]
-    write_u32(MTIME_CTRL_ADDR, prescaler << 8 | 0b1);
+    write_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, prescaler << 8 | 0b1);
 
     wait_on_lock();
 
     // No side-effects, reset to default state
 
     // Disable timer [bit 0], prescaler 0xf00
-    write_u32(MTIME_CTRL_ADDR, 0xf00);
-    write_u32(MTIMECMP_LOW_ADDR, 0);
+    write_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0xf00);
+    write_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS, 0);
     tear_irq(MTIMER_IRQ);
     riscv::interrupt::disable();
 
