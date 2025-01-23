@@ -4,6 +4,7 @@
 pub mod clic;
 #[cfg(not(feature = "ufmt"))]
 mod core_sprint;
+pub mod gpio;
 pub mod interrupt;
 pub mod led;
 pub mod mmap;
@@ -103,6 +104,26 @@ pub fn modify_u32(addr: usize, val: u32, mask: u32, bit_pos: usize) {
     write_u32(addr, tmp | (val << bit_pos));
 }
 
+#[inline(always)]
+pub fn mask_u32(addr: usize, mask: u32) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u32) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r | mask) }
+}
+
+/// Unmasks specified bits from given register
+#[inline(always)]
+pub fn unmask_u32(addr: usize, unmask: u32) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u32) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r & !unmask) }
+}
+
+#[inline(always)]
+pub fn toggle_u32(addr: usize, toggle_bits: u32) {
+    let mut r = read_u32(addr);
+    r ^= toggle_bits;
+    write_u32(addr, r);
+}
+
 /// # Safety
 ///
 /// Unaligned writes may fail to produce expected results on RISC-V.
@@ -113,6 +134,10 @@ pub fn mask_u8(addr: usize, mask: u8) {
 }
 
 /// Unmasks specified bits from given register
+///
+/// # Safety
+///
+/// Unaligned writes may fail to produce expected results on RISC-V.
 #[inline(always)]
 pub fn unmask_u8(addr: usize, unmask: u8) {
     let r = unsafe { core::ptr::read_volatile(addr as *const u8) };

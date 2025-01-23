@@ -67,9 +67,9 @@ fn main() -> ! {
 }
 
 fn wait_on_lock() {
-    use bsp::{asm_delay, led::Led::*, NOPS_PER_SEC};
+    use bsp::{asm_delay, led::Led, NOPS_PER_SEC};
 
-    let ord = [Ld3, Ld2, Ld3].windows(2);
+    let ord = [Led::Ld3, Led::Ld2, Led::Ld3].windows(2);
     let delay = NOPS_PER_SEC / ord.len() as u32;
     for leds in ord.cycle() {
         if !unsafe { ptr::read_volatile(ptr::addr_of_mut!(LOCK)) } {
