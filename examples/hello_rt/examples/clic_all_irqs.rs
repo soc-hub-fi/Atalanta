@@ -93,6 +93,7 @@ fn main() -> ! {
     } else {
         tb::signal_fail(Some(&mut serial));
     }
+    loop {}
 }
 
 fn setup_irq(irq: Interrupt) {

@@ -136,7 +136,10 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 
     match () {
         #[cfg(feature = "rtl-tb")]
-        () => tb::rtl_testbench_signal_fail(),
+        () => {
+            tb::rtl_tb_signal_fail();
+            loop {}
+        }
         #[cfg(not(feature = "rtl-tb"))]
         () => tb::blink_panic(),
     }

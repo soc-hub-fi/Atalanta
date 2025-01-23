@@ -24,6 +24,9 @@ fn main() -> ! {
     // Write to the led address to signal test completion in CI
     write_u32(LED_ADDR, 0b1);
 
+    #[cfg(feature = "rtl-tb")]
+    bsp::tb::rtl_tb_signal_ok();
+
     loop {
         asm_delay(1_000_000);
         serial.write_str("[UART] tick\r\n");

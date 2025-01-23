@@ -5,10 +5,7 @@
 // The testbench utilities are typically called once per method. Therefore it
 // makes sense to inline most functions to prefer saving on limited stack size.
 
-use crate::{
-    led::{led_off, led_on, Led},
-    uart::ApbUart,
-};
+use crate::uart::ApbUart;
 
 pub const TEST_PASS_TAG: &str = "[PASSED]";
 /// Partial OK
@@ -48,7 +45,7 @@ pub use signal_partial_fail;
 ///
 /// Optionally pass in an initialized UART for printouts.
 #[inline]
-pub fn signal_pass(serial: Option<&mut ApbUart>) -> ! {
+pub fn signal_pass(serial: Option<&mut ApbUart>) {
     if let Some(serial) = serial {
         // Safety: we've hacked around to make sure ApbUart is usually initialized at
         // this point
@@ -58,7 +55,7 @@ pub fn signal_pass(serial: Option<&mut ApbUart>) -> ! {
 
     match () {
         #[cfg(feature = "rtl-tb")]
-        () => rtl_testbench_signal_ok(),
+        () => rtl_tb_signal_ok(),
         #[cfg(not(feature = "rtl-tb"))]
         () => ok_blink(),
     }
@@ -68,7 +65,7 @@ pub fn signal_pass(serial: Option<&mut ApbUart>) -> ! {
 ///
 /// Optionally pass in an initialized UART for printouts.
 #[inline]
-pub fn signal_fail(serial: Option<&mut ApbUart>) -> ! {
+pub fn signal_fail(serial: Option<&mut ApbUart>) {
     if let Some(serial) = serial {
         serial.write_str(TEST_FAIL_TAG);
         serial.write_str("\r\n");
@@ -76,7 +73,7 @@ pub fn signal_fail(serial: Option<&mut ApbUart>) -> ! {
 
     match () {
         #[cfg(feature = "rtl-tb")]
-        () => rtl_testbench_signal_fail(),
+        () => rtl_tb_signal_fail(),
         #[cfg(not(feature = "rtl-tb"))]
         () => fail_blink(),
     }
@@ -96,36 +93,19 @@ pub fn signal_wait() -> ! {
 
 #[cfg(feature = "rtl-tb")]
 #[inline]
-pub(crate) fn rtl_testbench_signal_fail() -> ! {
-    // The RTL testbench convention is that if led 0 is high and led 1 is down,
-    // the test case is considered failing so let's make sure we're matching
-    // that first
-    led_off(Led::Ld1);
-    led_on(Led::Ld0);
-
+pub fn rtl_tb_signal_fail() {
     // Signal fail to Verilator / Questa testbench
     const OK_BIT: u32 = 0b1 << 31;
     const FAIL_BIT: u32 = 0b1;
     crate::write_u32(0x380, OK_BIT | FAIL_BIT);
-
-    // We must end on a timeout for the testbench and therefore cannot do any
-    // work after signaling failure
-    loop {}
 }
 
 #[cfg(feature = "rtl-tb")]
 #[inline]
-fn rtl_testbench_signal_ok() -> ! {
-    // The RTL testbench convention is that if leds [0, 1] are high the test
-    // case is considered passing
-    led_on(Led::Ld1);
-    led_on(Led::Ld0);
-
+pub fn rtl_tb_signal_ok() {
     // Signal OK to Verilator / Questa testbench
     const OK_BIT: u32 = 0b1 << 31;
     crate::write_u32(0x380, OK_BIT);
-
-    loop {}
 }
 
 /// Uses all 4 leds to represent the 4 LSBs of the exception code
@@ -226,7 +206,7 @@ fn ok_blink() -> ! {
 fn fail_blink() -> ! {
     match () {
         #[cfg(feature = "rtl-tb")]
-        () => rtl_testbench_signal_fail(),
+        () => rtl_tb_signal_fail(),
         #[cfg(not(feature = "rtl-tb"))]
         () => {
             use crate::{asm_delay, NOPS_PER_SEC};
