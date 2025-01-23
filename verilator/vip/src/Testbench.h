@@ -455,10 +455,9 @@ public:
         // repoint execution
         const uint8_t  Data0     = 0x04;
         const uint8_t  Command   = 0x17;
-        const uint32_t ImemStart = 0x1000;
         const uint16_t CsrDpc    = 0x7b1; // 12
         const uint32_t DmiCmd    = 0x2307B1;
-        jtag_write(Data0, ImemStart);
+        jtag_write(Data0, entry);
         jtag_write(Command, DmiCmd);
         // resume hart
         const uint8_t  DmControlAddr = 0x10;

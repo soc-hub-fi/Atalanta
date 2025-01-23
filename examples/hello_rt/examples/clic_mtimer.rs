@@ -11,20 +11,17 @@
 use core::ptr;
 
 use bsp::{
-    clic::{
-        intattr::{Polarity, Trig},
-        Clic, InterruptNumber,
-    },
+    clic::Clic,
     interrupt::Interrupt,
     led::{led_off, led_on, led_toggle, Led},
     mmap::*,
     print_example_name, riscv,
     rt::entry,
     sprintln, tb,
-    uart::init_uart,
+    uart::ApbUart,
     write_u32, CPU_FREQ,
 };
-use hello_rt::UART_BAUD;
+use hello_rt::{setup_irq, tear_irq, UART_BAUD};
 
 const MTIMER_IRQ: Interrupt = Interrupt::MachineTimer;
 
@@ -33,7 +30,7 @@ static mut LOCK: bool = true;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, UART_BAUD);
+    let mut serial = ApbUart::init(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8
@@ -47,28 +44,32 @@ fn main() -> ! {
     let prescaler = 0xf;
 
     // Set mtimecmp to something non-zero to produce a delayed interrupt
-    write_u32(MTIMECMP_LOW_ADDR, 2 * (CPU_FREQ / prescaler));
+    write_u32(
+        MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS,
+        2 * (CPU_FREQ / prescaler),
+    );
 
     // Enable timer [bit 0] & set prescaler [bits 20:8]
-    write_u32(MTIME_CTRL_ADDR, prescaler << 8 | 0b1);
+    write_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, prescaler << 8 | 0b1);
 
     wait_on_lock();
 
     // No side-effects, reset to default state
 
     // Disable timer [bit 0], prescaler 0xf00
-    write_u32(MTIME_CTRL_ADDR, 0xf00);
-    write_u32(MTIMECMP_LOW_ADDR, 0);
+    write_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0xf00);
+    write_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS, 0);
     tear_irq(MTIMER_IRQ);
     riscv::interrupt::disable();
 
-    tb::signal_pass(true)
+    tb::signal_pass(Some(&mut serial));
+    loop {}
 }
 
 fn wait_on_lock() {
-    use bsp::{asm_delay, led::Led::*, NOPS_PER_SEC};
+    use bsp::{asm_delay, led::Led, NOPS_PER_SEC};
 
-    let ord = [Ld3, Ld2, Ld3].windows(2);
+    let ord = [Led::Ld3, Led::Ld2, Led::Ld3].windows(2);
     let delay = NOPS_PER_SEC / ord.len() as u32;
     for leds in ord.cycle() {
         if !unsafe { ptr::read_volatile(ptr::addr_of_mut!(LOCK)) } {
@@ -87,24 +88,4 @@ fn custom_interrupt_handler() {
     // Flip a led and unlock the lock
     led_toggle(Led::Ld0);
     unsafe { ptr::write_volatile(ptr::addr_of_mut!(LOCK), false) };
-}
-
-fn setup_irq(irq: Interrupt) {
-    sprintln!("set up IRQ {}", irq.number());
-    Clic::attr(irq).set_trig(Trig::Edge);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
-    Clic::attr(irq).set_shv(true);
-    Clic::ctl(irq).set_level(0x88);
-    unsafe { Clic::ie(irq).enable() };
-}
-
-/// Tear down the IRQ configuration to avoid side-effects for further testing
-#[inline]
-fn tear_irq(irq: Interrupt) {
-    sprintln!("tear down IRQ {}", irq.number());
-    Clic::ie(irq).disable();
-    Clic::ctl(irq).set_level(0x0);
-    Clic::attr(irq).set_shv(false);
-    Clic::attr(irq).set_trig(Trig::Level);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
 }

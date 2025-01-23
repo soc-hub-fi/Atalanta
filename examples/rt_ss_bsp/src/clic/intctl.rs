@@ -3,10 +3,10 @@ use riscv_peripheral::common::{Reg, RW};
 
 /// CLIC interrupt control register.
 ///
-/// A configurable number of upper bits in clicintctl[i] are assigned to encode
-/// the interrupt level.
+/// A configurable number of upper bits in `clicintctl[i]` are assigned to
+/// encode the interrupt level.
 ///
-/// The least-significant bits in clicintctl[i] that are not configured to be
+/// The least-significant bits in `clicintctl[i]` that are not configured to be
 /// part of the interrupt level are interrupt priority, which are used to
 /// prioritize among interrupts pending-and-enabled at the same privilege mode
 /// and interrupt level. The highest-priority interrupt at a given privilege

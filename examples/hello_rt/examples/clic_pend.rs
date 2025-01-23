@@ -3,17 +3,14 @@
 #![no_std]
 
 use bsp::{
-    clic::{
-        intattr::{Polarity, Trig},
-        Clic, InterruptNumber,
-    },
+    clic::{Clic, InterruptNumber},
     interrupt::Interrupt,
     print_example_name, riscv,
     rt::entry,
     sprintln, tb,
-    uart::init_uart,
+    uart::ApbUart,
 };
-use hello_rt::UART_BAUD;
+use hello_rt::{setup_irq, tear_irq, UART_BAUD};
 
 const IRQ: Interrupt = Interrupt::MachineSoft;
 
@@ -22,7 +19,7 @@ static mut LAST_IRQ: Option<u16> = None;
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, UART_BAUD);
+    let mut serial = ApbUart::init(bsp::CPU_FREQ, UART_BAUD);
     print_example_name!();
 
     // Set level bits to 8
@@ -41,32 +38,14 @@ fn main() -> ! {
         assert!(IRQ.number() == irq);
         tear_irq(IRQ);
 
-        tb::signal_pass(true)
+        tb::signal_pass(Some(&mut serial))
     }
     // If execution gets here in spite of pending the IRQ, we have failed
     else {
         tear_irq(IRQ);
-        tb::signal_fail(true)
+        tb::signal_fail(Some(&mut serial))
     }
-}
-
-fn setup_irq(irq: Interrupt) {
-    sprintln!("set up IRQ: {}", irq.number());
-    Clic::attr(irq).set_trig(Trig::Edge);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
-    Clic::attr(irq).set_shv(true);
-    Clic::ctl(irq).set_level(0x88);
-    unsafe { Clic::ie(irq).enable() };
-}
-
-/// Tear down the IRQ configuration to avoid side-effects for further testing
-fn tear_irq(irq: Interrupt) {
-    sprintln!("tear down IRQ: {}", irq.number());
-    Clic::ie(irq).disable();
-    Clic::ctl(irq).set_level(0x0);
-    Clic::attr(irq).set_shv(false);
-    Clic::attr(irq).set_trig(Trig::Level);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
+    loop {}
 }
 
 #[export_name = "DefaultHandler"]

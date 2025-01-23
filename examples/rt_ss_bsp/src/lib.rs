@@ -2,14 +2,9 @@
 #![no_std]
 
 pub mod clic;
-pub mod sprint {
-    #[cfg(not(feature = "ufmt"))]
-    pub use crate::core_sprint::*;
-    #[cfg(feature = "ufmt")]
-    pub use crate::ufmt_sprint::*;
-}
 #[cfg(not(feature = "ufmt"))]
 mod core_sprint;
+pub mod gpio;
 pub mod interrupt;
 pub mod led;
 pub mod mmap;
@@ -109,6 +104,46 @@ pub fn modify_u32(addr: usize, val: u32, mask: u32, bit_pos: usize) {
     write_u32(addr, tmp | (val << bit_pos));
 }
 
+#[inline(always)]
+pub fn mask_u32(addr: usize, mask: u32) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u32) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r | mask) }
+}
+
+/// Unmasks specified bits from given register
+#[inline(always)]
+pub fn unmask_u32(addr: usize, unmask: u32) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u32) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r & !unmask) }
+}
+
+#[inline(always)]
+pub fn toggle_u32(addr: usize, toggle_bits: u32) {
+    let mut r = read_u32(addr);
+    r ^= toggle_bits;
+    write_u32(addr, r);
+}
+
+/// # Safety
+///
+/// Unaligned writes may fail to produce expected results on RISC-V.
+#[inline(always)]
+pub fn mask_u8(addr: usize, mask: u8) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u8) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r | mask) }
+}
+
+/// Unmasks specified bits from given register
+///
+/// # Safety
+///
+/// Unaligned writes may fail to produce expected results on RISC-V.
+#[inline(always)]
+pub fn unmask_u8(addr: usize, unmask: u8) {
+    let r = unsafe { core::ptr::read_volatile(addr as *const u8) };
+    unsafe { core::ptr::write_volatile(addr as *mut _, r & !unmask) }
+}
+
 /// Blinks the leds fast in a confused fashion (3 -> 1 -> 2 -> 0 -> 3)
 #[cfg(feature = "panic")]
 #[panic_handler]
@@ -116,7 +151,7 @@ pub fn modify_u32(addr: usize, val: u32, mask: u32, bit_pos: usize) {
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     // Initialize UART if not initialized
     if !unsafe { crate::uart::UART_IS_INIT } {
-        crate::uart::init_uart(crate::CPU_FREQ, crate::tb::DEFAULT_BAUD);
+        crate::uart::ApbUart::init(crate::CPU_FREQ, crate::tb::DEFAULT_BAUD);
     }
 
     #[cfg(not(feature = "ufmt"))]
@@ -126,7 +161,10 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 
     match () {
         #[cfg(feature = "rtl-tb")]
-        () => tb::rtl_testbench_signal_fail(),
+        () => {
+            tb::rtl_tb_signal_fail();
+            loop {}
+        }
         #[cfg(not(feature = "rtl-tb"))]
         () => tb::blink_panic(),
     }

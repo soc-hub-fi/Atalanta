@@ -1,4 +1,6 @@
 //! Ad-hoc CLIC impl based on the respective C code
+//!
+//! This is the old API.
 use bsp::mmap::*;
 use bsp::*;
 

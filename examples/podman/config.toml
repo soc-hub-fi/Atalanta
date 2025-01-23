@@ -36,16 +36,16 @@ tools = [
 
 # Replace the default compiler for our targets, as the autoresolver seems to fail us here
 [target.riscv32imc-unknown-none-elf]
-cc = "/root/riscv/bin/riscv32-unknown-elf-gcc"
+cc = "riscv32-unknown-elf-gcc"
 
 [target.riscv32e-unknown-none-elf]
-cc = "/root/riscv/bin/riscv32-unknown-elf-gcc"
+cc = "riscv32-unknown-elf-gcc"
 
 [target.riscv32em-unknown-none-elf]
-cc = "/root/riscv/bin/riscv32-unknown-elf-gcc"
+cc = "riscv32-unknown-elf-gcc"
 
 [target.riscv32emc-unknown-none-elf]
-cc = "/root/riscv/bin/riscv32-unknown-elf-gcc"
+cc = "riscv32-unknown-elf-gcc"
 
 [llvm]
 # We don't need to customize LLVM so we can build faster by using a prebuilt version from CI

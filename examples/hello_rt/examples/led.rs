@@ -6,8 +6,7 @@ use bsp::{asm_delay, led::*, rt::entry, NOPS_PER_SEC};
 
 #[inline(never)]
 fn blinky() {
-    use Led::*;
-    let ord = [Ld3, Ld0, Ld1, Ld2, Ld3].windows(2);
+    let ord = [Led::Ld3, Led::Ld0, Led::Ld1, Led::Ld2, Led::Ld3].windows(2);
     let delay = NOPS_PER_SEC / ord.len() as u32;
     for leds in ord.cycle() {
         led_off(leds[0]);

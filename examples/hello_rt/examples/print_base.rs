@@ -5,13 +5,13 @@
 #![no_main]
 #![no_std]
 
-use bsp::{mmap::CLIC_BASE_ADDR, rt::entry, sprintln, uart::init_uart};
+use bsp::{mmap::CLIC_BASE_ADDR, rt::entry, sprintln, uart::ApbUart};
 use hello_rt::UART_BAUD;
 
 /// Example entry point
 #[entry]
 fn main() -> ! {
-    init_uart(bsp::CPU_FREQ, UART_BAUD);
+    ApbUart::init(bsp::CPU_FREQ, UART_BAUD);
 
     let clic_base = CLIC_BASE_ADDR;
 
