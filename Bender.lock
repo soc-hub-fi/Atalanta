@@ -36,7 +36,7 @@ packages:
     - common_verification
     - tech_cells_generic
   clic:
-    revision: fbfde20412a3dfa151dfb19fec352b8600862732
+    revision: 5fa3836c2660347aaa7e0b20f7ec820a0aefec6f
     version: null
     source:
       Git: https://github.com/ANurmi/clic.git
@@ -91,7 +91,7 @@ packages:
     - common_cells
     - tech_cells_generic
   rt-ibex:
-    revision: c3a02703a7d1629f24cd58195a8002144818efc5
+    revision: 859e28aadcfecaa2ded8cdf7abf0a7225b57a7d8
     version: null
     source:
       Git: https://github.com/soc-hub-fi/rt-ibex.git
