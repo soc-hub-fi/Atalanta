@@ -114,7 +114,11 @@ pub fn rtl_tb_signal_ok() {
 #[export_name = "ExceptionHandler"]
 #[cfg(all(feature = "fpga", feature = "rt"))]
 fn blink_exception(_trap_frame: &riscv_rt::TrapFrame) -> ! {
-    use crate::{asm_delay, led::led_set, sprintln, NOPS_PER_SEC};
+    use crate::{
+        asm_delay,
+        led::{led_off, led_set, Led},
+        sprintln, NOPS_PER_SEC,
+    };
 
     // Initialize UART if not initialized
     let mut uart = if !unsafe { crate::uart::UART_IS_INIT } {
@@ -151,7 +155,11 @@ fn blink_exception(_trap_frame: &riscv_rt::TrapFrame) -> ! {
 
 #[cfg(all(feature = "fpga", feature = "panic"))]
 pub(crate) fn blink_panic() -> ! {
-    use crate::{asm_delay, led::Led::*, NOPS_PER_SEC};
+    use crate::{
+        asm_delay,
+        led::{led_off, led_on, Led::*},
+        NOPS_PER_SEC,
+    };
 
     let ord = [Ld3, Ld1, Ld2, Ld0, Ld3].windows(2);
     let delay = NOPS_PER_SEC / ord.len() as u32;
@@ -167,7 +175,11 @@ pub(crate) fn blink_panic() -> ! {
 /// Blinks leds 2 & 3, like a police
 #[cfg(feature = "fpga")]
 pub fn wait_blink() -> ! {
-    use crate::{asm_delay, led::Led::*, NOPS_PER_SEC};
+    use crate::{
+        asm_delay,
+        led::{led_off, led_on, Led::*},
+        NOPS_PER_SEC,
+    };
 
     led_off(Ld0);
     led_off(Ld1);
@@ -186,7 +198,11 @@ pub fn wait_blink() -> ! {
 /// Flahes two leds on and off, fast
 #[cfg(feature = "fpga")]
 fn ok_blink() -> ! {
-    use crate::{asm_delay, NOPS_PER_SEC};
+    use crate::{
+        asm_delay,
+        led::{led_off, led_on, Led},
+        NOPS_PER_SEC,
+    };
 
     led_off(Led::Ld2);
     led_off(Led::Ld3);
@@ -204,6 +220,8 @@ fn ok_blink() -> ! {
 /// Flashes all leds on and off, slow
 #[cfg(feature = "fpga")]
 fn fail_blink() -> ! {
+    use crate::led::{led_off, led_on, Led};
+
     match () {
         #[cfg(feature = "rtl-tb")]
         () => rtl_tb_signal_fail(),
