@@ -22,7 +22,7 @@ use bsp::{
     uart::ApbUart,
     Interrupt,
 };
-use hello_rt::UART_BAUD;
+use hello_rt::{tear_irq, UART_BAUD};
 
 static mut LOCK: u8 = 0;
 
@@ -118,14 +118,4 @@ fn setup_irq(irq: Interrupt, level: u8) {
     Clic::attr(irq).set_shv(true);
     Clic::ctl(irq).set_level(level);
     unsafe { Clic::ie(irq).enable() };
-}
-
-/// Tear down the IRQ configuration to avoid side-effects for further testing
-#[inline]
-fn tear_irq(irq: Interrupt) {
-    Clic::ie(irq).disable();
-    Clic::ctl(irq).set_level(0x0);
-    Clic::attr(irq).set_shv(false);
-    Clic::attr(irq).set_trig(Trig::Level);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
 }

@@ -7,17 +7,14 @@ use core::ptr::{self, addr_of, addr_of_mut};
 
 use bsp::{
     asm_delay,
-    clic::{
-        intattr::{Polarity, Trig},
-        Clic, InterruptNumber, CLIC,
-    },
+    clic::{Clic, InterruptNumber, CLIC},
     interrupt::Interrupt,
     print_example_name, riscv,
     rt::entry,
     sprintln, tb,
     uart::ApbUart,
 };
-use hello_rt::UART_BAUD;
+use hello_rt::{setup_irq, tear_irq, UART_BAUD};
 
 /// Interrupts under testing
 const TEST_IRQS: &[Interrupt] = &[
@@ -94,25 +91,6 @@ fn main() -> ! {
         tb::signal_fail(Some(&mut serial));
     }
     loop {}
-}
-
-fn setup_irq(irq: Interrupt) {
-    sprintln!("set up IRQ: {}", irq.number());
-    Clic::attr(irq).set_trig(Trig::Edge);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
-    Clic::attr(irq).set_shv(true);
-    Clic::ctl(irq).set_level(0x88);
-    unsafe { Clic::ie(irq).enable() };
-}
-
-/// Tear down the IRQ configuration to avoid side-effects for further testing
-fn tear_irq(irq: Interrupt) {
-    sprintln!("tear down IRQ: {}", irq.number());
-    Clic::ie(irq).disable();
-    Clic::ctl(irq).set_level(0x0);
-    Clic::attr(irq).set_shv(false);
-    Clic::attr(irq).set_trig(Trig::Level);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
 }
 
 #[export_name = "DefaultHandler"]

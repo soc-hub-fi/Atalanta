@@ -11,10 +11,7 @@
 use core::ptr;
 
 use bsp::{
-    clic::{
-        intattr::{Polarity, Trig},
-        Clic, InterruptNumber,
-    },
+    clic::Clic,
     interrupt::Interrupt,
     led::{led_off, led_on, led_toggle, Led},
     mmap::*,
@@ -24,7 +21,7 @@ use bsp::{
     uart::ApbUart,
     write_u32, CPU_FREQ,
 };
-use hello_rt::UART_BAUD;
+use hello_rt::{setup_irq, tear_irq, UART_BAUD};
 
 const MTIMER_IRQ: Interrupt = Interrupt::MachineTimer;
 
@@ -88,24 +85,4 @@ fn custom_interrupt_handler() {
     // Flip a led and unlock the lock
     led_toggle(Led::Ld0);
     unsafe { ptr::write_volatile(ptr::addr_of_mut!(LOCK), false) };
-}
-
-fn setup_irq(irq: Interrupt) {
-    sprintln!("set up IRQ {}", irq.number());
-    Clic::attr(irq).set_trig(Trig::Edge);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
-    Clic::attr(irq).set_shv(true);
-    Clic::ctl(irq).set_level(0x88);
-    unsafe { Clic::ie(irq).enable() };
-}
-
-/// Tear down the IRQ configuration to avoid side-effects for further testing
-#[inline]
-fn tear_irq(irq: Interrupt) {
-    sprintln!("tear down IRQ {}", irq.number());
-    Clic::ie(irq).disable();
-    Clic::ctl(irq).set_level(0x0);
-    Clic::attr(irq).set_shv(false);
-    Clic::attr(irq).set_trig(Trig::Level);
-    Clic::attr(irq).set_polarity(Polarity::Pos);
 }
