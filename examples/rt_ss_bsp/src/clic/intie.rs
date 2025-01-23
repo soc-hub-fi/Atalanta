@@ -6,12 +6,12 @@ use riscv_peripheral::common::{Reg, RW};
 
 /// CLIC interrupt enable register.
 ///
-/// Each interrupt input has a dedicated interrupt-enable bit (clicintie[i]) and
-/// occupies one byte in the memory map for ease of access. This control bit is
-/// read-write to enable/disable the corresponding interrupt. The enable bit is
-/// located in bit 0 of the byte. Software should assume clicintie[i]=0 means no
-/// interrupt enabled, and clicintie[i]!=0 indicates an interrupt is enabled
-/// to accommodate possible future expansion of the clicintie field.
+/// Each interrupt input has a dedicated interrupt-enable bit (`clicintie[i]`)
+/// and occupies one byte in the memory map for ease of access. This control bit
+/// is read-write to enable/disable the corresponding interrupt. The enable bit
+/// is located in bit 0 of the byte. Software should assume `clicintie[i] = 0`
+/// means no interrupt enabled, and `clicintie[i] != 0` indicates an interrupt
+/// is enabled to accommodate possible future expansion of the clicintie field.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct INTIE {
@@ -39,8 +39,8 @@ impl INTIE {
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
-        // > Software should assume clicintie[i]=0 means no interrupt enabled, and
-        // > clicintie[i]!=0
+        // > Software should assume `clicintie[i] = 0` means no interrupt enabled, and
+        // > `clicintie[i] != 0`
         // > indicates an interrupt is enabled to accommodate possible future expansion
         // > of the
         // > clicintie field.

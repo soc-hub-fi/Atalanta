@@ -2,9 +2,9 @@
 
 /// CLIC interrupt trigger register.
 ///
-/// Optional interrupt triggers (clicinttrig[i]) are used to generate a breakpoint exception,
-/// entry into Debug Mode, or a trace action. If these registers are not implemented, they
-/// appear as hard-wired zeros.
+/// Optional interrupt triggers (`clicinttrig[i]`) are used to generate a
+/// breakpoint exception, entry into Debug Mode, or a trace action. If these
+/// registers are not implemented, they appear as hard-wired zeros.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct INTTRIG {

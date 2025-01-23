@@ -34,9 +34,9 @@ pub const UART_DLAB_LSB_OFS: usize = UART_RBR_THR_DLL_OFS;
 ///
 /// - `[0]`: Interrupt is raised when...
 ///     - (fifo disabled) received data is available
-///     - (fifo enabled) trigger level has been reached (sa. [UART_IIR_FCR])
+///     - (fifo enabled) trigger level has been reached (sa. [UART_IIR_FCR_OFS])
 ///     - character timeout has been reached
-/// - `[1]`: Interrupt is raised when [UART_RBR_THR_DLL] is empty
+/// - `[1]`: Interrupt is raised when [UART_RBR_THR_DLL_OFS] is empty
 /// - `[2]`: Interrupt is raised on Overrun error, parity error, framing error
 ///   or break interrupt
 ///
