@@ -62,7 +62,8 @@ fn main() -> ! {
     tear_irq(MTIMER_IRQ);
     riscv::interrupt::disable();
 
-    tb::signal_pass(Some(&mut serial))
+    tb::signal_pass(Some(&mut serial));
+    loop {}
 }
 
 fn wait_on_lock() {

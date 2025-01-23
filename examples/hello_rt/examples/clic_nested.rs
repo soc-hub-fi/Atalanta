@@ -70,6 +70,7 @@ fn main() -> ! {
         tear_irq(Interrupt::Dma1);
         signal_fail(Some(&mut serial))
     }
+    loop {}
 }
 
 #[export_name = "DefaultHandler"]

@@ -48,6 +48,7 @@ fn main() -> ! {
         tear_irq(IRQ);
         tb::signal_fail(Some(&mut serial))
     }
+    loop {}
 }
 
 fn setup_irq(irq: Interrupt) {
