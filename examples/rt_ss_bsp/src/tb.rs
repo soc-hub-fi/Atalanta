@@ -157,11 +157,11 @@ fn blink_exception(_trap_frame: &riscv_rt::TrapFrame) -> ! {
 pub(crate) fn blink_panic() -> ! {
     use crate::{
         asm_delay,
-        led::{led_off, led_on, Led::*},
+        led::{led_off, led_on, Led},
         NOPS_PER_SEC,
     };
 
-    let ord = [Ld3, Ld1, Ld2, Ld0, Ld3].windows(2);
+    let ord = [Led::Ld3, Led::Ld1, Led::Ld2, Led::Ld0, Led::Ld3].windows(2);
     let delay = NOPS_PER_SEC / ord.len() as u32;
     for leds in ord.cycle() {
         led_off(leds[0]);
@@ -177,14 +177,14 @@ pub(crate) fn blink_panic() -> ! {
 pub fn wait_blink() -> ! {
     use crate::{
         asm_delay,
-        led::{led_off, led_on, Led::*},
+        led::{led_off, led_on, Led},
         NOPS_PER_SEC,
     };
 
-    led_off(Ld0);
-    led_off(Ld1);
+    led_off(Led::Ld0);
+    led_off(Led::Ld1);
 
-    let ord = [Ld3, Ld2, Ld3].windows(2);
+    let ord = [Led::Ld3, Led::Ld2, Led::Ld3].windows(2);
     let delay = NOPS_PER_SEC / ord.len() as u32;
     for leds in ord.cycle() {
         led_off(leds[0]);

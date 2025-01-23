@@ -19,4 +19,3 @@ pub use timer::*;
 pub use uart::*;
 
 pub const DEBUG_ADDR: usize = 0x0;
-pub const LED_ADDR: usize = 0x3_0008;
