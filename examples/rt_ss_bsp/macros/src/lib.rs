@@ -88,7 +88,10 @@ fn load_trap(arch: RiscvArch) -> String {
 /// signature `[unsafe] fn() [-> !]`. This macro generates the interrupt trap
 /// handler in assembly for 32-bit RISC-V E targets.
 ///
-/// Use [riscv_rt::interrupt] instead if you don't need nesting.
+/// Use
+/// [riscv_rt::core_interrupt](https://docs.rs/riscv-rt/0.13.0/riscv_rt/attr.core_interrupt.html) or
+/// [riscv_rt::external_interrupt](https://docs.rs/riscv-rt/0.13.0/riscv_rt/attr.external_interrupt.html)
+/// instead if you don't need nesting.
 ///
 /// N.b., this won't work with `export_name`.
 pub fn nested_interrupt_riscv32e(args: TokenStream, input: TokenStream) -> TokenStream {
@@ -100,7 +103,10 @@ pub fn nested_interrupt_riscv32e(args: TokenStream, input: TokenStream) -> Token
 /// signature `[unsafe] fn() [-> !]`. This macro generates the interrupt trap
 /// handler in assembly for 32-bit RISC-V I targets.
 ///
-/// Use [riscv_rt::interrupt] instead if you don't need nesting.
+/// Use
+/// [riscv_rt::core_interrupt](https://docs.rs/riscv-rt/0.13.0/riscv_rt/attr.core_interrupt.html) or
+/// [riscv_rt::external_interrupt](https://docs.rs/riscv-rt/0.13.0/riscv_rt/attr.external_interrupt.html)
+/// instead if you don't need nesting.
 ///
 /// N.b., this won't work with `export_name`.
 pub fn nested_interrupt_riscv32i(args: TokenStream, input: TokenStream) -> TokenStream {
