@@ -1,4 +1,11 @@
-//! Memory maps for mtimer
+//! Memory maps for mtimer (RISC-V base ISA)
+//!
+//! mtimer is implemented by:
+//!
+//! - [timer_core (SV)](.../src/ip/timer_core.sv)
+//! - [apb_mtimer (SV)](.../src/ip/apb_mtimer.sv)
+//!
+//! See also [crate::mmap::timer_group] for the general purpose timer group.
 pub const TIMER_BASE: usize = 0x30200;
 
 pub const MTIME_LOW_ADDR: usize = TIMER_BASE + 0;
