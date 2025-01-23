@@ -179,12 +179,13 @@ ibex_top #(
   .RV32M            (ibex_pkg::RV32MFast),
   .RV32B            (ibex_pkg::RV32BNone),
   .WritebackStage   (1'b1),
-`ifdef FPGA          //ASIC Implementation
-  .RegFile          (ibex_pkg::RegFileFPGA),
-`else                 // FPGA Implementation
-  .RegFile          ( ibex_pkg::RegFileFF),
-  //.RegFile          ( ibex_pkg::RegFileLatch),
-`endif
+//`ifdef FPGA          //ASIC Implementation
+//  .RegFile          (ibex_pkg::RegFileFPGA),
+//`else                 // FPGA Implementation
+//  .RegFile          ( ibex_pkg::RegFileFF),
+//  //.RegFile          ( ibex_pkg::RegFileLatch),
+//`endif
+  .RegFile          (ibex_pkg::RegFilePCS),
   .ICache           (0),
   .ICacheECC        (0),
   .ICacheScramble   (0),
@@ -234,6 +235,7 @@ ibex_top #(
   .data_err_i             ('0 ),
 
   // Interrupt inputs
+  .irq_is_pcs_i,
   .irq_i       (core_irq_x),
   .irq_id_o    (),
   .irq_ack_o   (irq_ready_o),
