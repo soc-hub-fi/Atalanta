@@ -6,10 +6,10 @@
 //! - [apb_mtimer (SV)](.../src/ip/apb_mtimer.sv)
 //!
 //! See also [crate::mmap::timer_group] for the general purpose timer group.
-pub const TIMER_BASE: usize = 0x30200;
+pub const MTIMER_BASE: usize = 0x30200;
 
-pub const MTIME_LOW_ADDR: usize = TIMER_BASE + 0;
-pub const MTIME_HIGH_ADDR: usize = TIMER_BASE + 4;
-pub const MTIMECMP_LOW_ADDR: usize = TIMER_BASE + 8;
-pub const MTIMECMP_HIGH_ADDR: usize = TIMER_BASE + 12;
-pub const MTIME_CTRL_ADDR: usize = TIMER_BASE + 16;
+pub const MTIME_LOW_ADDR_OFS: usize = 0;
+pub const MTIME_HIGH_ADDR_OFS: usize = 4;
+pub const MTIMECMP_LOW_ADDR_OFS: usize = 8;
+pub const MTIMECMP_HIGH_ADDR_OFS: usize = 12;
+pub const MTIME_CTRL_ADDR_OFS: usize = 16;
