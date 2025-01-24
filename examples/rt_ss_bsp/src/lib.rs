@@ -8,6 +8,7 @@ pub mod gpio;
 pub mod interrupt;
 pub mod led;
 pub mod mmap;
+pub mod mtimer;
 pub mod tb;
 #[cfg(feature = "rt")]
 mod trap;
