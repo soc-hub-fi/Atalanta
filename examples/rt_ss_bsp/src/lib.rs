@@ -10,6 +10,7 @@ pub mod led;
 pub mod mmap;
 pub mod mtimer;
 pub mod tb;
+pub mod timer_group;
 #[cfg(feature = "rt")]
 mod trap;
 pub mod uart;
