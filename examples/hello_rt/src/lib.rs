@@ -37,3 +37,14 @@ pub fn tear_irq(irq: Interrupt) {
     Clic::attr(irq).set_trig(Trig::Level);
     Clic::attr(irq).set_polarity(Polarity::Pos);
 }
+
+/// Print the name of the current file, i.e., test name.
+///
+/// This must be a macro to make sure core::file matches the file this is
+/// invoked in.
+#[macro_export]
+macro_rules! print_example_name {
+    () => {
+        sprintln!("[{}]", core::file!());
+    };
+}

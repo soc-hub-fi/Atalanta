@@ -1,6 +1,8 @@
 //! Implementation of [PULP APB UART](https://github.com/pulp-platform/apb_uart/) (v0.2.1)
 //!
 //! PULP APB UART conforms to the NS16550.
+use embedded_io::Write;
+
 use crate::{mask_u8, mmap::*, unmask_u8};
 use crate::{read_u8, write_u8};
 
@@ -96,25 +98,14 @@ impl<const BASE_ADDR: usize> ApbUartHal<BASE_ADDR> {
     }
 
     #[inline]
-    pub fn write(&mut self, buf: &[u8]) {
-        for b in buf {
-            self.putc(*b);
-        }
-    }
-
-    #[inline]
     pub fn write_str(&mut self, s: &str) {
-        self.write(s.as_bytes());
+        // SAFETY: UART impl is currently infallible
+        unsafe { self.write(s.as_bytes()).unwrap_unchecked() };
     }
 
-    /// Flush this output stream, blocking until all intermediately buffered
-    /// contents reach their destination.
-    #[inline]
-    pub fn flush(&mut self) {
-        // Wait for hardware to report completion
-        while !self.is_transmit_empty() {}
-    }
-
+    /// Writes a byte into UART
+    ///
+    /// Blocks until the transmit FIFO is empty before transmitting.
     #[inline]
     fn putc(&mut self, c: u8) {
         while !self.is_transmit_empty() {}
@@ -155,5 +146,36 @@ impl<const BASE_ADDR: usize> ApbUartHal<BASE_ADDR> {
     fn is_transmit_empty(&self) -> bool {
         // Safety: UART_LINE_STATUS is 4-byte aligned
         unsafe { (read_u8(BASE_ADDR + UART_LSR_OFS) & 0x20) != 0 }
+    }
+}
+
+#[derive(Debug)]
+pub struct UartError;
+
+impl embedded_io::Error for UartError {
+    fn kind(&self) -> embedded_io::ErrorKind {
+        // Error kinds not implemented for BSP right now
+        embedded_io::ErrorKind::Other
+    }
+}
+
+impl<const BASE_ADDR: usize> embedded_io::ErrorType for ApbUartHal<BASE_ADDR> {
+    type Error = UartError;
+}
+
+impl<const BASE_ADDR: usize> embedded_io::Write for ApbUartHal<BASE_ADDR> {
+    #[inline]
+    fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
+        for b in buf {
+            self.putc(*b);
+        }
+        Ok(buf.len())
+    }
+
+    #[inline]
+    fn flush(&mut self) -> Result<(), Self::Error> {
+        // Wait for hardware to report completion
+        while !self.is_transmit_empty() {}
+        Ok(())
     }
 }

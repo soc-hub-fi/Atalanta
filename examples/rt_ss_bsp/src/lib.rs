@@ -8,6 +8,7 @@ pub mod gpio;
 pub mod interrupt;
 pub mod led;
 pub mod mmap;
+pub mod mtimer;
 pub mod tb;
 #[cfg(feature = "rt")]
 mod trap;
@@ -22,6 +23,7 @@ compile_error!(
     "Select one of -Ffpga -Frtl-tb, BSP supports FPGA and RTL testbench implementations only"
 );
 
+pub use embedded_io;
 pub use interrupt::Interrupt;
 pub use riscv;
 #[cfg(feature = "rt")]
@@ -168,15 +170,4 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
         #[cfg(not(feature = "rtl-tb"))]
         () => tb::blink_panic(),
     }
-}
-
-/// Print the name of the current file, i.e., test name.
-///
-/// This must be a macro to make sure core::file matches the file this is
-/// invoked in.
-#[macro_export]
-macro_rules! print_example_name {
-    () => {
-        sprintln!("[{}]", core::file!());
-    };
 }
