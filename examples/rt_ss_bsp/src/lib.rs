@@ -22,6 +22,7 @@ compile_error!(
     "Select one of -Ffpga -Frtl-tb, BSP supports FPGA and RTL testbench implementations only"
 );
 
+pub use embedded_io;
 pub use interrupt::Interrupt;
 pub use riscv;
 #[cfg(feature = "rt")]
