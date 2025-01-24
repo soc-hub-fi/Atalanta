@@ -1,1 +1,1 @@
-pub const SPI_BASE_ADDR: usize = 0x6_0000;
+pub const SPI_BASE_ADDR: usize = 0x3_0400;
