@@ -36,10 +36,10 @@ packages:
     - common_verification
     - tech_cells_generic
   clic:
-    revision: 8ed76ffc779a435d0ed034f3068e4c3334fe2ecf
-    version: 2.0.0
+    revision: 5fa3836c2660347aaa7e0b20f7ec820a0aefec6f
+    version: null
     source:
-      Git: https://github.com/pulp-platform/clic.git
+      Git: https://github.com/ANurmi/clic.git
     dependencies:
     - common_cells
     - register_interface
@@ -91,7 +91,7 @@ packages:
     - common_cells
     - tech_cells_generic
   rt-ibex:
-    revision: c3a02703a7d1629f24cd58195a8002144818efc5
+    revision: 859e28aadcfecaa2ded8cdf7abf0a7225b57a7d8
     version: null
     source:
       Git: https://github.com/soc-hub-fi/rt-ibex.git

@@ -20,6 +20,7 @@ module rt_peripherals #(
   output logic           [7:0]       irq_level_o,
   output logic                       irq_shv_o,
   output logic           [1:0]       irq_priv_o,
+  output logic                       irq_is_pcs_o,
   output logic                       irq_kill_req_o,
   input  logic                       irq_kill_ack_i,
   output logic                       uart_tx_o,
@@ -173,8 +174,9 @@ clic_apb #(
   .irq_level_o    (irq_level_o),
   .irq_shv_o      (irq_shv_o),
   .irq_priv_o     (irq_priv_o),
+  .irq_is_pcs_o   (irq_is_pcs_o),
   .irq_kill_req_o (irq_kill_req_o),
-  .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
+  .irq_kill_ack_i (irq_kill_ack_i)
 );
 
 apb_gpio #(

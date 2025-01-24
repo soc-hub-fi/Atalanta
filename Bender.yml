@@ -5,8 +5,8 @@ package:
     - "Abdesattar Kalache <abdesattar.kalache@tuni.fi>"
 
 dependencies:
-  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "c3a02703a7d1629f24cd58195a8002144818efc5" }
-  clic: { git: "https://github.com/pulp-platform/clic.git", version: 2.0.0 }
+  rt-ibex: { git: "https://github.com/soc-hub-fi/rt-ibex.git", rev: "859e28aadcfecaa2ded8cdf7abf0a7225b57a7d8" }
+  clic: { git: "https://github.com/ANurmi/clic.git", rev: "5fa3836c2660347aaa7e0b20f7ec820a0aefec6f" }
   riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
   #obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
@@ -21,18 +21,18 @@ dependencies:
 sources:
   files:
     - src/ip/rt_pkg.sv
-    - src/ip/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
-    - src/ip/obi/src/obi_pkg.sv
-    - src/ip/obi/src/obi_intf.sv
-    - src/ip/obi/src/obi_mux.sv
-    - src/ip/obi/src/obi_demux.sv
-    - src/ip/obi/src/obi_xbar.sv
+    - src/vendor/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
+    - src/vendor/obi/src/obi_pkg.sv
+    - src/vendor/obi/src/obi_intf.sv
+    - src/vendor/obi/src/obi_mux.sv
+    - src/vendor/obi/src/obi_demux.sv
+    - src/vendor/obi/src/obi_xbar.sv
     #- src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
-    - src/ip/apb_spi_master/spi_master_apb_if.sv
+    - src/vendor/apb_spi_master/spi_master_apb_if.sv
     - src/ip/irq_pulse_cdc.sv
     - src/ip/axi_to_obi.sv
-    - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
-    - src/ip/safety_island/future/axi_obi/src/obi_to_axi.sv
+    - src/vendor/safety_island/future/axi_obi/src/obi_to_axi.sv
+    - src/vendor/safety_island/future/axi_obi/src/obi_to_axi.sv
     - src/ip/axi_to_obi_intf.sv
     - src/ip/obi_to_axi_intf.sv
     - src/ip/obi_to_apb_intf.sv
@@ -71,7 +71,7 @@ sources:
 
 vendor_package:
   - name: safety_island
-    target_dir: src/ip/safety_island
+    target_dir: src/vendor/safety_island
     upstream: { git: "https://github.com/pulp-platform/safety_island.git", rev: "584eb697195c44ef1b1cbd1f4b7accdf5192200a" }
     include_from_upstream:
       #- "future/axi_obi/src/axi_to_obi.sv"
@@ -79,13 +79,13 @@ vendor_package:
       - "future/axi_obi/src/axi_to_detailed_mem_user.sv"
 
   - name: apb_spi_master
-    target_dir: src/ip/apb_spi_master
+    target_dir: src/vendor/apb_spi_master
     upstream: { git: "https://github.com/pulp-platform/apb_spi_master.git", rev: "3fce81084b15870f4bd9da7806cf950774f9672e"}
     include_from_upstream:
       - spi_master_apb_if.sv
 
   - name: obi
-    target_dir: src/ip/obi
+    target_dir: src/vendor/obi
     upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "00304bc2f6d1a67490c639ffab70af0ea9d77c54" }
     include_from_upstream:
       - src/obi_pkg.sv
@@ -95,5 +95,3 @@ vendor_package:
       - src/obi_xbar.sv
       - include/obi/assign.svh
       - include/obi/typedef.svh
-
-

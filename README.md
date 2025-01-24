@@ -11,8 +11,10 @@ make repository_init
 ### Dependencies
 
 - The Verilator features used here depend on GCC 10 or newer, or Clang (untested). Ensure your compiler is suitable before proceeding.
-- This build is developed on top of version *5.024*. Currently, this requires a manual [installation](https://verilator.org/guide/latest/install.html#git-quick-install).
+- This build is developed on top of version *5.008*. Currently, this requires a manual [installation](https://verilator.org/guide/latest/install.html#git-quick-install).
 - [Elf2Hex](https://github.com/sifive/elf2hex) is used to create hex-stims from ELF-binaries when loading programs with `$readmemh`.
+
+> **_NOTE:_**  The design is compatible with at least Verilator 5.024, but 5.008 is preferded due to our experienced better compilation performance.
 
 ### with Verilator
 
@@ -117,9 +119,10 @@ Software compulation is implicitly included in the simulator invocation. Artifac
 
 ## Citing
 
-If you use our work, please consider citing it as 
+If you use our work, please consider citing any of the following piblications:
+
 ```
-@InProceedings{AN2024,
+@InProceedings{ARCS24,
  author="Nurmi, Antti
  and Lindgren, Per
  and Kalache, Abdesattar
@@ -138,6 +141,20 @@ If you use our work, please consider citing it as
  pages="316--330",
  isbn="978-3-031-66146-4"
 }
+```
 
 ```
+@INPROCEEDINGS{NORCAS24,
+  author={Nurmi, Antti and Kalache, Abdesattar and Hämäläinen, Timo D.},
+  booktitle={2024 IEEE Nordic Circuits and Systems Conference (NorCAS)}, 
+  title={Hardware Solutions for Eliminating Context Switching Latency in Processor-Based Hard Real-Time Systems}, 
+  year={2024},
+  volume={},
+  number={},
+  pages={1-6},
+  keywords={Context;Microcontrollers;Stacking;Switches;Hardware;Real-time systems;Libraries;Registers;Low latency communication;Clocks},
+  doi={10.1109/NorCAS64408.2024.10752471}}
+
+```
+
 

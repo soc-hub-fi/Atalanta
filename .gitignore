@@ -1,8 +1,6 @@
 .bender/
 build/
-src/ip/safety_island
-src/ip/apb_spi_master
-src/ip/obi
+src/vendor
 src/tb/cheshire
 vsim/modelsim.ini
 transcript

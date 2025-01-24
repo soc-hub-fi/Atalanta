@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.2.0] - 2025-01-24
+
 ### Fixed
 - Verilator support after long stale period
 - Erronious hard-coded program entry address
 
 ### Added
+- PCS instance to default design configuration
 - Readmem-program loading for Verilator
 - C++ port of elfloader for Verilator
 - "wfi" to timer_test to accommodate for rt-ibex's sleep mode

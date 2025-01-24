@@ -41,7 +41,6 @@ VERIL_WARN_SUPPRESS ?= \
   -Wno-UNSIGNED        \
   -Wno-WIDTHCONCAT     \
   -Wno-WIDTHTRUNC      \
-  -Wno-MISINDENT	   \
   -Wno-COMBDLY         \
   -Wno-LATCH           \
   -Wno-LITENDIAN       \
@@ -67,7 +66,7 @@ VERIL_INCLUDES ?= \
 	+incdir+$(shell bender path apb)/include \
 	+incdir+$(shell bender path axi)/include \
 	+incdir+$(shell bender path register_interface)/include \
-	+incdir+$(VERIL_DIR)/../src/ip/obi/include \
+	+incdir+$(VERIL_DIR)/../src/vendor/obi/include \
 	+incdir+$(shell bender path rt-ibex)/vendor/lowrisc_ip/dv/sv/dv_utils \
 	+incdir+$(shell bender path rt-ibex)/vendor/lowrisc_ip/ip/prim/rtl \
 	+incdir+$(shell bender path rt-ibex)/rtl
@@ -106,10 +105,12 @@ init:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(VERIL_BUILD_DIR)
 
+## Target for internal CI on verilator 5.024
 .PHONY: lint
 lint:
 	$(VERILATOR) --lint-only \
 	$(VERIL_DEFINES) \
+	-Wno-MISINDENT	 \
 	$(VERIL_INCLUDES) \
 	$(VERIL_PARAMS) \
 	$(VERIL_WARN_SUPPRESS) \

@@ -47,6 +47,7 @@ logic [SrcW-1:0] irq_id;
 logic [     7:0] irq_level;
 logic            irq_shv;
 logic [     1:0] irq_priv;
+logic            irq_is_pcs;
 
 APB #() apb_bus ();
 OBI_BUS #() axi_mgr_bus  ();
@@ -81,6 +82,7 @@ rt_core #(
   .irq_level_i     (irq_level),
   .irq_shv_i       (irq_shv),
   .irq_priv_i      (irq_priv),
+  .irq_is_pcs_i    (irq_is_pcs),
   .debug_req_i     (debug_req),
   .main_xbar_mgr   (core_mgr_bus),
   .main_xbar_sbr   (core_sbr_bus)
@@ -150,13 +152,14 @@ rt_peripherals #() i_peripherals (
   .uart_rx_i      (uart_rx_i),
   .uart_tx_o      (uart_tx_o),
   .irq_kill_req_o (),
-  .irq_kill_ack_i (),
+  .irq_kill_ack_i (1'b0),
   .irq_priv_o     (irq_priv),
   .irq_shv_o      (irq_shv),
   .irq_level_o    (irq_level),
   .irq_valid_o    (irq_valid),
   .irq_ready_i    (irq_ready),
   .irq_id_o       (irq_id),
+  .irq_is_pcs_o   (irq_is_pcs),
   .irq_src_i      (intr_src_i),
   .gpio_i         (gpio_input_i),
   .gpio_o         (gpio_output_o),
