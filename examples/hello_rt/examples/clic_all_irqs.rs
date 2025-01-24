@@ -9,12 +9,12 @@ use bsp::{
     asm_delay,
     clic::{Clic, InterruptNumber, CLIC},
     interrupt::Interrupt,
-    print_example_name, riscv,
+    riscv,
     rt::entry,
     sprintln, tb,
     uart::ApbUart,
 };
-use hello_rt::{setup_irq, tear_irq, UART_BAUD};
+use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 
 /// Interrupts under testing
 const TEST_IRQS: &[Interrupt] = &[

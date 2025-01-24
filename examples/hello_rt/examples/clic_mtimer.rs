@@ -15,13 +15,13 @@ use bsp::{
     interrupt::Interrupt,
     led::{led_off, led_on, led_toggle, Led},
     mmap::*,
-    print_example_name, riscv,
+    riscv,
     rt::entry,
     sprintln, tb,
     uart::ApbUart,
     write_u32, CPU_FREQ,
 };
-use hello_rt::{setup_irq, tear_irq, UART_BAUD};
+use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 
 const MTIMER_IRQ: Interrupt = Interrupt::MachineTimer;
 

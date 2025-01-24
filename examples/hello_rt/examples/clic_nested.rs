@@ -15,14 +15,14 @@ use bsp::{
         Clic, InterruptNumber,
     },
     interrupt::nested,
-    print_example_name, riscv,
+    riscv,
     rt::entry,
     sprint, sprintln,
     tb::{signal_fail, signal_pass},
     uart::ApbUart,
     Interrupt,
 };
-use hello_rt::{tear_irq, UART_BAUD};
+use hello_rt::{print_example_name, tear_irq, UART_BAUD};
 
 static mut LOCK: u8 = 0;
 

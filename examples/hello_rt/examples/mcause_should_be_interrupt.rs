@@ -6,8 +6,8 @@
 #![no_main]
 #![no_std]
 
-use bsp::{print_example_name, riscv, rt::entry, sprintln, tb, uart::ApbUart};
-use hello_rt::{clic::*, UART_BAUD};
+use bsp::{riscv, rt::entry, sprintln, tb, uart::ApbUart};
+use hello_rt::{clic::*, print_example_name, UART_BAUD};
 
 // 3 == MSI
 const IRQ_ID: u32 = 3;
