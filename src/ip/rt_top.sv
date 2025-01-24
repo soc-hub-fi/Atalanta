@@ -160,9 +160,7 @@ rt_ibex_bootrom #() i_rom (
 
 
 rt_peripherals #(
-  .NSource(ClicIrqSrcs),
-  .GpioPadNum(GpioPadNum),
-  .TimerGroupSize(TimerGroupSize)
+  .NSource       (ClicIrqSrcs)
 ) i_peripherals (
   .clk_i,
   .rst_ni,
@@ -179,20 +177,13 @@ rt_peripherals #(
   .irq_id_o       (irq_id),
   .irq_is_pcs_o   (irq_is_pcs),
   .irq_src_i      (intr_src_i),
-<<<<<<< HEAD
   .gpio_i         (gpio_input_i),
   .gpio_o         (gpio_output_o),
-  .dma_irqs_i     (dma_irqs)
-=======
-
-  .gpio_i         (gpio_input_i),
-  .gpio_o         (gpio_output_o), 
-
+  .dma_irqs_i     (dma_irqs),
   .spi_sdi_i      (spi_sdi_i),
   .spi_sdo_o      (spi_sdo_o),
   .spi_csn_o      (spi_csn_o),
   .spi_clk_o      (spi_clk_o)
->>>>>>> origin/experimental/rt-core
 );
 
 rt_debug #(

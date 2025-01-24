@@ -1,52 +1,13 @@
 `include "register_interface/typedef.svh"
 
 module rt_peripherals #(
-  parameter int unsigned AddrWidth = 32,
-  parameter int unsigned DataWidth = 32,
-  parameter int unsigned NSource   = 64,
-  localparam int         SrcW      = $clog2(NSource),
-  localparam int         StrbWidth = (DataWidth / 8),
-  localparam int         GpioPadNum= 4
-)(
-  input  logic                       clk_i,
-  input  logic                       rst_ni,
-  APB.Slave                          apb_i,
-  output logic      [GpioPadNum-1:0] gpio_o,
-  input  logic      [GpioPadNum-1:0] gpio_i,
-  input  logic   [NSource-1:0]       irq_src_i,
-  output logic                       irq_valid_o,
-  input  logic                       irq_ready_i,
-  output logic      [SrcW-1:0]       irq_id_o,
-  output logic           [7:0]       irq_level_o,
-  output logic                       irq_shv_o,
-  output logic           [1:0]       irq_priv_o,
-  output logic                       irq_is_pcs_o,
-  output logic                       irq_kill_req_o,
-  input  logic                       irq_kill_ack_i,
-  output logic                       uart_tx_o,
-  input  logic                       uart_rx_i,
-  input  logic [rt_pkg::NumDMAs-1:0] dma_irqs_i
-);
-
-localparam int unsigned NrApbPerip = 5;
-localparam int unsigned SelWidth   = $clog2(NrApbPerip);
-localparam int unsigned ClkDiv     = 2;
-
-logic                   irq_ready_slow;
-logic [rt_pkg::NumDMAs-1:0] dma_irqs_q;
-logic                   uart_irq;
-
-logic [SelWidth-1:0] demux_sel;
-logic  [NSource-1:0] intr_src;
-logic                mtimer_irq;
-  parameter int unsigned AddrWidth      = 32,
-  parameter int unsigned DataWidth      = 32,
-  parameter int unsigned NSource        = 64,
-  //parameter type         rule_t    = logic,
-  localparam int         SrcW           = $clog2(NSource),
-  localparam int         StrbWidth      = (DataWidth / 8),
-  localparam int         GpioPadNum     = 4,
-  localparam int         TimerGroupSize = 2
+  parameter int unsigned  AddrWidth      = 32,
+  parameter int unsigned  DataWidth      = 32,
+  parameter int unsigned  NSource        = 64,
+  localparam int unsigned SrcW           = $clog2(NSource),
+  localparam int unsigned StrbWidth      = (DataWidth / 8),
+  localparam int unsigned GpioPadNum     = 4,
+  localparam int unsigned TimerGroupSize = 4
 )(
   input  logic                 clk_i,
   input  logic                 rst_ni,
@@ -58,22 +19,22 @@ logic                mtimer_irq;
   output logic           [7:0] irq_level_o,
   output logic                 irq_shv_o,
   output logic           [1:0] irq_priv_o,
+  output logic                 irq_is_pcs_o,
   output logic                 irq_kill_req_o,
   input  logic                 irq_kill_ack_i,
 
-  // GPIO Interface 
   output logic  [GpioPadNum-1:0] gpio_o,
   input  logic  [GpioPadNum-1:0] gpio_i,
 
-  // UART Interface
   output logic                 uart_tx_o,
   input  logic                 uart_rx_i,
 
-  // SPI master interface 
   input  logic           [3:0] spi_sdi_i,
   output logic           [3:0] spi_sdo_o,
   output logic           [3:0] spi_csn_o,
-  output logic                 spi_clk_o
+  output logic                 spi_clk_o,
+
+  input  logic [rt_pkg::NumDMAs-1:0] dma_irqs_i
 );
 
 /////////////////////
@@ -86,7 +47,7 @@ typedef enum integer {
   GpioIrqId   = 18,
   SpiRxTxIrqId= 19,
   SpiEotIrqId = 20,
-  ApbTimerIrqIdStart = 21  // apb_timer interrupt can have multiple irq lines (2 per timer group)
+  TGIrqIdBase = 21  // apb_timer interrupt can have multiple irq lines (2 per timer group)
 } clic_int_ids_e;
 
 // INCLUSIVE END ADDR
@@ -103,14 +64,17 @@ localparam int unsigned ApbSpiMasterEndAddr   = 32'h0003_04FF;
 localparam int unsigned ClicStartAddr     = 32'h0005_0000;
 localparam int unsigned ClicEndAddr       = 32'h0005_FFFF;
 
+localparam int unsigned NrApbPerip = 6;
+localparam int unsigned SelWidth   = $clog2(NrApbPerip);
+localparam int unsigned ClkDiv     = 2;
 
-localparam int unsigned NrApbPerip      = 5;
-localparam int unsigned PeripDemuxWidth = $clog2(NrApbPerip);
+logic                   irq_ready_slow;
+logic [rt_pkg::NumDMAs-1:0] dma_irqs_q;
 
+logic [SelWidth-1:0]    demux_sel;
 logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
 logic                   uart_irq;
 
-logic [PeripDemuxWidth-1:0] demux_sel;
 logic [NSource-1:0]         intr_src;
 logic                       mtimer_irq;
 logic                       gpio_irq;
@@ -127,20 +91,14 @@ APB #(
 
 always_comb
   begin : irq_assign
-    intr_src     = irq_src_i;
-    intr_src[17] = uart_irq;   // supervisor software irq
-    intr_src[7]  = mtimer_irq;
     intr_src = irq_src_i;
-    intr_src[UartIrqId] = uart_irq; // supervisor software irq
-    intr_src[GpioIrqId] = gpio_irq;
-    intr_src[MtimerIrqId] = mtimer_irq;
+    intr_src[UartIrqId]    = uart_irq; // supervisor software irq
+    intr_src[GpioIrqId]    = gpio_irq;
+    intr_src[MtimerIrqId]  = mtimer_irq;
     intr_src[SpiRxTxIrqId] = spi_irqs[0];
     intr_src[SpiEotIrqId]  = spi_irqs[1];
-    intr_src[ApbTimerIrqIdStart+2*TimerGroupSize-1:ApbTimerIrqIdStart] = apb_timer_irq;
-    // supervisor external irq 9
-    // machine external irq 11
-    // platform defined 16-19
-    intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_q; // serve irqs 32-48 for DMAs
+    intr_src[TGIrqIdBase+2*TimerGroupSize-1:TGIrqIdBase] = apb_timer_irq;
+    intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_q; // reserve irqs 32-48 for DMAs
     // nmi 31
   end
 
@@ -232,28 +190,11 @@ always_comb
       [rt_pkg::SpiStartAddr:rt_pkg::SpiEndAddr]: begin
         demux_sel = SelWidth'('h4);
       end
+      [ApbTimerStartAddr:ApbTimerEndAddr]: begin
+        demux_sel = SelWidth'('h5);
+      end
       default: begin
         demux_sel = SelWidth'('h0);
-      [GpioStartAddr:GpioEndAddr]: begin
-        demux_sel = 3'b000;
-      end
-      [UartStartAddr:UartEndAddr]: begin
-        demux_sel = 3'b001;
-      end
-      [MTimerStartAddr:MTimerEndAddr]: begin
-        demux_sel = 3'b010;
-      end
-      [ApbTimerStartAddr:ApbTimerEndAddr]: begin
-        demux_sel = 3'b011;
-      end
-      [ApbSpiMasterStartAddr:ApbSpiMasterEndAddr]: begin
-        demux_sel = 3'b100;
-      end
-      [ClicStartAddr:ClicEndAddr]: begin
-        demux_sel = 3'b101;
-      end
-      default: begin
-        demux_sel = 3'b000;
       end
     endcase
   end
@@ -302,24 +243,6 @@ apb_gpio #(
   .PSLVERR        (apb_out[0].pslverr),
   .interrupt      (gpio_irq)
 );
-
-/*
-// APB to REG_BUS boilerplate
-`REG_BUS_TYPEDEF_ALL(regbus, logic [31:0], logic [31:0], logic [3:0])
-
-regbus_req_t spi_req;
-regbus_rsp_t spi_rsp;
-
-assign spi_req.addr  = apb_out[4].paddr;
-assign spi_req.wdata = apb_out[4].pwdata;
-assign spi_req.wstrb = '1;
-assign spi_req.write = apb_out[4].pwrite;
-assign spi_req.valid = apb_out[4].psel & apb_out[4].penable;
-
-assign apb_out[4].prdata  = spi_rsp.rdata;
-assign apb_out[4].pslverr = spi_rsp.error;
-assign apb_out[4].pready  = spi_rsp.ready;
-//*/
 
 `ifndef VERILATOR
 apb_uart i_apb_uart (
@@ -385,14 +308,14 @@ apb_timer #(
 ) i_apb_timer (
   .HCLK           (periph_clk),
   .HRESETn        (rst_ni),
-  .PENABLE        (apb_out[3].penable),
-  .PWRITE         (apb_out[3].pwrite),
-  .PADDR          (apb_out[3].paddr),
-  .PSEL           (apb_out[3].psel),
-  .PWDATA         (apb_out[3].pwdata),
-  .PRDATA         (apb_out[3].prdata),
-  .PREADY         (apb_out[3].pready),
-  .PSLVERR        (apb_out[3].pslverr),
+  .PENABLE        (apb_out[5].penable),
+  .PWRITE         (apb_out[5].pwrite),
+  .PADDR          (apb_out[5].paddr),
+  .PSEL           (apb_out[5].psel),
+  .PWDATA         (apb_out[5].pwdata),
+  .PRDATA         (apb_out[5].prdata),
+  .PREADY         (apb_out[5].pready),
+  .PSLVERR        (apb_out[5].pslverr),
   .irq_o          (apb_timer_irq)
 );
 
@@ -429,33 +352,5 @@ apb_spi_master #(
   .spi_sdo2       (spi_sdo_o[2]),
   .spi_sdo3       (spi_sdo_o[3])
   );
-
-
-clic_apb #(
-  .N_SOURCE     (NSource),
-  .INTCTLBITS   (8)
-) i_clic (
-  .clk_i          (periph_clk),
-  .rst_ni         (rst_ni),
-  .penable_i      (apb_out[5].penable),
-  .pwrite_i       (apb_out[5].pwrite),
-  .paddr_i        (apb_out[5].paddr),
-  .psel_i         (apb_out[5].psel),
-  .pwdata_i       (apb_out[5].pwdata),
-  .prdata_o       (apb_out[5].prdata),
-  .pready_o       (apb_out[5].pready),
-  .pslverr_o      (apb_out[5].pslverr),
-  .intr_src_i     (intr_src), // 0-31 -> CLINT IRQS
-  .irq_valid_o    (irq_valid_o),
-  .irq_ready_i    (irq_ready_delay_q),
-  .irq_id_o       (irq_id_o),
-  .irq_level_o    (irq_level_o),
-  .irq_shv_o      (irq_shv_o),
-  .irq_priv_o     (irq_priv_o),
-  .irq_kill_req_o (irq_kill_req_o),
-  .irq_kill_ack_i (1'b0 ) //irq_kill_ack_i)
-);
-
-
 
 endmodule : rt_peripherals
