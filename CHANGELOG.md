@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- 4 * 32-bit timer group
+- QSPI APB peripheral (umapped in FPGA)
+
 ## [v0.2.0] - 2025-01-24
 
 ### Fixed

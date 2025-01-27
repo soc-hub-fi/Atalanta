@@ -1,44 +1,86 @@
 `include "register_interface/typedef.svh"
 
 module rt_peripherals #(
-  parameter int unsigned AddrWidth = 32,
-  parameter int unsigned DataWidth = 32,
-  parameter int unsigned NSource   = 64,
-  localparam int         SrcW      = $clog2(NSource),
-  localparam int         StrbWidth = (DataWidth / 8),
-  localparam int         GpioPadNum= 4
+  parameter int unsigned  AddrWidth      = 32,
+  parameter int unsigned  DataWidth      = 32,
+  parameter int unsigned  NSource        = 64,
+  localparam int unsigned SrcW           = $clog2(NSource),
+  localparam int unsigned StrbWidth      = (DataWidth / 8),
+  localparam int unsigned GpioPadNum     = 4,
+  localparam int unsigned TimerGroupSize = 4
 )(
-  input  logic                       clk_i,
-  input  logic                       rst_ni,
-  APB.Slave                          apb_i,
-  output logic      [GpioPadNum-1:0] gpio_o,
-  input  logic      [GpioPadNum-1:0] gpio_i,
-  input  logic   [NSource-1:0]       irq_src_i,
-  output logic                       irq_valid_o,
-  input  logic                       irq_ready_i,
-  output logic      [SrcW-1:0]       irq_id_o,
-  output logic           [7:0]       irq_level_o,
-  output logic                       irq_shv_o,
-  output logic           [1:0]       irq_priv_o,
-  output logic                       irq_is_pcs_o,
-  output logic                       irq_kill_req_o,
-  input  logic                       irq_kill_ack_i,
-  output logic                       uart_tx_o,
-  input  logic                       uart_rx_i,
+  input  logic                 clk_i,
+  input  logic                 rst_ni,
+  APB.Slave                    apb_i,
+  input  logic   [NSource-1:0] irq_src_i,
+  output logic                 irq_valid_o,
+  input  logic                 irq_ready_i,
+  output logic      [SrcW-1:0] irq_id_o,
+  output logic           [7:0] irq_level_o,
+  output logic                 irq_shv_o,
+  output logic           [1:0] irq_priv_o,
+  output logic                 irq_is_pcs_o,
+  output logic                 irq_kill_req_o,
+  input  logic                 irq_kill_ack_i,
+
+  output logic  [GpioPadNum-1:0] gpio_o,
+  input  logic  [GpioPadNum-1:0] gpio_i,
+
+  output logic                 uart_tx_o,
+  input  logic                 uart_rx_i,
+
+  input  logic           [3:0] spi_sdi_i,
+  output logic           [3:0] spi_sdo_o,
+  output logic           [3:0] spi_csn_o,
+  output logic                 spi_clk_o,
+
   input  logic [rt_pkg::NumDMAs-1:0] dma_irqs_i
 );
 
-localparam int unsigned NrApbPerip = 5;
+/////////////////////
+// CLIC IRQS Enums //
+/////////////////////
+
+typedef enum integer {
+  MtimerIrqId = 7,
+  UartIrqId   = 17,
+  GpioIrqId   = 18,
+  SpiRxTxIrqId= 19,
+  SpiEotIrqId = 20,
+  TGIrqIdBase = 21  // apb_timer interrupt can have multiple irq lines (2 per timer group)
+} clic_int_ids_e;
+
+// INCLUSIVE END ADDR
+localparam int unsigned GpioStartAddr     = 32'h0003_0000;
+localparam int unsigned GpioEndAddr       = 32'h0003_00FF;
+localparam int unsigned UartStartAddr     = 32'h0003_0100;
+localparam int unsigned UartEndAddr       = 32'h0003_01FF;
+localparam int unsigned MTimerStartAddr   = 32'h0003_0200;
+localparam int unsigned MTimerEndAddr     = 32'h0003_0210;
+localparam int unsigned ApbTimerStartAddr = 32'h0003_0300;
+localparam int unsigned ApbTimerEndAddr   = 32'h0003_03FF;
+localparam int unsigned ApbSpiMasterStartAddr = 32'h0003_0400;
+localparam int unsigned ApbSpiMasterEndAddr   = 32'h0003_04FF;
+localparam int unsigned ClicStartAddr     = 32'h0005_0000;
+localparam int unsigned ClicEndAddr       = 32'h0005_FFFF;
+
+localparam int unsigned NrApbPerip = 6;
 localparam int unsigned SelWidth   = $clog2(NrApbPerip);
 localparam int unsigned ClkDiv     = 2;
 
 logic                   irq_ready_slow;
 logic [rt_pkg::NumDMAs-1:0] dma_irqs_q;
+
+logic [SelWidth-1:0]    demux_sel;
+logic                   irq_ready_delay, irq_ready_delay_q, irq_ready_q;
 logic                   uart_irq;
 
-logic [SelWidth-1:0] demux_sel;
-logic  [NSource-1:0] intr_src;
-logic                mtimer_irq;
+logic [NSource-1:0]         intr_src;
+logic                       mtimer_irq;
+logic                       gpio_irq;
+logic [2*TimerGroupSize-1:0]apb_timer_irq;
+logic [1:0]                 spi_irqs;
+
 
 logic                   periph_clk;
 
@@ -49,13 +91,14 @@ APB #(
 
 always_comb
   begin : irq_assign
-    intr_src     = irq_src_i;
-    intr_src[17] = uart_irq;   // supervisor software irq
-    intr_src[7]  = mtimer_irq;
-    // supervisor external irq 9
-    // machine external irq 11
-    // platform defined 16-19
-    intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_q; // serve irqs 32-48 for DMAs
+    intr_src = irq_src_i;
+    intr_src[UartIrqId]    = uart_irq; // supervisor software irq
+    intr_src[GpioIrqId]    = gpio_irq;
+    intr_src[MtimerIrqId]  = mtimer_irq;
+    intr_src[SpiRxTxIrqId] = spi_irqs[0];
+    intr_src[SpiEotIrqId]  = spi_irqs[1];
+    intr_src[TGIrqIdBase+2*TimerGroupSize-1:TGIrqIdBase] = apb_timer_irq;
+    intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_q; // reserve irqs 32-48 for DMAs
     // nmi 31
   end
 
@@ -147,6 +190,9 @@ always_comb
       [rt_pkg::SpiStartAddr:rt_pkg::SpiEndAddr]: begin
         demux_sel = SelWidth'('h4);
       end
+      [ApbTimerStartAddr:ApbTimerEndAddr]: begin
+        demux_sel = SelWidth'('h5);
+      end
       default: begin
         demux_sel = SelWidth'('h0);
       end
@@ -195,45 +241,8 @@ apb_gpio #(
   .PRDATA         (apb_out[0].prdata),
   .PREADY         (apb_out[0].pready),
   .PSLVERR        (apb_out[0].pslverr),
-  .interrupt      ()
+  .interrupt      (gpio_irq)
 );
-
-// APB to REG_BUS boilerplate
-`REG_BUS_TYPEDEF_ALL(regbus, logic [31:0], logic [31:0], logic [3:0])
-
-regbus_req_t spi_req;
-regbus_rsp_t spi_rsp;
-
-assign spi_req.addr  = apb_out[4].paddr;
-assign spi_req.wdata = apb_out[4].pwdata;
-assign spi_req.wstrb = '1;
-assign spi_req.write = apb_out[4].pwrite;
-assign spi_req.valid = apb_out[4].psel & apb_out[4].penable;
-
-assign apb_out[4].prdata  = spi_rsp.rdata;
-assign apb_out[4].pslverr = spi_rsp.error;
-assign apb_out[4].pready  = spi_rsp.ready;
-//
-
-/*
-spi_host #(
-  .reg_req_t (regbus_req_t),
-  .reg_rsp_t (regbus_rsp_t)
-) i_spih (
-  .clk_i,
-  .rst_ni,
-  .reg_req_i        (spi_req),
-  .reg_rsp_o        (spi_rsp),
-  .cio_sck_o        (),
-  .cio_sck_en_o     (),
-  .cio_csb_o        (),
-  .cio_csb_en_o     (),
-  .cio_sd_o         (),
-  .cio_sd_en_o      (),
-  .cio_sd_i         ('0),
-  .intr_error_o     (),
-  .intr_spi_event_o ()
-);*/
 
 `ifndef VERILATOR
 apb_uart i_apb_uart (
@@ -293,5 +302,55 @@ apb_mtimer #() i_mtimer (
   .pslverr_o   (apb_out[2].pslverr)
 );
 
+apb_timer #(
+  .APB_ADDR_WIDTH(AddrWidth),
+  .TIMER_CNT(TimerGroupSize)
+) i_apb_timer (
+  .HCLK           (periph_clk),
+  .HRESETn        (rst_ni),
+  .PENABLE        (apb_out[5].penable),
+  .PWRITE         (apb_out[5].pwrite),
+  .PADDR          (apb_out[5].paddr),
+  .PSEL           (apb_out[5].psel),
+  .PWDATA         (apb_out[5].pwdata),
+  .PRDATA         (apb_out[5].prdata),
+  .PREADY         (apb_out[5].pready),
+  .PSLVERR        (apb_out[5].pslverr),
+  .irq_o          (apb_timer_irq)
+);
+
+
+apb_spi_master #(
+  .APB_ADDR_WIDTH      (AddrWidth),
+  .BUFFER_DEPTH        (10)
+) i_apb_spi_master1(
+  .HCLK           (periph_clk),
+  .HRESETn        (rst_ni),
+  .PENABLE        (apb_out[4].penable),
+  .PWRITE         (apb_out[4].pwrite),
+  .PADDR          (apb_out[4].paddr),
+  .PSEL           (apb_out[4].psel),
+  .PWDATA         (apb_out[4].pwdata),
+  .PRDATA         (apb_out[4].prdata),
+  .PREADY         (apb_out[4].pready),
+  .PSLVERR        (apb_out[4].pslverr),
+  .events_o       (spi_irqs),
+
+  // Interface: spi_master
+  .spi_sdi0       (spi_sdi_i[0]),
+  .spi_sdi1       (spi_sdi_i[1]),
+  .spi_sdi2       (spi_sdi_i[2]),
+  .spi_sdi3       (spi_sdi_i[3]),
+  .spi_clk        (spi_clk_o),
+  .spi_csn0       (spi_csn_o[0]),
+  .spi_csn1       (spi_csn_o[1]),
+  .spi_csn2       (spi_csn_o[2]),
+  .spi_csn3       (spi_csn_o[3]),
+  .spi_mode       (),
+  .spi_sdo0       (spi_sdo_o[0]),
+  .spi_sdo1       (spi_sdo_o[1]),
+  .spi_sdo2       (spi_sdo_o[2]),
+  .spi_sdo3       (spi_sdo_o[3])
+  );
 
 endmodule : rt_peripherals

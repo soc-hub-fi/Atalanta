@@ -14,22 +14,34 @@ module rt_top #(
   parameter bit          IbexRve      = 1,
   // Derived parameters
   localparam int SrcW                 = $clog2(ClicIrqSrcs),
-  localparam int unsigned StrbWidth   = (AxiDataWidth / 8)
+  localparam int unsigned StrbWidth   = (AxiDataWidth / 8),
+  localparam int unsigned GpioPadNum  = 4,
+  localparam int unsigned TimerGroupSize = 2
 
 )(
   input  logic                   clk_i,
   input  logic                   rst_ni,
-  input  logic [3:0]             gpio_input_i,
-  output logic [3:0]             gpio_output_o,
+
+  input  logic [GpioPadNum-1:0]  gpio_input_i,
+  output logic [GpioPadNum-1:0]  gpio_output_o,
+
   input  logic                   uart_rx_i,
   output logic                   uart_tx_o,
+
   AXI_BUS.Slave                  soc_slv,
   AXI_BUS.Master                 soc_mst,
+
+  input  logic           [3:0]   spi_sdi_i,
+  output logic           [3:0]   spi_sdo_o,
+  output logic           [3:0]   spi_csn_o,
+  output logic                   spi_clk_o,
+
   input  logic                   jtag_tck_i,
   input  logic                   jtag_tms_i,
   input  logic                   jtag_trst_ni,
   input  logic                   jtag_td_i,
   output logic                   jtag_td_o,
+
   input  logic [ClicIrqSrcs-1:0] intr_src_i
 );
 
@@ -145,7 +157,11 @@ rt_ibex_bootrom #() i_rom (
   .sbr_bus (demux_sbr_bus[0])
 );
 
-rt_peripherals #() i_peripherals (
+
+
+rt_peripherals #(
+  .NSource       (ClicIrqSrcs)
+) i_peripherals (
   .clk_i,
   .rst_ni,
   .apb_i          (apb_bus),
@@ -163,7 +179,11 @@ rt_peripherals #() i_peripherals (
   .irq_src_i      (intr_src_i),
   .gpio_i         (gpio_input_i),
   .gpio_o         (gpio_output_o),
-  .dma_irqs_i     (dma_irqs)
+  .dma_irqs_i     (dma_irqs),
+  .spi_sdi_i      (spi_sdi_i),
+  .spi_sdo_o      (spi_sdo_o),
+  .spi_csn_o      (spi_csn_o),
+  .spi_clk_o      (spi_clk_o)
 );
 
 rt_debug #(
