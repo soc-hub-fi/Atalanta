@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - 4 * 32-bit timer group
 - QSPI APB peripheral (umapped in FPGA)
 
+### Fixed
+- Mtimer with new implementation
+
 ## [v0.2.0] - 2025-01-24
 
 ### Fixed
