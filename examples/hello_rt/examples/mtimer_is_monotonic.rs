@@ -11,16 +11,18 @@ fn main() -> ! {
     let _serial = ApbUart::init(CPU_FREQ, UART_BAUD);
     print_example_name!();
 
+    let mut mtimer = MTimer::init();
+
     // Enable timer (bit 0) & set prescaler to 0xf (bits 20:8)
     let prescaler = 0xf;
-    let mut mtimer = MTimer::en(prescaler);
+    mtimer.enable_with_prescaler(prescaler);
 
     let mut p_mtime;
     let mut mtime = 0;
 
     loop {
         p_mtime = mtime;
-        mtime = unsafe { mtimer.read() };
+        mtime = unsafe { mtimer.counter() };
         sprintln!("mtime: {}", mtime);
         if mtime > p_mtime {
             #[cfg(feature = "rtl-tb")]
