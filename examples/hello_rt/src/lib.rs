@@ -48,3 +48,10 @@ macro_rules! print_example_name {
         sprintln!("[{}]", core::file!());
     };
 }
+
+#[macro_export]
+macro_rules! print_reg_u32 {
+    ($reg:expr) => {
+        sprintln!("{:#x}: {} \"{}\"", $reg, read_u32($reg), stringify!($reg));
+    };
+}
