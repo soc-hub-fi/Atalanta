@@ -16,11 +16,16 @@ the right backends already exist in LLVM & Rust, so we only need to configure Ru
     # Specify install location for the compiler. This can be anything you like.
     export DESTDIR="$HOME/.local/install/compilers/rust-1.84.0"
 
+    export CFLAGS_riscv32e_unknown_none_elf="-march=rv32e -mabi=ilp32e"
+    export CFLAGS_riscv32em_unknown_none_elf="-march=rv32em -mabi=ilp32e"
+    export CFLAGS_riscv32emc_unknown_none_elf="-march=rv32emc -mabi=ilp32e"
+    export BOOTSTRAP_SKIP_TARGET_SANITY=1
+
     # Build the compiler
-    CFLAGS_riscv32e_unknown_none_elf="-march=rv32e -mabi=ilp32e" \
-    CFLAGS_riscv32em_unknown_none_elf="-march=rv32em -mabi=ilp32e" \
-    CFLAGS_riscv32emc_unknown_none_elf="-march=rv32emc -mabi=ilp32e" \
-    BOOTSTRAP_SKIP_TARGET_SANITY=1 ./x install compiler/rustc library/std
+    ./x install compiler/rustc library/std
+
+    # Build extra tools if required
+    ./x install rust-analyzer rusfmt src clippy
     ```
 
 6. Link the installed compiler for rustup so that we can use it easily from anywhere on the system
