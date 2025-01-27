@@ -16,7 +16,8 @@ fn add_linker_script() {
 /// Parse the target RISC-V architecture and returns its bit width and the
 /// extension set
 ///
-/// Returns a char set such as ['i', 'e'] based on which extensions are active right now.
+/// Returns a char set such as ['i', 'e'] based on which extensions are active
+/// right now.
 fn parse_extensions(target: &str, cargo_flags: &str) -> HashSet<char> {
     // isolate bit width and extensions from the rest of the target information
     let arch = target
@@ -69,7 +70,8 @@ fn main() {
     let target = env::var("TARGET").unwrap();
     let cargo_flags = env::var("CARGO_ENCODED_RUSTFLAGS").unwrap();
 
-    // Let cargo know we're using extension flags so it doesn't create a superfluous warning about them
+    // Let cargo know we're using extension flags so it doesn't create a superfluous
+    // warning about them
     for ext in VALID_RISCV_EXTENSIONS {
         println!("cargo::rustc-check-cfg=cfg(riscv{})", ext);
     }
