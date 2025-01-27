@@ -8,6 +8,8 @@ MEMORY
   IMEM (rx ) : ORIGIN = 0x1000, LENGTH = 0x4000
   /* LENGTH = 0x4000 = 16K */
   DMEM (rwx) : ORIGIN = 0x5000, LENGTH = 0x4000
+  /* LENGTH = 0x10000 = 64K */
+  SRAM (rwx) : ORIGIN = 0x20000, LENGTH = 0x10000
 }
 
 /* Regions are setup like in link.ld for rt-ss written by Antti Nurmi. I didn't put any more thought into it. */
@@ -25,6 +27,17 @@ ASSERT(_start == 0x1100, "code must start from 0x1100 for simulator builds");
 
 /* Provide handlers for the placeholder traps */
 PROVIDE(_start_Uart_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Gpio_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_SpiRxTxIrq_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_SpiEotIrq_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Timer0Ovf_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Timer0Cmp_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Timer1Ovf_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Timer1Cmp_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Timer2Ovf_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Timer2Cmp_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Timer3Ovf_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_Timer3Cmp_trap = _start_DefaultHandler_trap);
 PROVIDE(_start_Nmi_trap = _start_DefaultHandler_trap);
 PROVIDE(_start_Dma0_trap = _start_DefaultHandler_trap);
 PROVIDE(_start_Dma1_trap = _start_DefaultHandler_trap);

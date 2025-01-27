@@ -15,6 +15,26 @@ pub enum Interrupt {
     /// UART interrupt (Non-standard, overrides S-mode software interrupt
     /// mapping.)
     Uart = 17,
+    Gpio = 18,
+    SpiRxTxIrq = 19,
+    /// SPI end of transmission
+    SpiEotIrq = 20,
+    /// Timer 0 overflow
+    Timer0Ovf = 21,
+    /// Timer 0 compare
+    Timer0Cmp = 22,
+    /// Timer1 overflow
+    Timer1Ovf = 23,
+    /// Timer1 compare
+    Timer1Cmp = 24,
+    /// Timer2 overflow
+    Timer2Ovf = 25,
+    /// Timer2 compare
+    Timer2Cmp = 26,
+    /// Timer3 overflow
+    Timer3Ovf = 27,
+    /// Timer3 compare
+    Timer3Cmp = 28,
     /// Non-maskable interrupt, carried over from standard Ibex
     Nmi = 31,
     Dma0 = 32,

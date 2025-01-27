@@ -48,3 +48,22 @@ macro_rules! print_example_name {
         sprintln!("[{}]", core::file!());
     };
 }
+
+#[macro_export]
+macro_rules! print_reg_u32 {
+    ($reg:expr) => {
+        sprintln!("{:#x}: {} \"{}\"", $reg, read_u32($reg), stringify!($reg));
+    };
+}
+
+#[macro_export]
+macro_rules! function {
+    () => {{
+        fn f() {}
+        fn type_name_of<T>(_: T) -> &'static str {
+            core::any::type_name::<T>()
+        }
+        let name = type_name_of(f);
+        name.strip_suffix("::f").unwrap()
+    }};
+}
