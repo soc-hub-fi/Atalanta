@@ -42,7 +42,7 @@ const TEST_IRQS: &[Interrupt] = &[
     Interrupt::Dma15,
 ];
 
-/// An array of 32 bits, one for each possible interrupt 0..32
+/// An array of 64 bits, one for each possible interrupt 0..64
 static mut IRQ_RECVD: u64 = 0;
 
 /// Example entry point
