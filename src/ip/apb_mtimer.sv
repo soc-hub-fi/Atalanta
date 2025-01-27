@@ -47,8 +47,6 @@ always_ff @(posedge clk_i or negedge rst_ni)
     end
   end
 
-assign counter_d = (counter_q == prescaler_q) ? 0 : counter_q + 1;
-
 always_comb
   begin
     if (enable_q) begin
