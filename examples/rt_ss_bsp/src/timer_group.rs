@@ -62,18 +62,21 @@ impl<const BASE_ADDR: usize> TimerUnit<BASE_ADDR> {
 
     /// Sets the timer compare value
     ///
-    /// Interrupt signal is raised on `timer >= timer_cmp`.
+    /// On `timer >= timer_cmp`:
+    ///
+    /// * interrupt signal for corresponding Timer is raised, and
+    /// * `counter` value is reset to zero.
     #[inline]
     pub fn set_cmp(&mut self, cmp: u32) {
         write_u32(BASE_ADDR + TIMER_CMP_OFS, cmp);
     }
 }
 
-///Type alias that should be used to interface timer 0.
+/// Type alias that should be used to interface timer 0.
 pub type Timer0 = TimerUnit<TIMER0_ADDR>;
-///Type alias that should be used to interface timer 1.
+/// Type alias that should be used to interface timer 1.
 pub type Timer1 = TimerUnit<TIMER1_ADDR>;
-///Type alias that should be used to interface timer 2.
+/// Type alias that should be used to interface timer 2.
 pub type Timer2 = TimerUnit<TIMER2_ADDR>;
-///Type alias that should be used to interface timer 3.
+/// Type alias that should be used to interface timer 3.
 pub type Timer3 = TimerUnit<TIMER3_ADDR>;
