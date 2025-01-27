@@ -28,13 +28,16 @@ impl<const BASE_ADDR: usize> TimerUnit<BASE_ADDR> {
     pub fn enable_with_prescaler(&mut self, prescaler: u32) {
         debug_assert!(prescaler <= 0b111);
 
-        write_u32(BASE_ADDR + TIMER_CTRL_OFS,  (prescaler << TIMER_CTRL_PRESCALER_BIT_IDX) | TIMER_CTRL_ENABLE_BIT);
+        write_u32(
+            BASE_ADDR + TIMER_CTRL_OFS,
+            (prescaler << TIMER_CTRL_PRESCALER_BIT_IDX) | TIMER_CTRL_ENABLE_BIT,
+        );
     }
 
     /// Starts the count
     #[inline]
     pub fn enable(&mut self) {
-        mask_u32(BASE_ADDR + TIMER_CTRL_OFS,  TIMER_CTRL_ENABLE_BIT);
+        mask_u32(BASE_ADDR + TIMER_CTRL_OFS, TIMER_CTRL_ENABLE_BIT);
     }
 
     /// Stops the count
