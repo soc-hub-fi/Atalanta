@@ -8,6 +8,8 @@ MEMORY
   IMEM (rx ) : ORIGIN = 0x1000, LENGTH = 0x4000
   /* LENGTH = 0x4000 = 16K */
   DMEM (rwx) : ORIGIN = 0x5000, LENGTH = 0x4000
+  /* LENGTH = 0x10000 = 64K */
+  SRAM (rwx) : ORIGIN = 0x20000, LENGTH = 0x10000
 }
 
 /* Regions are setup like in link.ld for rt-ss written by Antti Nurmi. I didn't put any more thought into it. */
