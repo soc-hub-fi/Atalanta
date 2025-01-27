@@ -49,8 +49,6 @@ impl INTCTL {
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
-        // TODO: need to figure out how many are actually priority bits and how many are
-        // level bits and mask accordingly
         reg.write_bits(
             8 * Self::INTCTL_OFFSET,
             7 + 8 * Self::INTCTL_OFFSET,
@@ -58,10 +56,10 @@ impl INTCTL {
         )
     }
 
+    // N.b., 2024-03-11 rt-ss/CLIC does not implement priority bits at all at
+    // this time
+    /*
     /// Check interrupt priority for this interrupt.
-    ///
-    /// N.b., 2024-03-11 rt-ss/CLIC does not implement priority bits at all at
-    /// this time
     #[inline]
     pub fn priority(self) -> u8 {
         // SAFETY: valid interrupt number
@@ -73,9 +71,6 @@ impl INTCTL {
     }
 
     /// Set interrupt priority for this interrupt.
-    ///
-    /// N.b., 2024-03-11 rt-ss/CLIC does not implement priority bits at all at
-    /// this time
     #[inline]
     pub fn set_priority(self, priority: u8) {
         // SAFETY: valid interrupt number
@@ -89,4 +84,5 @@ impl INTCTL {
             priority as _,
         )
     }
+    */
 }
