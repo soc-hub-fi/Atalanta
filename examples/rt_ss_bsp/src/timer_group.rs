@@ -64,7 +64,7 @@ impl<const BASE_ADDR: usize> TimerUnit<BASE_ADDR> {
     ///
     /// Interrupt signal is raised on `timer >= timer_cmp`.
     #[inline]
-    pub fn set_cmp(cmp: u32) {
+    pub fn set_cmp(&mut self, cmp: u32) {
         write_u32(BASE_ADDR + TIMER_CMP_OFS, cmp);
     }
 }
