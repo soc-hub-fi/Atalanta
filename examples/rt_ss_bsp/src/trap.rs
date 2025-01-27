@@ -57,10 +57,21 @@ global_asm!(
         .word _start_DefaultHandler_trap    // 12..=16
         .endr
         .word _start_Uart_trap              // 17
+        .word _start_Gpio_trap              // 18
+        .word _start_SpiRxTxIrq_trap        // 19
+        .word _start_SpiEotIrq_trap         // 20
+        .word _start_Timer0Ovf_trap         // 21
+        .word _start_Timer0Cmp_trap         // 22
+        .word _start_Timer1Ovf_trap         // 23
+        .word _start_Timer1Cmp_trap         // 24
+        .word _start_Timer2Ovf_trap         // 25
+        .word _start_Timer2Cmp_trap         // 26
+        .word _start_Timer3Ovf_trap         // 27
+        .word _start_Timer3Cmp_trap         // 28
 
         // Pad with `DefaultHandler`
-        .rept 13
-        .word _start_DefaultHandler_trap    // 18..=30
+        .rept 2
+        .word _start_DefaultHandler_trap    // 29..=30
         .endr
 
         .word _start_Nmi_trap   // 31
