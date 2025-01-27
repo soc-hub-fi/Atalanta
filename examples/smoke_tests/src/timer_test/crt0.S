@@ -91,7 +91,7 @@ uart_handler_1:
     csrci mstatus, 8 /* disable global interrupts*/
 
     // I expanded stack size to prevent stack overflow due multiple nesting 
-
+   #ifndef HARDWARE_STACKING
     lw t0, 28(sp)
     lw t1, 32(sp)
     csrw mcause, t1
@@ -104,6 +104,8 @@ uart_handler_1:
     lw a5, 20(sp)
     lw t1, 24(sp)
     addi sp, sp, (4 * 9)
+    #endif
+
     mret
 .endfunc
 
@@ -151,6 +153,7 @@ mtimer_handler:
     quit:
     csrci mstatus, 8 /* disable global interrupts*/
 
+    #ifndef HARDWARE_STACKING
     lw t0, 28(sp)
     lw t1, 32(sp)
     csrw mcause, t1
@@ -163,5 +166,7 @@ mtimer_handler:
     lw a3, 20(sp)
     lw t1, 24(sp)
     addi sp, sp, (4 * 9)
+    #endif
+
     mret
 .endfunc

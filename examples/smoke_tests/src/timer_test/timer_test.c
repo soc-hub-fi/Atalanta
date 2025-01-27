@@ -52,8 +52,8 @@ int main() {
   enable_int(MTIME_IRQ_ID);
   set_priority(MTIME_IRQ_ID, 0x88);
 
-  //enable timer [bit 0] & set prescaler to 00F [bits 20:8]
-  *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00F01;
+  //enable timer [bit 0] & set prescaler to 3 [bits 10:8]
+  *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00301;
   csr_write(CSR_MINTTHRESH, 0x00);
 
   //asm("wfi");

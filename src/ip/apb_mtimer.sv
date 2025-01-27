@@ -19,103 +19,86 @@ localparam int unsigned MTimeCmpAddrLow   = 3'b010;
 localparam int unsigned MTimeCmpAddrHigh  = 3'b011;
 localparam int unsigned CtrlAddr          = 3'b100;
 
-logic                          active_r;
-logic [                  31:0] mtime_read_low_r;
-logic [                  31:0] mtime_read_high_r;
-logic [                  31:0] mtime_write_low_r;
-logic [                  31:0] mtime_write_high_r;
-logic [                  31:0] mtimecmp_low_r;
-logic [                  31:0] mtimecmp_high_r;
+logic [63:0] mtime_q, mtime_d;
+logic [31:0] mtime_hi, mtime_lo;
+logic [63:0] mtimecmp_q;
+logic [31:0] mtimecmp_hi, mtimecmp_lo;
+logic [2:0] prescaler_q, prescaler_d;
+logic [2:0] counter_q, counter_d;
+logic       enable_q, enable_d;
 
-logic tick;
-logic [11:0] prescale_r;
-logic [63:0] mtime_r;
+logic [2:0] int_addr;
+assign int_addr = paddr_i[4:2];
 
-
-always_ff @( posedge clk_i or negedge rst_ni )
-  begin : write_logic
-    if ( ~rst_ni )
-      begin
-        mtime_r             <= 64'b0;
-        mtimecmp_high_r     <= 32'b0;
-        mtimecmp_low_r      <= 32'b0;
-        active_r            <=  1'b0;
-        prescale_r          <= 12'b0;
-      end else if (pwrite_i) begin
-        case (paddr_i[4:2])
-          MTimeAddrLow: begin
-            mtime_r[63:32] <= pwdata_i;
-          end
-          MTimeAddrHigh: begin
-            mtime_r[31:0] <= pwdata_i;
-          end
-          MTimeCmpAddrLow: begin
-            mtimecmp_low_r <= pwdata_i;
-          end
-          MTimeCmpAddrHigh: begin
-            mtimecmp_high_r <= pwdata_i;
-          end
-          CtrlAddr: begin
-            active_r   <= pwdata_i[0];
-            prescale_r <= pwdata_i[20:8];
-          end
-          default: begin
-            //nothing
-          end
-        endcase
-      end
-      else if (tick) begin
-        mtime_r <= mtime_r + 1;
-      end
-  end
-
-always_comb
-  begin : read_logic
-    prdata_o = '0;
-    if (~pwrite_i) begin
-      case (paddr_i[4:2])
-        MTimeAddrLow: begin
-          prdata_o = mtime_read_low_r;
-        end
-        MTimeAddrHigh: begin
-          prdata_o = mtime_read_high_r;
-        end
-        MTimeCmpAddrLow: begin
-          prdata_o = mtimecmp_low_r;
-        end
-        MTimeCmpAddrHigh: begin
-          prdata_o = mtimecmp_high_r;
-        end
-        CtrlAddr: begin
-          prdata_o = {12'b0, prescale_r, 7'b0, active_r};
-        end
-        default: begin
-          prdata_o = '0;
-        end
-      endcase
+always_ff @(posedge clk_i or negedge rst_ni)
+  begin
+    if(~rst_ni) begin
+      mtime_q     <= '0;
+      mtimecmp_q  <= '0;
+      prescaler_q <= '0;
+      enable_q    <= '0;
+      counter_q   <= '0;
+    end else begin
+      mtime_q     <= mtime_d;
+      mtimecmp_q  <= {mtimecmp_hi, mtimecmp_lo};
+      prescaler_q <= prescaler_d;
+      enable_q    <= enable_d;
+      counter_q   <= counter_d;
     end
   end
 
-always_comb begin
-  pready_o = '0;
-  pslverr_o = '0;
-  if (penable_i) begin
-    pready_o = 1;
-  end
-end
+assign counter_d = (counter_q == prescaler_q) ? 0 : counter_q + 1;
 
-timer_core #(
-) i_timer (
-  .clk_i     (clk_i),
-  .rst_ni    (rst_ni),
-  .active    (active_r),
-  .prescaler (prescale_r),
-  .step      (8'b0),
-  .tick      (tick),
-  .mtime_d   ({mtime_read_high_r,mtime_read_low_r}),
-  .mtime     (mtime_r),
-  .mtimecmp  ({mtimecmp_high_r, mtimecmp_low_r}),
-  .intr      (timer_irq_o)
-);
+always_comb
+  begin
+    if (enable_q) begin
+      counter_d = counter_q + 1;
+      mtime_d   = mtime_q;
+      if (counter_q == prescaler_q) begin
+        counter_d = 0;
+        mtime_d = mtime_q + 1;
+      end
+    end
+  end
+
+always_comb
+  begin : apb_access
+    mtime_hi    = mtime_d[63:32];
+    mtime_lo    = mtime_d[31:0];
+    mtimecmp_hi = mtimecmp_q[63:32];
+    mtimecmp_lo = mtimecmp_q[31:0];
+    prdata_o    = '0;
+    if (penable_i) begin
+      if (pwrite_i) begin // write logic
+        case (int_addr)
+          MTimeAddrLow:     mtime_lo    = pwdata_i;
+          MTimeAddrHigh:    mtime_hi    = pwdata_i;
+          MTimeCmpAddrLow:  mtimecmp_lo = pwdata_i;
+          MTimeCmpAddrHigh: mtimecmp_hi = pwdata_i;
+          CtrlAddr: begin
+            enable_d    = pwdata_i[0];
+            prescaler_d = pwdata_i[10:8];
+          end
+          default:;
+        endcase
+      end else begin // read logic
+        case (int_addr)
+          MTimeAddrLow:     prdata_o = mtime_q[31:0];
+          MTimeAddrHigh:    prdata_o = mtime_q[63:32];
+          MTimeCmpAddrLow:  prdata_o = mtimecmp_q[31:0];
+          MTimeCmpAddrHigh: prdata_o = mtimecmp_q[63:32];
+          CtrlAddr: begin
+            prdata_o[0]    = enable_q;
+            prdata_o[10:8] = prescaler_q;
+          end
+          default:;
+        endcase
+      end
+    end
+  end : apb_access
+
+assign pslverr_o = '0;
+assign pready_o = penable_i;
+assign timer_irq_o = (mtime_q >= mtimecmp_q) & enable_q;
 
 endmodule
