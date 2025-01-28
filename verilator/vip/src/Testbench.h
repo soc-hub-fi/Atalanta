@@ -446,6 +446,13 @@ public:
         uint32_t entry = 0x1000; // default IMEM base
         if(jtag_load)
             entry = jtag_elf_preload(binary);
+        else {
+            read_elf(binary.c_str());
+            long long entry_ = 0;
+            (void)(get_entry(&entry_));
+            entry = (uint32_t)entry_;
+        }
+
         return entry;
     }
 
