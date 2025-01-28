@@ -49,8 +49,8 @@ VERIL_WARN_SUPPRESS ?= \
   -Wno-MULTIDRIVEN     \
   -Wno-CMPCONST        \
   -Wno-IMPLICIT        \
-  -Wno-BLKLOOPINIT     
-       
+  -Wno-BLKLOOPINIT
+
 VERIL_DEFINES ?= \
 	+define+VERILATOR=1 \
 	+define+RVFI \
@@ -58,7 +58,7 @@ VERIL_DEFINES ?= \
 
 ifdef TRACE
 VERIL_DEFINES += +define+RVFI +define+DEBUG
-VERIL_WARN_SUPPRESS += -Wno-MULTIDRIVEN 
+VERIL_WARN_SUPPRESS += -Wno-MULTIDRIVEN
 endif
 
 VERIL_INCLUDES ?= \

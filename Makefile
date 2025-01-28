@@ -39,7 +39,7 @@ check-env:
 	mkdir -p $(BUILD_DIR)/logs/sim
 
 ######################################################################
-# hw build targets 
+# hw build targets
 ######################################################################
 
 .PHONY: compile
@@ -63,7 +63,7 @@ fpga:
 	$(MAKE) -C fpga all FPGA_DIR=$(FPGA_DIR)
 
 ######################################################################
-# formal targets 
+# formal targets
 ######################################################################
 
 .PHONY: autocheck
@@ -109,14 +109,14 @@ vsim_wave: check-env
 .PHONY: test_check
 test_check:
 ifeq ($(TEST),)
-	$(error "No TEST specified. Exiting.") 
+	$(error "No TEST specified. Exiting.")
 	exit 0
 endif
 
 .PHONY: smoke_compile
 smoke_compile: test_check
 	@$(MAKE) -C $(CURDIR)/examples/smoke_tests $(TEST)
-  
+
 
 #####################
 # Verilator
@@ -143,7 +143,7 @@ initv:
 	$(MAKE) -C verilator init
 
 ######################################################################
-# clean target 
+# clean target
 ######################################################################
 
 .PHONY: clean_ips
