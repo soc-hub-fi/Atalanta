@@ -52,6 +52,7 @@ macro_rules! print_example_name {
 #[macro_export]
 macro_rules! print_reg_u32 {
     ($reg:expr) => {
+        use bsp::read_u32;
         sprintln!("{:#x}: {} \"{}\"", $reg, read_u32($reg), stringify!($reg));
     };
 }

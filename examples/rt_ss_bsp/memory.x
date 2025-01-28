@@ -15,12 +15,13 @@ MEMORY
 /* Regions are setup like in link.ld for rt-ss written by Antti Nurmi. I didn't put any more thought into it. */
 
 REGION_ALIAS("REGION_TEXT", IMEM);
-REGION_ALIAS("REGION_DATA", IMEM);
 
 REGION_ALIAS("REGION_RODATA", DMEM);
 REGION_ALIAS("REGION_BSS", DMEM);
 REGION_ALIAS("REGION_HEAP", DMEM);
 REGION_ALIAS("REGION_STACK", DMEM);
+
+REGION_ALIAS("REGION_DATA", SRAM);
 
 /* The simulator requires code to start from 0x1100 since that's how the hardware operates */
 ASSERT(_start == 0x1100, "code must start from 0x1100 for simulator builds");

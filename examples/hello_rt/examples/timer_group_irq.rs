@@ -6,8 +6,8 @@
 #![allow(non_snake_case)]
 
 use bsp::{
-    asm_delay,
     clic::Clic,
+    mtimer::MTimer,
     riscv::{self, asm::wfi},
     rt::{entry, interrupt},
     sprint, sprintln,
@@ -18,8 +18,16 @@ use bsp::{
 };
 use hello_rt::{function, print_example_name, setup_irq, tear_irq, UART_BAUD};
 
-/// Bit flag to store the interrupt IDs
+const INTERVAL: u32 = if cfg!(feature = "rtl-tb") {
+    0x100
+} else {
+    // Just enough to be able to tell the timer's apart
+    NOPS_PER_SEC / 2
+};
+
+/// Bit flag to store & verify the correct interrupt IDs fired
 static mut IRQ_RECVD: u64 = 0;
+static mut TIMEOUT: bool = false;
 
 #[entry]
 fn main() -> ! {
@@ -29,10 +37,16 @@ fn main() -> ! {
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
 
+    // Setup 4 timers for verification and machine timer for timeout
     setup_irq(Interrupt::Timer0Cmp);
     setup_irq(Interrupt::Timer1Cmp);
     setup_irq(Interrupt::Timer2Cmp);
     setup_irq(Interrupt::Timer3Cmp);
+    setup_irq(Interrupt::MachineTimer);
+
+    // Use mtimer for timeout
+    let mut mtimer = MTimer::init();
+    unsafe { mtimer.set_cmp(5 * INTERVAL as u64) };
 
     let mut timers = (
         Timer0::init(),
@@ -40,14 +54,12 @@ fn main() -> ! {
         Timer2::init(),
         Timer3::init(),
     );
+    timers.0.set_cmp(INTERVAL);
+    timers.1.set_cmp(2 * INTERVAL);
+    timers.2.set_cmp(3 * INTERVAL);
+    timers.3.set_cmp(4 * INTERVAL);
 
-    let interval = NOPS_PER_SEC / 2;
-    timers.0.set_cmp(interval);
-    timers.1.set_cmp(2 * interval);
-    timers.2.set_cmp(3 * interval);
-    timers.3.set_cmp(4 * interval);
-
-    sprintln!("dispatching 4 timers");
+    sprintln!("dispatching 4 timers...");
 
     // Enable interrupts globally and dispatch all timers
     unsafe { riscv::interrupt::enable() };
@@ -55,22 +67,28 @@ fn main() -> ! {
     timers.1.enable();
     timers.2.enable();
     timers.3.enable();
+    mtimer.enable();
 
-    // HACK: timeout using asm delay, while mtimer is unstable
-    asm_delay(5 * interval);
+    // Wait for timeout from timer
+    while !unsafe { TIMEOUT } {
+        wfi();
+    }
+
+    riscv::interrupt::disable();
 
     // Tear down after timeout
     tear_irq(Interrupt::Timer0Cmp);
     tear_irq(Interrupt::Timer1Cmp);
     tear_irq(Interrupt::Timer2Cmp);
     tear_irq(Interrupt::Timer3Cmp);
+    tear_irq(Interrupt::MachineTimer);
 
     let all_flags = (0b1 << Interrupt::Timer0Cmp as u64)
         | (0b1 << Interrupt::Timer1Cmp as u64)
         | (0b1 << Interrupt::Timer2Cmp as u64)
         | (0b1 << Interrupt::Timer3Cmp as u64);
-    // Safety: hopefully all interrupt handlers have already been run and there
-    // isn't a race on IRQ_RECVD
+    // Safety: all interrupt handlers have already been run and there will not be a
+    // race on IRQ_RECVD.
     assert_eq!(all_flags, unsafe { IRQ_RECVD });
 
     signal_pass(Some(&mut serial));
@@ -118,4 +136,10 @@ fn Timer3Cmp() {
     // Safety: can't race, interrupts are disabled during the interrupt handler
     unsafe { IRQ_RECVD |= 0b1 << irq_code };
     unsafe { Timer3::instance() }.disable();
+}
+
+#[interrupt]
+fn MachineTimer() {
+    unsafe { TIMEOUT = true };
+    unsafe { MTimer::instance() }.disable();
 }
