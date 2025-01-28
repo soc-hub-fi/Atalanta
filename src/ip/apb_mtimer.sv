@@ -49,9 +49,10 @@ always_ff @(posedge clk_i or negedge rst_ni)
 
 always_comb
   begin
+    mtime_d   = mtime_q;
+    counter_d = 0;
     if (enable_q) begin
       counter_d = counter_q + 1;
-      mtime_d   = mtime_q;
       if (counter_q == prescaler_q) begin
         counter_d = 0;
         mtime_d = mtime_q + 1;
@@ -66,6 +67,8 @@ always_comb
     mtimecmp_hi = mtimecmp_q[63:32];
     mtimecmp_lo = mtimecmp_q[31:0];
     prdata_o    = '0;
+    prescaler_d = prescaler_q;
+    enable_d    = enable_q;
     if (penable_i) begin
       if (pwrite_i) begin // write logic
         case (int_addr)

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - QSPI APB peripheral (umapped in FPGA)
 
 ### Fixed
+- Mtimer X values
 - Mtimer with new implementation
 
 ## [v0.2.0] - 2025-01-24
