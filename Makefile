@@ -21,6 +21,7 @@ SHELL=bash
 VERILATOR_CFLAGS="-O0 -ffunction-sections -fdata-sections -g -c -DVERILATOR"
 
 BENDER ?= bender
+TARGET ?= riscv32emc-unknown-none-elf
 
 ######################################################################
 # Repository targets
@@ -122,13 +123,15 @@ smoke_compile: test_check
 # Verilator
 #####################
 
+TEST_DIR ?= $(CURDIR)/examples/smoke_tests
+
 .PHONY: $(TEST)
 $(TEST):
-	$(MAKE) -C $(CURDIR)/examples/smoke_tests $(TEST) CFLAGS=$(VERILATOR_CFLAGS)
+	$(MAKE) -C $(TEST_DIR) $(TEST) CFLAGS=$(VERILATOR_CFLAGS)
 
 .PHONY: verilate
 verilate: $(TEST)
-	$(MAKE) -C verilator verilate
+	TARGET=$(TARGET) $(MAKE) -C verilator verilate
 
 .PHONY: simv
 simv:
