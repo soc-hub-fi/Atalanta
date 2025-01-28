@@ -4,7 +4,7 @@ use crate::{
         MTIMECMP_HIGH_ADDR_OFS, MTIMECMP_LOW_ADDR_OFS, MTIMER_BASE, MTIME_CTRL_ADDR_OFS,
         MTIME_HIGH_ADDR_OFS, MTIME_LOW_ADDR_OFS,
     },
-    read_u32, write_u32,
+    read_u32, unmask_u32, write_u32,
 };
 
 pub struct MTimer {}
@@ -40,14 +40,20 @@ impl MTimer {
 
     /// Starts the count
     #[inline]
-    pub fn enable(&mut self) -> Self {
+    pub fn enable(&mut self) {
         mask_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0b1);
-        Self {}
+    }
+
+    /// Stops the count
+    #[inline]
+    pub fn disable(&mut self) {
+        unmask_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0b1);
     }
 
     /// Safety: needs to be called in an interrupt critical-section, otherwise
     /// you risk getting interrupted in between reading the hi & low address and
     /// getting a disjoint value
+    #[inline]
     pub unsafe fn counter(&mut self) -> u64 {
         let lo = read_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS);
         let hi = read_u32(MTIMER_BASE + MTIME_HIGH_ADDR_OFS);
