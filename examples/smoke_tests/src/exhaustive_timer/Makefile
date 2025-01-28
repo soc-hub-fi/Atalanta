@@ -6,11 +6,11 @@ BUILD_DIR 		  =$(TOP_LEVEL_DIR)/build
 
 ifneq ($(wildcard $(CURDIR)/crt0.S),)
 CRUNTIME		  =$(CURDIR)/crt0
-else 
+else
 CRUNTIME		  =$(TOP_LEVEL_DIR)/common/crt0
 endif
 
-#-{ Toolchain Specifications }------------------------------------------------------ 
+#-{ Toolchain Specifications }------------------------------------------------------
 
 XLEN 			 ?= 64
 TOOLCHAIN_PATH   := /opt/poc/rv64gcc/bin/
@@ -19,7 +19,7 @@ RVGCC			  =$(TOOLCHAIN_PREFIX)gcc
 RVOBJDUMP		  =$(TOOLCHAIN_PREFIX)objdump
 RVGDB		      =$(TOOLCHAIN_PREFIX)gdb
 
-# Object copy (for converting formats if needed) 
+# Object copy (for converting formats if needed)
 OBJCOPY		      =$(TOOLCHAIN_PREFIX)objcopy
 
 # Architecture and Compiler flags
@@ -42,7 +42,7 @@ all: link objdump
 
 # Compile $(TEST)
 .PHONY: compile
-compile: 
+compile:
 	$(RVGCC) $(ARCH_FLAGS) $(CFLAGS) -I $(INCLUDE_DIR) -DLANGUAGE_ASSEMBLY $(CRUNTIME).S \
 	-o $(BUILD_DIR)/crt0.o
 
@@ -55,7 +55,7 @@ link: compile
 #$(RVLD) $(LDFLAGS) $(BUILD_DIR)/crt0.o $(BUILD_DIR)/$(TEST)/$(TEST).o -o $(BUILD_DIR)/$(TEST).elf
 	$(RVGCC) $(ARCH_FLAGS) $(LDFLAGS) -I $(INCLUDE_DIR) -o $(BUILD_DIR)/$(TEST)/$(TEST).elf  $(BUILD_DIR)/crt0.o $(BUILD_DIR)/$(TEST)/$(TEST).o
 
-# Dump the generated .elf file 
+# Dump the generated .elf file
 .PHONY: objdump
 objdump: #link
 	$(RVOBJDUMP) $(BUILD_DIR)/$(TEST)/$(TEST).elf $(OBJDUMP_OPT) -SsdhwD > $(BUILD_DIR)/$(TEST)/$(TEST).dump

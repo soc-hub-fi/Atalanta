@@ -17,12 +17,22 @@ VERIL_BUILD_DIR ?= $(BUILD_DIR)/verilator_build
 TOP_MODULE       = rt_top_unpacked
 VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
 
-SW_ROOT          = examples/smoke_tests
-ELF_PATH         = $(realpath $(CURDIR))/../$(SW_ROOT)/build/$(TEST)/$(TEST).elf
+ifeq (!$(RUST),)
+# ELF is from C
+	ELF_ROOT    ?= $(realpath $(CURDIR))/../examples/smoke_tests/build/$(TEST)
+	ELF_PATH    ?= $(ELF_ROOT)/$(TEST).elf
+# Locate the file called exactly $(TEST).elf
+	ELF_PATH    ?= $(shell find $(ELF_ROOT) -type f -name "$(TEST).elf" -print -quit)
+else
+# ELF is from Rust build -> make sure to use the release build
+	ELF_ROOT    ?= $(realpath $(CURDIR))/../$(TEST_DIR)/target/$(TARGET)/release
+# Locate the file called exactly $(TEST)
+	ELF_PATH    ?= $(shell find $(ELF_ROOT) -type f -name "$(TEST)" -print -quit)
+endif
 JTAG_LOAD        = 0
-## TODO: Makefile magic to make DMEM_START = IMEM_SIZE+1
 IMEM_SIZE        = 4096
-DMEM_START       = 4097
+# DMEM_START = IMEM_SIZE + 1
+DMEM_START       = $(shell echo $$(($(IMEM_SIZE) + 1)))
 
 # if VERILATOR_ROOT is undefined, assume that it is in PATH
 ifeq ($(VERILATOR_ROOT),)
@@ -49,8 +59,8 @@ VERIL_WARN_SUPPRESS ?= \
   -Wno-MULTIDRIVEN     \
   -Wno-CMPCONST        \
   -Wno-IMPLICIT        \
-  -Wno-BLKLOOPINIT     
-       
+  -Wno-BLKLOOPINIT
+
 VERIL_DEFINES ?= \
 	+define+VERILATOR=1 \
 	+define+RVFI \
@@ -58,7 +68,7 @@ VERIL_DEFINES ?= \
 
 ifdef TRACE
 VERIL_DEFINES += +define+RVFI +define+DEBUG
-VERIL_WARN_SUPPRESS += -Wno-MULTIDRIVEN 
+VERIL_WARN_SUPPRESS += -Wno-MULTIDRIVEN
 endif
 
 VERIL_INCLUDES ?= \

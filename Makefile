@@ -21,6 +21,7 @@ SHELL=bash
 VERILATOR_CFLAGS="-O0 -ffunction-sections -fdata-sections -g -c -DVERILATOR"
 
 BENDER ?= bender
+TARGET ?= riscv32emc-unknown-none-elf
 
 ######################################################################
 # Repository targets
@@ -39,7 +40,7 @@ check-env:
 	mkdir -p $(BUILD_DIR)/logs/sim
 
 ######################################################################
-# hw build targets 
+# hw build targets
 ######################################################################
 
 .PHONY: compile
@@ -63,7 +64,7 @@ fpga:
 	$(MAKE) -C fpga all FPGA_DIR=$(FPGA_DIR)
 
 ######################################################################
-# formal targets 
+# formal targets
 ######################################################################
 
 .PHONY: autocheck
@@ -109,26 +110,28 @@ vsim_wave: check-env
 .PHONY: test_check
 test_check:
 ifeq ($(TEST),)
-	$(error "No TEST specified. Exiting.") 
+	$(error "No TEST specified. Exiting.")
 	exit 0
 endif
 
 .PHONY: smoke_compile
 smoke_compile: test_check
 	@$(MAKE) -C $(CURDIR)/examples/smoke_tests $(TEST)
-  
+
 
 #####################
 # Verilator
 #####################
 
+TEST_DIR ?= $(CURDIR)/examples/smoke_tests
+
 .PHONY: $(TEST)
 $(TEST):
-	$(MAKE) -C $(CURDIR)/examples/smoke_tests $(TEST) CFLAGS=$(VERILATOR_CFLAGS)
+	$(MAKE) -C $(TEST_DIR) $(TEST) CFLAGS=$(VERILATOR_CFLAGS)
 
 .PHONY: verilate
 verilate: $(TEST)
-	$(MAKE) -C verilator verilate
+	TARGET=$(TARGET) $(MAKE) -C verilator verilate
 
 .PHONY: simv
 simv:
@@ -143,7 +146,7 @@ initv:
 	$(MAKE) -C verilator init
 
 ######################################################################
-# clean target 
+# clean target
 ######################################################################
 
 .PHONY: clean_ips

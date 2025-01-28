@@ -25,7 +25,29 @@ REGION_ALIAS("REGION_STACK", DMEM);
 /* The simulator requires code to start from 0x1100 since that's how the hardware operates */
 ASSERT(_start == 0x1100, "code must start from 0x1100 for simulator builds");
 
-/* Provide handlers for the placeholder traps */
+/* Default interrupt trap entry point. When vectored trap mode is enabled,
+   the riscv-rt crate provides an implementation of this function, which saves caller saved
+   registers, calls the the DefaultHandler ISR, restores caller saved registers and returns.
+*/
+/*
+PROVIDE(_start_DefaultHandler_trap = _start_trap);
+*/
+
+/* When vectored trap mode is enabled, each interrupt source must implement its own
+   trap entry point.
+
+   The following default handlers are set by riscv-rt/link.rx:
+*/
+/*
+PROVIDE(_start_SupervisorSoft_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_MachineSoft_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_SupervisorTimer_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_MachineTimer_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_SupervisorExternal_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_MachineExternal_trap = _start_DefaultHandler_trap);
+*/
+
+/* Provide default handlers for vectored traps */
 PROVIDE(_start_Uart_trap = _start_DefaultHandler_trap);
 PROVIDE(_start_Gpio_trap = _start_DefaultHandler_trap);
 PROVIDE(_start_SpiRxTxIrq_trap = _start_DefaultHandler_trap);
