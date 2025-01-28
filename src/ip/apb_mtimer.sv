@@ -53,7 +53,9 @@ always_comb
     counter_d = 0;
     if (enable_q) begin
       counter_d = counter_q + 1;
-      if (counter_q == prescaler_q) begin
+      if (timer_irq_o) begin
+        mtime_d = 0;
+      end else if (counter_q == prescaler_q) begin
         counter_d = 0;
         mtime_d = mtime_q + 1;
       end
