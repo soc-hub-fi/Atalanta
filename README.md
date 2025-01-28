@@ -1,8 +1,10 @@
 # Atalanta, a Predictable RISC-V Microcontroller
 
 ## Getting started
+
 Dependencies are managed with [Bender](https://github.com/pulp-platform/bender) and can be fetched by calling
-```
+
+```sh
 make repository_init
 ```
 
@@ -14,20 +16,21 @@ make repository_init
 - This build is developed on top of version *5.008*. Currently, this requires a manual [installation](https://verilator.org/guide/latest/install.html#git-quick-install).
 - [Elf2Hex](https://github.com/sifive/elf2hex) is used to create hex-stims from ELF-binaries when loading programs with `$readmemh`.
 
-> **_NOTE:_**  The design is compatible with at least Verilator 5.024, but 5.008 is preferded due to our experienced better compilation performance.
+> ***NOTE:***  The design is compatible with at least Verilator 5.024, but 5.008 is preferded due to our experienced better compilation performance.
 
 ### with Verilator
 
 Verilator simulations can be invoked from the repository root with
-```
+
+```sh
 make verilate simv TEST=<name of test, e.g. 'uart_sanity'>
 ```
+
 This will clean and compile the design and the software test, then invoke the simulation.
 
 By default, programs are loaded with `$readmemh` (applicable to simulations only). JTAG-based serial loading is supported and can be invoked by appending `JTAG_LOAD=1` to the above command.
 
 An Instruction trace and a `.fst` waveform are always generated under `build/verilator_build`.
-
 
 ### with Questa
 
@@ -40,10 +43,6 @@ make compile elaborate simulate TEST=<name of test, e.g. 'uart_sanity'>
 ```
 
 from the repository root.
-
-
-
-
 
 ## FPGA
 
@@ -116,12 +115,11 @@ The `.gdb` file automates connecting GDB to the debug module and loading the ELF
 
 Software compulation is implicitly included in the simulator invocation. Artifacts are generated under `examples/*/build`.
 
-
 ## Citing
 
-If you use our work, please consider citing any of the following piblications:
+If you use our work, please consider citing any of the following publications:
 
-```
+```bib
 @InProceedings{ARCS24,
  author="Nurmi, Antti
  and Lindgren, Per
@@ -143,7 +141,7 @@ If you use our work, please consider citing any of the following piblications:
 }
 ```
 
-```
+```bib
 @INPROCEEDINGS{NORCAS24,
   author={Nurmi, Antti and Kalache, Abdesattar and Hämäläinen, Timo D.},
   booktitle={2024 IEEE Nordic Circuits and Systems Conference (NorCAS)}, 
@@ -156,5 +154,3 @@ If you use our work, please consider citing any of the following piblications:
   doi={10.1109/NorCAS64408.2024.10752471}}
 
 ```
-
-
