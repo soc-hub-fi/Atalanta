@@ -56,7 +56,7 @@ int main() {
   *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00301;
   csr_write(CSR_MINTTHRESH, 0x00);
 
-  //asm("wfi");
+  asm("wfi");
 
   while (1)
     if (*(uint32_t*)(COMMON_ADDR) == 0xFE) break;
