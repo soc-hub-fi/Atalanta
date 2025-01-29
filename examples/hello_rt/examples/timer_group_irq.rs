@@ -62,12 +62,12 @@ fn main() -> ! {
     sprintln!("dispatching 4 timers...");
 
     // Enable interrupts globally and dispatch all timers
-    unsafe { riscv::interrupt::enable() };
     timers.0.enable();
     timers.1.enable();
     timers.2.enable();
     timers.3.enable();
     mtimer.enable();
+    unsafe { riscv::interrupt::enable() };
 
     // Wait for timeout from timer
     while !unsafe { TIMEOUT } {
@@ -100,42 +100,42 @@ fn main() -> ! {
 
 #[interrupt]
 fn Timer0Cmp() {
+    unsafe { Timer0::instance() }.disable();
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
     sprintln!(" code: {}", irq_code);
     // Safety: can't race, interrupts are disabled during the interrupt handler
     unsafe { IRQ_RECVD |= 0b1 << irq_code };
-    unsafe { Timer0::instance() }.disable();
 }
 
 #[interrupt]
 fn Timer1Cmp() {
+    unsafe { Timer1::instance() }.disable();
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
     sprintln!(" code: {}", irq_code);
     // Safety: can't race, interrupts are disabled during the interrupt handler
     unsafe { IRQ_RECVD |= 0b1 << irq_code };
-    unsafe { Timer1::instance() }.disable();
 }
 
 #[interrupt]
 fn Timer2Cmp() {
+    unsafe { Timer2::instance() }.disable();
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
     sprintln!(" code: {}", irq_code);
     // Safety: can't race, interrupts are disabled during the interrupt handler
     unsafe { IRQ_RECVD |= 0b1 << irq_code };
-    unsafe { Timer2::instance() }.disable();
 }
 
 #[interrupt]
 fn Timer3Cmp() {
+    unsafe { Timer3::instance() }.disable();
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
     sprintln!(" code: {}", irq_code);
     // Safety: can't race, interrupts are disabled during the interrupt handler
     unsafe { IRQ_RECVD |= 0b1 << irq_code };
-    unsafe { Timer3::instance() }.disable();
 }
 
 #[interrupt]
