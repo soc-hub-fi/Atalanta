@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - QSPI APB peripheral (umapped in FPGA)
 
 ### Fixed
+- Wake from sleep with IRQ
 - Mtimer X values
 - Mtimer with new implementation
 
