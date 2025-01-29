@@ -17,7 +17,7 @@ VERIL_BUILD_DIR ?= $(BUILD_DIR)/verilator_build
 TOP_MODULE       = rt_top_unpacked
 VERIL_TOP        = $(VERIL_DIR)/$(TOP_MODULE).cpp
 
-ifndef $(RUST)
+ifndef RUST
 # ELF is from C
 	ELF_ROOT    ?= $(realpath $(CURDIR))/../examples/smoke_tests/build/$(TEST)
 # Locate the file called exactly $(TEST).elf
