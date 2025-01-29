@@ -1,47 +1,54 @@
 #[rustfmt::skip]
-/// List of the register names to be stored in the trap frame
-pub(crate) const TRAP_FRAME_RVE: &[&str] = &[
+pub(crate) const CALLER_SAVE_EABI: &[&str] = &[
     // `ra`: return address, stores the address to return to after a function call or interrupt.
     "x1",
-    // `t0`: temporary register `t0`, used for intermediate values
+    // `t0`: temporary/link register
     "x5",
-    // `t1`: temporary register `t1`, used for intermediate values
-    "x6",
-    // `t2`: temporary register `t2`, used for intermediate values
-    "x7",
-    // `a0`: argument register `a0`. Used to pass the first argument to a function.
+    // `a0`: Argument/return value
     "x10",
-    // `a1`: argument register `a1`. Used to pass the second argument to a function.
+    // `a1`: Argument/return value
     "x11",
-    // `a2`: argument register `a2`. Used to pass the third argument to a function.
+    // `a2`: Argument
     "x12",
-    // `a3`: argument register `a3`. Used to pass the fourth argument to a function.
+    // `a3`: Argument
     "x13",
-    // `a4`: argument register `a4`. Used to pass the fifth argument to a function.
-    "x14",
-    // `a5`: argument register `a5`. Used to pass the sixth argument to a function.
+    // `t1`: Temporary (`a5` in RISC-V ABI)
     "x15",
 ];
 
 #[rustfmt::skip]
-/// List of the register names to be stored in the trap frame
-pub(crate) const TRAP_FRAME_RVI: &[&str] = &[
-    "ra",
-    "t0",
-    "t1",
-    "t2",
-    "t3",
-    "t4",
-    "t5",
-    "t6",
-    "a0",
-    "a1",
-    "a2",
-    "a3",
-    "a4",
-    "a5",
-    "a6",
-    "a7",
+pub(crate) const CALLEE_SAVE_EABI_RVE: &[&str] = &[
+    // `sp`: stack pointer
+    "x2",
+    // `s3`: saved register (`t1` in RISC-V ABI)
+    "x6",
+    // `s4`: saved register (`t2` in RISC-V ABI)
+    "x7",
+    // `s0`/`fp`: saved register/frame pointer
+    "x8",
+    // `s1`: saved register
+    "x9",
+    // `s2`: saved register (`a4` in RISC-V ABI)
+    "x14",
+];
+
+#[rustfmt::skip]
+pub(crate) const CALLEE_SAVE_EABI_RVI: &[&str] = &[
+    // `sp`: stack pointer
+    "x2",
+    // `s3`: saved register (`t1` in RISC-V ABI)
+    "x6",
+    // `s4`: saved register (`t2` in RISC-V ABI)
+    "x7",
+    // `s0`/`fp`: saved register/frame pointer
+    "x8",
+    // `s1`: saved register
+    "x9",
+    // `s2`: saved register (`a4` in RISC-V ABI)
+    "x14",
+    // `x16..=x31`: `s5-s20` saved registers (`a6-a7`, s2-s11`, `t3-t6` in RISC-V ABI)
+    "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23",
+    "x24", "x25", "x26", "x27", "x28", "x29", "x30", "x31",
 ];
 
 #[derive(Clone, Copy)]

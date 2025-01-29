@@ -11,14 +11,14 @@ use trampoline::{generate_continue_nested_trap, nested_interrupt};
 // ???: making this into a doc comment causes ICE
 #[proc_macro_attribute]
 pub fn nested_interrupt_riscv32e(args: TokenStream, input: TokenStream) -> TokenStream {
-    nested_interrupt(args, input, RiscvArch::Rv32E)
+    nested_interrupt(args, input)
 }
 
 // Sa. [crate::nested_interrupt]
 // ???: making this into a doc comment causes ICE
 #[proc_macro_attribute]
 pub fn nested_interrupt_riscv32i(args: TokenStream, input: TokenStream) -> TokenStream {
-    nested_interrupt(args, input, RiscvArch::Rv32I)
+    nested_interrupt(args, input)
 }
 
 #[proc_macro]
