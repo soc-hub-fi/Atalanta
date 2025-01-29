@@ -7,16 +7,14 @@
 use bsp::{
     asm_delay,
     clic::{Clic, InterruptNumber, Polarity, Trig},
-    mask_u32,
-    mmap::CLIC_BASE_ADDR,
     nested_interrupt,
     riscv::{self, asm::wfi},
-    rt::{entry, interrupt},
+    rt::entry,
     sprint, sprintln,
     tb::signal_pass,
     timer_group::{Timer0, Timer1, Timer2, Timer3},
     uart::*,
-    unmask_u32, Interrupt, CPU_FREQ, NOPS_PER_SEC,
+    Interrupt, CPU_FREQ, NOPS_PER_SEC,
 };
 use hello_rt::{print_example_name, tear_irq, UART_BAUD};
 use ufmt::derive::uDebug;
