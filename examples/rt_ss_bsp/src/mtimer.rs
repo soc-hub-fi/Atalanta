@@ -7,6 +7,9 @@ use crate::{
     read_u32, unmask_u32, write_u32,
 };
 
+/// Machine Timer
+///
+/// This timer is associated with [crate::Interrupt::MachineTimer]
 pub struct MTimer {}
 
 impl MTimer {
