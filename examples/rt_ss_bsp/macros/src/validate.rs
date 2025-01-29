@@ -39,12 +39,16 @@ pub(crate) fn validate_interrupt_handler(args: TokenStream, f: &ItemFn) -> Optio
         );
     }
 
-    if !args.is_empty() {
+    if !args.is_empty() && args.into_iter().next().unwrap().to_string() != "hw_stack" {
         return Some(
-            parse::Error::new(Span::call_site(), "This attribute accepts no arguments")
-                .to_compile_error()
-                .into(),
+            parse::Error::new(
+                Span::call_site(),
+                "This attribute accepts no arguments other than 'hw_stack'",
+            )
+            .to_compile_error()
+            .into(),
         );
     }
+
     None
 }

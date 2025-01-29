@@ -32,11 +32,17 @@ pub use riscv_rt as rt;
 #[cfg(feature = "ufmt")]
 pub use ufmt;
 
-// Generate the `_continue_nested_interrupt_trap` symbol
+// Generate the `_continue_nested_trap` symbol
 #[cfg(riscve)]
 rt_ss_bsp_macros::generate_continue_nested_trap_riscv32e!();
 #[cfg(riscvi)]
 rt_ss_bsp_macros::generate_continue_nested_trap_riscv32i!();
+
+// Generate the `_continue_nested_hw_stack_trap` symbol
+#[cfg(riscve)]
+rt_ss_bsp_macros::generate_continue_nested_hw_stack_trap_riscv32e!();
+#[cfg(riscvi)]
+rt_ss_bsp_macros::generate_continue_nested_hw_stack_trap_riscv32i!();
 
 // Import macro for nested_interrupt
 #[cfg(riscve)]
