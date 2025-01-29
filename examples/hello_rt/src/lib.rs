@@ -11,7 +11,7 @@ pub mod clic;
 pub const UART_BAUD: u32 = if cfg!(feature = "rtl-tb") {
     1_500_000
 } else {
-    9600
+    115_200
 };
 
 /// Setup `irq` for use with some basic defaults
