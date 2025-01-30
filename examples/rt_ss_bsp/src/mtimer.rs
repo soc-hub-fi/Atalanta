@@ -32,12 +32,12 @@ impl MTimer {
 
     /// Starts the count
     ///
-    /// `prescaler` must be less than 8191
+    /// `prescaler` must be less than or equal to 7
     #[inline]
     pub fn enable_with_prescaler(&mut self, prescaler: u32) {
-        debug_assert!(prescaler <= 0b1_1111_1111_1111);
+        debug_assert!(prescaler <= 0b111);
 
-        // Enable timer (bit 0) & set prescaler (bits 20:8)
+        // Enable timer (bit 0) & set prescaler (bits 10:8)
         write_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, (prescaler << 8) | 0b1);
     }
 
@@ -60,7 +60,7 @@ impl MTimer {
     pub unsafe fn counter(&mut self) -> u64 {
         let lo = read_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS);
         let hi = read_u32(MTIMER_BASE + MTIME_HIGH_ADDR_OFS);
-        let mtime = ((hi as u64) << 32) + lo as u64;
+        let mtime = ((hi as u64) << 32) | lo as u64;
         mtime
     }
 
@@ -70,8 +70,8 @@ impl MTimer {
         write_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0);
         write_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS, 0);
         write_u32(MTIMER_BASE + MTIME_HIGH_ADDR_OFS, 0);
-        write_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS, 0);
-        write_u32(MTIMER_BASE + MTIMECMP_HIGH_ADDR_OFS, 0);
+        write_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS, u32::MAX);
+        write_u32(MTIMER_BASE + MTIMECMP_HIGH_ADDR_OFS, u32::MAX);
     }
 
     /// Sets the timer compare value
