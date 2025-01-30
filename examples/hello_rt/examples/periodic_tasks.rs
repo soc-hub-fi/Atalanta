@@ -21,6 +21,7 @@ use bsp::{
     uart::*,
     unmask_u32, Interrupt, CPU_FREQ,
 };
+use fugit::ExtU64;
 use hello_rt::{print_example_name, tear_irq, UART_BAUD};
 use ufmt::derive::uDebug;
 
@@ -75,7 +76,6 @@ const PERIPH_CLK_DIV: u64 = 2;
 const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
 const CYCLES_PER_MS: u64 = CYCLES_PER_SEC / 1_000;
 const CYCLES_PER_US: u64 = CYCLES_PER_MS / 1_000;
-// CYCLES_PER_US = 15
 
 static mut TASK0_COUNT: usize = 0;
 static mut TASK1_COUNT: usize = 0;
@@ -142,13 +142,7 @@ fn main() -> ! {
             serial.flush().unwrap_unchecked();
         }
         // Use mtimer for timeout
-        let mut mtimer = MTimer::init();
-        mtimer.reset();
-        unsafe {
-            let counter = mtimer.counter();
-            let timeout = counter + TEST_DURATION_US as u64 * CYCLES_PER_US;
-            mtimer.set_cmp(timeout);
-        }
+        let mut mtimer = MTimer::instance().into_oneshot();
 
         let mut timers = (
             Timer0::init(),
@@ -178,7 +172,7 @@ fn main() -> ! {
         unsafe { asm!("fence") };
 
         // Test will end when MachineTimer fires
-        mtimer.enable();
+        mtimer.start((TEST_DURATION_US as u64).micros());
         timers.0.enable();
         timers.1.enable();
         timers.2.enable();
@@ -298,7 +292,7 @@ unsafe fn Timer3Cmp() {
 #[interrupt]
 unsafe fn MachineTimer() {
     unsafe { TIMEOUT = true };
-    let mut timer = unsafe { MTimer::instance() };
+    let mut timer = MTimer::instance();
     timer.disable();
 
     // Draw mtimer to max value to make sure all currently pending or in flight
