@@ -126,4 +126,15 @@ impl OneShot {
     pub fn cancel(&mut self) {
         self.0.set_cmp(u64::MAX);
     }
+
+    /// Gets the timer compare value
+    ///
+    /// Safety: needs to be called in an interrupt critical-section, otherwise
+    /// you risk getting interrupted in between reading the hi & low address and
+    /// getting a disjoint value
+    #[inline]
+    pub unsafe fn cmp(&mut self) -> u64 {
+        ((read_u32(MTIMER_BASE + MTIMECMP_HIGH_ADDR_OFS) as u64) << 32)
+            | read_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS) as u64
+    }
 }
