@@ -57,7 +57,7 @@ impl<const BASE_ADDR: usize> TimerUnit<BASE_ADDR> {
     pub fn reset(&mut self) {
         write_u32(BASE_ADDR + TIMER_CTRL_OFS, 0);
         write_u32(BASE_ADDR + TIMER_COUNTER_OFS, 0);
-        write_u32(BASE_ADDR + TIMER_CMP_OFS, 0);
+        write_u32(BASE_ADDR + TIMER_CMP_OFS, u32::MAX);
     }
 
     /// Sets the timer compare value
