@@ -18,7 +18,7 @@ pub const UART_BAUD: u32 = if cfg!(feature = "rtl-tb") {
 ///
 /// Copy and customize this function if you need more involved configurations.
 pub fn setup_irq(irq: Interrupt) {
-    sprintln!("set up IRQ: {}", irq.number());
+    sprintln!("Set up {:?} (id = {})", irq, irq.number());
     Clic::attr(irq).set_trig(Trig::Edge);
     Clic::attr(irq).set_polarity(Polarity::Pos);
     Clic::attr(irq).set_shv(true);
@@ -30,7 +30,7 @@ pub fn setup_irq(irq: Interrupt) {
 ///
 /// Copy and customize this function if you need more involved configurations.
 pub fn tear_irq(irq: Interrupt) {
-    sprintln!("tear down IRQ: {}", irq.number());
+    sprintln!("Tear down {:?} (id = {})", irq, irq.number());
     Clic::ie(irq).disable();
     Clic::ctl(irq).set_level(0x0);
     Clic::attr(irq).set_shv(false);

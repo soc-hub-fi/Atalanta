@@ -168,7 +168,7 @@ fn Timer3Cmp() {
 }
 
 pub fn setup_irq(irq: Interrupt, level: u8) {
-    sprintln!("set up IRQ: {}", irq.number());
+    sprintln!("Set up {:?} (id = {})", irq, irq.number());
     Clic::attr(irq).set_trig(Trig::Edge);
     Clic::attr(irq).set_polarity(Polarity::Pos);
     Clic::attr(irq).set_shv(true);
