@@ -2,36 +2,70 @@
 //! i.e., each measurement is bigger than the last.
 #![no_main]
 #![no_std]
+#![allow(static_mut_refs)]
+#![allow(non_snake_case)]
 
-use bsp::{asm_delay, mtimer::MTimer, rt::entry, sprintln, uart::*, CPU_FREQ, NOPS_PER_SEC};
-use hello_rt::{print_example_name, UART_BAUD};
+use bsp::{
+    mtimer::MTimer,
+    riscv::{self, asm::wfi},
+    rt::{entry, interrupt},
+    sprintln,
+    uart::ApbUart,
+    Interrupt, CPU_FREQ, NOPS_PER_SEC,
+};
+use heapless::Vec;
+use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
+
+const INTERVAL: u64 = if cfg!(feature = "rtl-tb") {
+    0x100
+} else {
+    NOPS_PER_SEC as u64 / 2
+};
+
+static mut SAMPLES: Vec<u64, 8> = Vec::<u64, 8>::new();
+static mut STOP: bool = false;
 
 #[entry]
 fn main() -> ! {
-    let _serial = ApbUart::init(CPU_FREQ, UART_BAUD);
+    let mut serial = ApbUart::init(CPU_FREQ, UART_BAUD);
     print_example_name!();
 
+    // Set a timer to trigger an interrupt every `ÌNTERVAL`
     let mut mtimer = MTimer::init();
-
-    // Enable timer (bit 0) & set prescaler to 0xf (bits 20:8)
-    let prescaler = 0xf;
-    mtimer.enable_with_prescaler(prescaler);
-
-    let mut p_mtime;
-    let mut mtime = 0;
-
-    loop {
-        p_mtime = mtime;
-        mtime = unsafe { mtimer.counter() };
-        sprintln!("mtime: {}", mtime);
-        if mtime > p_mtime {
-            #[cfg(feature = "rtl-tb")]
-            bsp::tb::rtl_tb_signal_ok();
-        } else {
-            #[cfg(feature = "rtl-tb")]
-            bsp::tb::rtl_tb_signal_fail();
-            assert!(false, "mtime must increase monotonically");
-        }
-        asm_delay(NOPS_PER_SEC / 2);
+    setup_irq(Interrupt::MachineTimer);
+    unsafe {
+        let counter = mtimer.counter();
+        mtimer.set_cmp(counter + INTERVAL);
+        riscv::interrupt::enable();
     }
+    mtimer.enable();
+
+    while !unsafe { STOP } {
+        wfi();
+    }
+
+    // Make sure the timer is monotonically increasing
+    assert!(
+        unsafe { SAMPLES.windows(2).all(|win| win[0] < win[1]) },
+        "timer must increase monotonically"
+    );
+    // Clean up
+    tear_irq(Interrupt::MachineTimer);
+
+    bsp::tb::signal_pass(Some(&mut serial));
+    loop {}
+}
+
+#[interrupt]
+unsafe fn MachineTimer() {
+    let mut mtimer = MTimer::instance();
+    let sample = mtimer.counter();
+    sprintln!("mtime: {}", sample);
+    SAMPLES.push(sample).unwrap_unchecked();
+    if SAMPLES.len() == SAMPLES.capacity() {
+        STOP = true;
+        return;
+    }
+    let counter = mtimer.counter();
+    mtimer.set_cmp(counter + INTERVAL);
 }
