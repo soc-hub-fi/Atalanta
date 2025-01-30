@@ -17,7 +17,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Mtimer with new implementation
 
 ### Changed
-- mtimer resets on IRQ
 
 ## [v0.2.0] - 2025-01-24
 
