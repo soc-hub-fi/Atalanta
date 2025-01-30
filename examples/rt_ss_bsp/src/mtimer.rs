@@ -64,7 +64,9 @@ impl MTimer {
         mtime
     }
 
-    /// Initializes all values to zero
+    /// Resets mtime to zero, disables the count & sets compare to u32::MAX,
+    /// making sure no more interrupts will fire (n.b., an interrupt might
+    /// already be pending and this will not lower it).
     #[inline]
     pub fn reset(&mut self) {
         write_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0);
