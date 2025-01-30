@@ -10,6 +10,8 @@ use bsp::{
     asm_delay,
     clic::{Clic, InterruptNumber, Polarity, Trig},
     embedded_io::Write,
+    mask_u32,
+    mmap::CLIC_BASE_ADDR,
     mtimer::MTimer,
     nested_interrupt,
     riscv::{self, asm::wfi},
@@ -18,7 +20,7 @@ use bsp::{
     tb::signal_pass,
     timer_group::{Timer0, Timer1, Timer2, Timer3},
     uart::*,
-    Interrupt, CPU_FREQ, NOPS_PER_SEC,
+    unmask_u32, Interrupt, CPU_FREQ, NOPS_PER_SEC,
 };
 use hello_rt::{print_example_name, tear_irq, UART_BAUD};
 use ufmt::derive::uDebug;
@@ -56,6 +58,22 @@ static mut TASK2_COUNT: usize = 0;
 static mut TASK3_COUNT: usize = 0;
 static mut TIMEOUT: bool = false;
 
+fn enable_pcs(irq: Interrupt) {
+    const PCS_BIT_IDX: u32 = 12;
+    mask_u32(
+        CLIC_BASE_ADDR + 0x1000 + 0x04 * irq as usize,
+        0b1 << PCS_BIT_IDX,
+    );
+}
+
+fn disable_pcs(irq: Interrupt) {
+    const PCS_BIT_IDX: u32 = 12;
+    unmask_u32(
+        CLIC_BASE_ADDR + 0x1000 + 0x04 * irq as usize,
+        0b1 << PCS_BIT_IDX,
+    );
+}
+
 #[entry]
 fn main() -> ! {
     let mut serial = ApbUart::init(CPU_FREQ, UART_BAUD);
@@ -81,6 +99,10 @@ fn main() -> ! {
     setup_irq(Interrupt::Timer2Cmp, TASK2.prio);
     setup_irq(Interrupt::Timer3Cmp, TASK3.prio);
     setup_irq(Interrupt::MachineTimer, u8::MAX);
+    enable_pcs(Interrupt::Timer0Cmp);
+    enable_pcs(Interrupt::Timer1Cmp);
+    enable_pcs(Interrupt::Timer2Cmp);
+    enable_pcs(Interrupt::Timer3Cmp);
 
     for run_idx in 0..RUN_COUNT {
         sprintln!("Run {}", run_idx);
@@ -172,6 +194,10 @@ fn main() -> ! {
     tear_irq(Interrupt::Timer2Cmp);
     tear_irq(Interrupt::Timer3Cmp);
     tear_irq(Interrupt::MachineTimer);
+    disable_pcs(Interrupt::Timer0Cmp);
+    disable_pcs(Interrupt::Timer1Cmp);
+    disable_pcs(Interrupt::Timer2Cmp);
+    disable_pcs(Interrupt::Timer3Cmp);
 
     signal_pass(Some(&mut serial));
     loop {
@@ -180,7 +206,7 @@ fn main() -> ! {
     }
 }
 
-#[nested_interrupt]
+#[nested_interrupt(hw_stack)]
 fn Timer0Cmp() {
     // Safety: resources are unique to this task
     unsafe {
@@ -189,7 +215,7 @@ fn Timer0Cmp() {
     };
 }
 
-#[nested_interrupt]
+#[nested_interrupt(hw_stack)]
 fn Timer1Cmp() {
     // Safety: resources are unique to this task
     unsafe {
@@ -198,7 +224,7 @@ fn Timer1Cmp() {
     };
 }
 
-#[nested_interrupt]
+#[nested_interrupt(hw_stack)]
 fn Timer2Cmp() {
     // Safety: resources are unique to this task
     unsafe {
@@ -207,7 +233,7 @@ fn Timer2Cmp() {
     };
 }
 
-#[nested_interrupt]
+#[nested_interrupt(hw_stack)]
 fn Timer3Cmp() {
     // Safety: resources are unique to this task
     unsafe {
