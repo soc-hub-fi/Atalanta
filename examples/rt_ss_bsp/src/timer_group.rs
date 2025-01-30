@@ -68,6 +68,8 @@ impl<const BASE_ADDR: usize> TimerUnit<BASE_ADDR> {
 
     /// Sets the timer compare value
     ///
+    /// N.b., setting timer compare also zeros the timer counter
+    ///
     /// On `timer >= timer_cmp`:
     ///
     /// * interrupt signal for corresponding Timer is raised, and
