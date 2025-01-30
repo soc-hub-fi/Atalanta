@@ -7,7 +7,6 @@
 use core::arch::asm;
 
 use bsp::{
-    asm_delay,
     clic::{Clic, InterruptNumber, Polarity, Trig},
     embedded_io::Write,
     mask_u32,
@@ -20,37 +19,63 @@ use bsp::{
     tb::signal_pass,
     timer_group::{Timer0, Timer1, Timer2, Timer3},
     uart::*,
-    unmask_u32, Interrupt, CPU_FREQ, NOPS_PER_SEC,
+    unmask_u32, Interrupt, CPU_FREQ,
 };
 use hello_rt::{print_example_name, tear_irq, UART_BAUD};
 use ufmt::derive::uDebug;
 
-const NOPS_PER_MS: u32 = NOPS_PER_SEC / 1000;
-const NOPS_PER_US: u32 = NOPS_PER_MS / 1000;
-
 #[cfg_attr(feature = "ufmt", derive(uDebug))]
 #[cfg_attr(not(feature = "ufmt"), derive(Debug))]
 struct Task {
+    level: u8,
     period_us: u32,
     duration_us: u32,
-    prio: u8,
+    start_offset_us: u32,
 }
 
+const RUN_COUNT: usize = 1;
+
 impl Task {
-    pub const fn new(prio: u8, period_us: u32, duration_us: u32) -> Self {
+    pub const fn new(level: u8, period_us: u32, duration_us: u32, start_offset_us: u32) -> Self {
         Self {
             period_us,
             duration_us,
-            prio,
+            level,
+            start_offset_us,
         }
     }
 }
 
-const TEST_DURATION_US: u64 = 250;
-const TASK0: Task = Task::new(4, TEST_DURATION_US as u32 / 5, 2);
-const TASK1: Task = Task::new(3, TEST_DURATION_US as u32 / 4, 2);
-const TASK2: Task = Task::new(2, TEST_DURATION_US as u32 / 10, 2);
-const TASK3: Task = Task::new(1, TEST_DURATION_US as u32 / 3, 2);
+const TEST_DURATION_US: u32 = 500;
+const TASK0: Task = Task::new(
+    1,
+    TEST_DURATION_US / 1,
+    /* 20 % */ TEST_DURATION_US / 5,
+    /* 10 % */ TEST_DURATION_US / 10,
+);
+const TASK1: Task = Task::new(
+    2,
+    TEST_DURATION_US / 1,
+    /* 10 % */ TEST_DURATION_US / 10,
+    /* 60 % */ 3 * TEST_DURATION_US / 5,
+);
+const TASK2: Task = Task::new(
+    3,
+    TEST_DURATION_US / 2,
+    /* 5 % */ TEST_DURATION_US / 20,
+    /* 37.5 % */ 3 * TEST_DURATION_US / 8,
+);
+const TASK3: Task = Task::new(
+    4,
+    TEST_DURATION_US / 4,
+    /* 2.5 % */ TEST_DURATION_US / 40,
+    /* 12.5 % */ TEST_DURATION_US / 8,
+);
+const PERIPH_CLK_DIV: u64 = 2;
+const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
+const CYCLES_PER_MS: u64 = CYCLES_PER_SEC / 1_000;
+const CYCLES_PER_US: u64 = CYCLES_PER_MS / 1_000;
+// CYCLES_PER_US = 15
 
 static mut TASK0_COUNT: usize = 0;
 static mut TASK1_COUNT: usize = 0;
@@ -79,7 +104,6 @@ fn main() -> ! {
     let mut serial = ApbUart::init(CPU_FREQ, UART_BAUD);
     print_example_name!();
 
-    const RUN_COUNT: usize = 5;
     sprintln!("Running test {} times", RUN_COUNT);
 
     sprintln!(
@@ -94,10 +118,10 @@ fn main() -> ! {
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
 
-    setup_irq(Interrupt::Timer0Cmp, TASK0.prio);
-    setup_irq(Interrupt::Timer1Cmp, TASK1.prio);
-    setup_irq(Interrupt::Timer2Cmp, TASK2.prio);
-    setup_irq(Interrupt::Timer3Cmp, TASK3.prio);
+    setup_irq(Interrupt::Timer0Cmp, TASK0.level);
+    setup_irq(Interrupt::Timer1Cmp, TASK1.level);
+    setup_irq(Interrupt::Timer2Cmp, TASK2.level);
+    setup_irq(Interrupt::Timer3Cmp, TASK3.level);
     setup_irq(Interrupt::MachineTimer, u8::MAX);
     enable_pcs(Interrupt::Timer0Cmp);
     enable_pcs(Interrupt::Timer1Cmp);
@@ -113,12 +137,19 @@ fn main() -> ! {
             TASK2_COUNT = 0;
             TASK3_COUNT = 0;
             TIMEOUT = false;
-            // Make sure serial is done printing before proceeding to the next iteration
+
+            // Make sure serial is done printing before proceeding to the test case
             serial.flush().unwrap_unchecked();
         }
+        // Use mtimer for timeout
+        let mut mtimer = MTimer::init();
+        mtimer.reset();
+        unsafe {
+            let counter = mtimer.counter();
+            let timeout = counter + TEST_DURATION_US as u64 * CYCLES_PER_US;
+            mtimer.set_cmp(timeout);
+        }
 
-        // --- Test critical ---
-        unsafe { asm!("fence") };
         let mut timers = (
             Timer0::init(),
             Timer1::init(),
@@ -126,24 +157,34 @@ fn main() -> ! {
             Timer3::init(),
         );
 
-        timers.0.set_cmp(TASK0.period_us * NOPS_PER_US);
-        timers.1.set_cmp(TASK1.period_us * NOPS_PER_US);
-        timers.2.set_cmp(TASK2.period_us * NOPS_PER_US);
-        timers.3.set_cmp(TASK3.period_us * NOPS_PER_US);
+        timers.0.set_cmp(TASK0.period_us * CYCLES_PER_US as u32);
+        timers.1.set_cmp(TASK1.period_us * CYCLES_PER_US as u32);
+        timers.2.set_cmp(TASK2.period_us * CYCLES_PER_US as u32);
+        timers.3.set_cmp(TASK3.period_us * CYCLES_PER_US as u32);
+        timers
+            .0
+            .set_counter((TASK0.period_us - TASK0.start_offset_us) * CYCLES_PER_US as u32);
+        timers
+            .1
+            .set_counter((TASK1.period_us - TASK1.start_offset_us) * CYCLES_PER_US as u32);
+        timers
+            .2
+            .set_counter((TASK2.period_us - TASK2.start_offset_us) * CYCLES_PER_US as u32);
+        timers
+            .3
+            .set_counter((TASK3.period_us - TASK3.start_offset_us) * CYCLES_PER_US as u32);
 
-        // Use mtimer for timeout
-        let mut mtimer = MTimer::init();
-        let counter = unsafe { mtimer.counter() };
+        // --- Test critical ---
+        unsafe { asm!("fence") };
+
+        // Test will end when MachineTimer fires
         mtimer.enable();
-        let timeout = counter + TEST_DURATION_US * NOPS_PER_US as u64;
-        unsafe { mtimer.set_cmp(timeout) };
-
-        // Enable interrupts globally and dispatch all timers
-        unsafe { riscv::interrupt::enable() };
         timers.0.enable();
         timers.1.enable();
         timers.2.enable();
         timers.3.enable();
+
+        unsafe { riscv::interrupt::enable() };
 
         while !unsafe { TIMEOUT } {
             wfi();
@@ -163,7 +204,7 @@ fn main() -> ! {
             Clic::ip(Interrupt::Timer1Cmp).unpend();
             Clic::ip(Interrupt::Timer2Cmp).unpend();
             Clic::ip(Interrupt::Timer3Cmp).unpend();
-            Clic::ip(Interrupt::MachineTimer);
+            Clic::ip(Interrupt::MachineTimer).unpend();
             sprintln!(
                 "Task counts:\r\n{} | {} | {} | {}",
                 TASK0_COUNT,
@@ -207,39 +248,68 @@ fn main() -> ! {
 }
 
 #[nested_interrupt(pcs)]
-fn Timer0Cmp() {
-    // Safety: resources are unique to this task
-    unsafe {
-        asm_delay(TASK0.duration_us * NOPS_PER_US);
-        TASK0_COUNT += 1;
-    };
+unsafe fn Timer0Cmp() {
+    let plevel: u8;
+    asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK0.level);
+    let mtimer = MTimer::instance();
+    let sample = mtimer.counter();
+    TASK0_COUNT += 1;
+    let task_end = sample + TASK0.duration_us as u64 * CYCLES_PER_US;
+    while mtimer.counter() <= task_end {}
+    asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
 #[nested_interrupt(pcs)]
-fn Timer1Cmp() {
-    // Safety: resources are unique to this task
-    unsafe {
-        asm_delay(TASK1.duration_us * NOPS_PER_US);
-        TASK1_COUNT += 1;
-    };
+unsafe fn Timer1Cmp() {
+    let plevel: u8;
+    asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK1.level);
+    let mtimer: MTimer = MTimer::instance();
+    let sample = mtimer.counter();
+    TASK1_COUNT += 1;
+    let task_end = sample + TASK1.duration_us as u64 * CYCLES_PER_US;
+    while mtimer.counter() <= task_end {}
+    asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
 #[nested_interrupt(pcs)]
-fn Timer2Cmp() {
-    // Safety: resources are unique to this task
-    unsafe {
-        asm_delay(TASK2.duration_us * NOPS_PER_US);
-        TASK2_COUNT += 1;
-    };
+unsafe fn Timer2Cmp() {
+    let plevel: u8;
+    asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK2.level);
+    let mtimer = MTimer::instance();
+    let sample = mtimer.counter();
+    TASK2_COUNT += 1;
+    let task_end = sample + TASK2.duration_us as u64 * CYCLES_PER_US;
+    while mtimer.counter() <= task_end {}
+    asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
 #[nested_interrupt(pcs)]
-fn Timer3Cmp() {
-    // Safety: resources are unique to this task
-    unsafe {
-        asm_delay(TASK3.duration_us * NOPS_PER_US);
-        TASK3_COUNT += 1;
-    };
+unsafe fn Timer3Cmp() {
+    let plevel: u8;
+    asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK3.level);
+    let mtimer = MTimer::instance();
+    let sample = mtimer.counter();
+    TASK3_COUNT += 1;
+    let task_end = sample + TASK3.duration_us as u64 * CYCLES_PER_US;
+    while mtimer.counter() <= task_end {}
+    asm!("csrw 0x347, {0}", in(reg) plevel);
+}
+
+#[interrupt]
+unsafe fn MachineTimer() {
+    unsafe { TIMEOUT = true };
+    let mut timer = unsafe { MTimer::instance() };
+    timer.disable();
+
+    // Draw mtimer to max value to make sure all currently pending or in flight
+    // TimerXCmp interrupts fall through.
+    timer.set_counter(u64::MAX);
+
+    Clic::ip(Interrupt::MachineTimer).unpend();
+    Clic::ip(Interrupt::Timer0Cmp).unpend();
+    Clic::ip(Interrupt::Timer1Cmp).unpend();
+    Clic::ip(Interrupt::Timer2Cmp).unpend();
+    Clic::ip(Interrupt::Timer3Cmp).unpend();
 }
 
 pub fn setup_irq(irq: Interrupt, level: u8) {
@@ -249,10 +319,4 @@ pub fn setup_irq(irq: Interrupt, level: u8) {
     Clic::attr(irq).set_shv(true);
     Clic::ctl(irq).set_level(level);
     unsafe { Clic::ie(irq).enable() };
-}
-
-#[interrupt]
-fn MachineTimer() {
-    unsafe { TIMEOUT = true };
-    unsafe { MTimer::instance() }.reset();
 }
