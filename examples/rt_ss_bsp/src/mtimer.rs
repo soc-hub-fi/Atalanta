@@ -47,7 +47,7 @@ impl MTimer {
         mask_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0b1);
     }
 
-    /// Stops the count
+    /// Stops the count & disables the interrupt line on the core
     #[inline]
     pub fn disable(&mut self) {
         unmask_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0b1);
@@ -57,11 +57,17 @@ impl MTimer {
     /// you risk getting interrupted in between reading the hi & low address and
     /// getting a disjoint value
     #[inline]
-    pub unsafe fn counter(&mut self) -> u64 {
+    pub unsafe fn counter(&self) -> u64 {
         let lo = read_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS);
         let hi = read_u32(MTIMER_BASE + MTIME_HIGH_ADDR_OFS);
         let mtime = ((hi as u64) << 32) | lo as u64;
         mtime
+    }
+
+    #[inline]
+    pub unsafe fn set_counter(&mut self, cnt: u64) {
+        write_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS, cnt as u32);
+        write_u32(MTIMER_BASE + MTIME_HIGH_ADDR_OFS, (cnt >> 32) as u32);
     }
 
     /// Resets mtime to zero, disables the count & sets compare to u32::MAX,
