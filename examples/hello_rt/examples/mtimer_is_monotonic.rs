@@ -66,6 +66,5 @@ unsafe fn MachineTimer() {
         STOP = true;
         return;
     }
-    let counter = mtimer.counter();
-    mtimer.set_cmp(counter + INTERVAL);
+    mtimer.set_cmp(sample + INTERVAL);
 }
