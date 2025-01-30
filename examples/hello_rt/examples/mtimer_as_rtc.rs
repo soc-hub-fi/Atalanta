@@ -14,6 +14,7 @@ use bsp::{
     uart::ApbUart,
     Interrupt, CPU_FREQ,
 };
+use fugit::ExtU64;
 use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 
 static mut IRQ_COUNTER: usize = 0;
@@ -28,16 +29,14 @@ fn main() -> ! {
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
 
-    let mut mtimer = MTimer::init();
+    let mut mtimer = MTimer::instance().into_oneshot();
     setup_irq(Interrupt::MachineTimer);
 
     let mut t0 = Timer0::init();
     setup_irq(Interrupt::Timer0Cmp);
 
     unsafe {
-        let cmp = mtimer.cmp();
-        mtimer.set_cmp(cmp + CPU_FREQ as u64 / PERIPH_CLK_DIV as u64);
-        mtimer.enable();
+        mtimer.start(1u64.secs());
 
         t0.set_cmp(CPU_FREQ / PERIPH_CLK_DIV);
         t0.enable();
@@ -61,14 +60,11 @@ fn main() -> ! {
 #[interrupt]
 unsafe fn MachineTimer() {
     unsafe { IRQ_COUNTER += 1 };
-    let mut mtimer = unsafe { MTimer::instance() };
-    let cmp = mtimer.cmp();
-    mtimer.set_cmp(cmp + CPU_FREQ as u64 / PERIPH_CLK_DIV as u64);
-    sprintln!(
-        "Seconds passed: {} (mtimer = {})",
-        IRQ_COUNTER,
-        mtimer.counter()
-    );
+    let mtimer = MTimer::instance();
+    let sample = mtimer.counter();
+    let mut mtimer = mtimer.into_oneshot();
+    mtimer.start(1u64.secs());
+    sprintln!("Seconds passed: {} (mtimer = {})", IRQ_COUNTER, sample);
 }
 
 #[interrupt]
