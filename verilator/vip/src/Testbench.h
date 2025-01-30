@@ -1,4 +1,10 @@
 // Testbench template, modelled from https://github.com/ZipCPU/zipcpu/blob/master/sim/verilator/testb.h
+
+#include <cstdint>
+
+// Clock period in picoseconds, used for generating waveforms
+const uint32_t CLOCK_PERIOD_PS = /* 30 MHz */ 33'333;
+
 template <class VA>
 class Testbench {
 public:
@@ -43,14 +49,14 @@ public:
     virtual void tick(void) {
         m_tickcount++;
         eval();
-        if (m_trace) m_trace->dump((vluint64_t)(10*m_tickcount-2));
+        if (m_trace) m_trace->dump((vluint64_t)(CLOCK_PERIOD_PS*m_tickcount-CLOCK_PERIOD_PS/5));
         m_dut->clk_i = 1;
         eval();
-        if (m_trace) m_trace->dump((vluint64_t)(10*m_tickcount));
+        if (m_trace) m_trace->dump((vluint64_t)(CLOCK_PERIOD_PS*m_tickcount));
         m_dut->clk_i = 0;
         eval();
         if (m_trace){
-            m_trace->dump((vluint64_t)(10*m_tickcount+5));
+            m_trace->dump((vluint64_t)(CLOCK_PERIOD_PS*m_tickcount+CLOCK_PERIOD_PS/2));
             m_trace->flush();
         }
     }
