@@ -4,11 +4,11 @@
 
 use bsp::{
     clic::{Clic, InterruptNumber},
-    interrupt::Interrupt,
     riscv,
     rt::entry,
     sprintln, tb,
     uart::ApbUart,
+    Interrupt,
 };
 use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 

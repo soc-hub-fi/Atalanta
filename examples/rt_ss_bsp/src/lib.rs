@@ -5,7 +5,7 @@ pub mod clic;
 #[cfg(not(feature = "ufmt"))]
 mod core_sprint;
 pub mod gpio;
-pub mod interrupt;
+mod interrupt;
 pub mod led;
 pub mod mmap;
 pub mod mtimer;
@@ -25,10 +25,10 @@ compile_error!(
 );
 
 pub use embedded_io;
-pub use interrupt::Interrupt;
+pub use interrupt::{nested, Interrupt};
 pub use riscv;
 #[cfg(feature = "rt")]
-pub use riscv_rt as rt;
+pub use riscv_rt::{self as rt, interrupt};
 #[cfg(feature = "ufmt")]
 pub use ufmt;
 

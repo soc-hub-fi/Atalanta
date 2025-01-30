@@ -9,7 +9,7 @@ use bsp::{
     clic::{Clic, InterruptNumber, Polarity, Trig},
     nested_interrupt,
     riscv::{self, asm::wfi},
-    rt::entry,
+    rt::{entry, interrupt},
     sprint, sprintln,
     tb::signal_pass,
     timer_group::{Timer0, Timer1, Timer2, Timer3},
