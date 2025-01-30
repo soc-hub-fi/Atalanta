@@ -52,6 +52,12 @@ impl<const BASE_ADDR: usize> TimerUnit<BASE_ADDR> {
         read_u32(BASE_ADDR + TIMER_COUNTER_OFS)
     }
 
+    /// Set current counter value
+    #[inline]
+    pub fn set_counter(&mut self, cnt: u32) {
+        write_u32(BASE_ADDR + TIMER_COUNTER_OFS, cnt)
+    }
+
     /// Initializes all values to zero
     #[inline]
     pub fn reset(&mut self) {
