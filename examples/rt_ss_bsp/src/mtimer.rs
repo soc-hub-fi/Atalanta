@@ -116,7 +116,11 @@ impl OneShot {
         self.0.enable();
     }
 
-    /// Unschedules the `MachineTimer' interrupt
+    /// Unschedules the `MachineTimer' interrupt by setting mtimecmp to
+    /// `u64::MAX`
+    ///
+    /// Note that an interrupt may be pending already when this is called, which
+    /// won't be unscheduled. Call `Clic::ip(int).unpend` instead.
     pub fn cancel(&mut self) {
         self.0.set_cmp(u64::MAX);
     }
