@@ -18,9 +18,9 @@ pub(crate) fn nested_interrupt(args: TokenStream, input: TokenStream) -> TokenSt
 
     let ident = &f.sig.ident;
     let export_name = format!("{:#}", ident);
-    let use_hw_stack = args.into_iter().any(|arg| arg.to_string() == "hw_stack");
+    let use_pcs = args.into_iter().any(|arg| arg.to_string() == "pcs");
 
-    let start_trap = start_nested_interrupt_trap(ident, use_hw_stack);
+    let start_trap = start_nested_interrupt_trap(ident, use_pcs);
 
     quote!(
         #start_trap
@@ -56,13 +56,13 @@ const CALLER_SAVE_COUNT: usize = CALLER_SAVE_EABI.len();
 const CAUSE_POS: usize = CALLER_SAVE_COUNT * 4;
 const EPC_POS: usize = (CALLER_SAVE_COUNT + 1) * 4;
 
-fn start_nested_interrupt_trap(interrupt: &syn::Ident, hw_stack: bool) -> proc_macro2::TokenStream {
+fn start_nested_interrupt_trap(interrupt: &syn::Ident, pcs: bool) -> proc_macro2::TokenStream {
     let interrupt = interrupt.to_string();
     let width = 4;
     let enter_save_count = CALLER_SAVE_EABI.len() + 2;
     let store_caller_save_regs = store_trap(CALLER_SAVE_EABI);
 
-    let store_caller_save = if !hw_stack {
+    let store_caller_save = if !pcs {
         format!(
             r#"
         addi sp, sp, -{enter_save_count} * {width}  // Create frame for caller save registers, mcause, and mepc
@@ -77,8 +77,8 @@ fn start_nested_interrupt_trap(interrupt: &syn::Ident, hw_stack: bool) -> proc_m
         "// hardware stacks epc, cause & caller save".to_string()
     };
 
-    let continue_label = if hw_stack {
-        "_continue_nested_hw_stack_trap"
+    let continue_label = if pcs {
+        "_continue_nested_pcs_trap"
     } else {
         "_continue_nested_trap"
     };
@@ -107,7 +107,7 @@ core::arch::global_asm!(
 /// The '_continue_nested_trap' function stores the trap frame partially (all
 /// registers except a0), jumps to the interrupt handler, and restores the trap
 /// frame.
-pub(crate) fn generate_continue_nested_trap(arch: RiscvArch, hw_stack: bool) -> TokenStream {
+pub(crate) fn generate_continue_nested_trap(arch: RiscvArch, pcs: bool) -> TokenStream {
     let width = 4;
     let callee_save = match arch {
         RiscvArch::Rv32E => CALLEE_SAVE_EABI_RVE,
@@ -119,13 +119,13 @@ pub(crate) fn generate_continue_nested_trap(arch: RiscvArch, hw_stack: bool) -> 
     let load_caller_save_regs = load_trap(CALLER_SAVE_EABI);
     let exit_save_count = CALLER_SAVE_EABI.len() + 2;
 
-    let asm_label = if !hw_stack {
+    let asm_label = if !pcs {
         "_continue_nested_trap"
     } else {
-        "_continue_nested_hw_stack_trap"
+        "_continue_nested_pcs_trap"
     };
 
-    let load_exit_regs = if !hw_stack {
+    let load_exit_regs = if !pcs {
         format!(
             r#"
         lw x15, {EPC_POS}(sp)                       // restore epc from stack into x15 / t1 / a5

@@ -206,7 +206,7 @@ fn main() -> ! {
     }
 }
 
-#[nested_interrupt(hw_stack)]
+#[nested_interrupt(pcs)]
 fn Timer0Cmp() {
     // Safety: resources are unique to this task
     unsafe {
@@ -215,7 +215,7 @@ fn Timer0Cmp() {
     };
 }
 
-#[nested_interrupt(hw_stack)]
+#[nested_interrupt(pcs)]
 fn Timer1Cmp() {
     // Safety: resources are unique to this task
     unsafe {
@@ -224,7 +224,7 @@ fn Timer1Cmp() {
     };
 }
 
-#[nested_interrupt(hw_stack)]
+#[nested_interrupt(pcs)]
 fn Timer2Cmp() {
     // Safety: resources are unique to this task
     unsafe {
@@ -233,7 +233,7 @@ fn Timer2Cmp() {
     };
 }
 
-#[nested_interrupt(hw_stack)]
+#[nested_interrupt(pcs)]
 fn Timer3Cmp() {
     // Safety: resources are unique to this task
     unsafe {

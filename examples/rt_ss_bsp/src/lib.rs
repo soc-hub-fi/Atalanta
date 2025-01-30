@@ -38,11 +38,11 @@ rt_ss_bsp_macros::generate_continue_nested_trap_riscv32e!();
 #[cfg(riscvi)]
 rt_ss_bsp_macros::generate_continue_nested_trap_riscv32i!();
 
-// Generate the `_continue_nested_hw_stack_trap` symbol
+// Generate the `_continue_nested_pcs_trap` symbol
 #[cfg(riscve)]
-rt_ss_bsp_macros::generate_continue_nested_hw_stack_trap_riscv32e!();
+rt_ss_bsp_macros::generate_continue_nested_pcs_trap_riscv32e!();
 #[cfg(riscvi)]
-rt_ss_bsp_macros::generate_continue_nested_hw_stack_trap_riscv32i!();
+rt_ss_bsp_macros::generate_continue_nested_pcs_trap_riscv32i!();
 
 // Import macro for nested_interrupt
 #[cfg(riscve)]

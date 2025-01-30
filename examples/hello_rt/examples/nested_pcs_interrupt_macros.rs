@@ -96,7 +96,7 @@ fn main() -> ! {
     loop {}
 }
 
-#[nested_interrupt(hw_stack)]
+#[nested_interrupt(pcs)]
 fn Dma0() {
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
@@ -117,7 +117,7 @@ fn Dma0() {
     }
 }
 
-#[nested_interrupt(hw_stack)]
+#[nested_interrupt(pcs)]
 fn Dma1() {
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
