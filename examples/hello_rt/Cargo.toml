@@ -11,6 +11,7 @@ bsp = { package = "rt_ss_bsp", path = "../rt_ss_bsp", features = [
     "clic-smclic",
     "clic-smclicshv",
 ] }
+fugit = "0.3.7"
 ufmt = "0.2.0"
 
 [features]
