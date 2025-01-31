@@ -7,11 +7,11 @@
 use core::arch::asm;
 
 use bsp::{
-    clic::{Clic, InterruptNumber, Polarity, Trig},
+    clic::{Clic, Polarity, Trig},
     embedded_io::Write,
     mask_u32,
     mmap::CLIC_BASE_ADDR,
-    mtimer::MTimer,
+    mtimer::{self, MTimer},
     nested_interrupt,
     riscv::{self, asm::wfi},
     rt::{entry, interrupt},
@@ -21,8 +21,7 @@ use bsp::{
     uart::*,
     unmask_u32, Interrupt, CPU_FREQ,
 };
-use fugit::ExtU64;
-use hello_rt::{print_example_name, tear_irq, UART_BAUD};
+use hello_rt::{print_example_name, UART_BAUD};
 use ufmt::derive::uDebug;
 
 #[cfg_attr(feature = "ufmt", derive(uDebug))]
@@ -35,6 +34,7 @@ struct Task {
 }
 
 const RUN_COUNT: usize = 1;
+const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(1_000);
 
 impl Task {
     pub const fn new(level: u8, period_us: u32, duration_us: u32, start_offset_us: u32) -> Self {
@@ -47,30 +47,30 @@ impl Task {
     }
 }
 
-const TEST_DURATION_US: u32 = 500;
+const TEST_BASE_PERIOD_US: u32 = 100;
 const TASK0: Task = Task::new(
     1,
-    TEST_DURATION_US / 1,
-    /* 20 % */ TEST_DURATION_US / 5,
-    /* 10 % */ TEST_DURATION_US / 10,
+    TEST_BASE_PERIOD_US / 1,
+    /* 20 % */ TEST_BASE_PERIOD_US / 5,
+    /* 10 % */ TEST_BASE_PERIOD_US / 10,
 );
 const TASK1: Task = Task::new(
     2,
-    TEST_DURATION_US / 1,
-    /* 10 % */ TEST_DURATION_US / 10,
-    /* 60 % */ 3 * TEST_DURATION_US / 5,
+    TEST_BASE_PERIOD_US / 1,
+    /* 10 % */ TEST_BASE_PERIOD_US / 10,
+    /* 60 % */ 3 * TEST_BASE_PERIOD_US / 5,
 );
 const TASK2: Task = Task::new(
     3,
-    TEST_DURATION_US / 2,
-    /* 5 % */ TEST_DURATION_US / 20,
-    /* 37.5 % */ 3 * TEST_DURATION_US / 8,
+    TEST_BASE_PERIOD_US / 2,
+    /* 5 % */ TEST_BASE_PERIOD_US / 20,
+    /* 37.5 % */ 3 * TEST_BASE_PERIOD_US / 8,
 );
 const TASK3: Task = Task::new(
     4,
-    TEST_DURATION_US / 4,
-    /* 2.5 % */ TEST_DURATION_US / 40,
-    /* 12.5 % */ TEST_DURATION_US / 8,
+    TEST_BASE_PERIOD_US / 4,
+    /* 2.5 % */ TEST_BASE_PERIOD_US / 40,
+    /* 12.5 % */ TEST_BASE_PERIOD_US / 8,
 );
 const PERIPH_CLK_DIV: u64 = 2;
 const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
@@ -113,7 +113,7 @@ fn main() -> ! {
         TASK2,
         TASK3
     );
-    sprintln!("Test duration: {} us", TEST_DURATION_US);
+    sprintln!("Test duration: {} us", TEST_DURATION.to_micros());
 
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
@@ -152,18 +152,18 @@ fn main() -> ! {
         );
 
         timers.0.set_cmp(TASK0.period_us * CYCLES_PER_US as u32);
-        timers.1.set_cmp(TASK1.period_us * CYCLES_PER_US as u32);
-        timers.2.set_cmp(TASK2.period_us * CYCLES_PER_US as u32);
-        timers.3.set_cmp(TASK3.period_us * CYCLES_PER_US as u32);
         timers
             .0
             .set_counter((TASK0.period_us - TASK0.start_offset_us) * CYCLES_PER_US as u32);
+        timers.1.set_cmp(TASK1.period_us * CYCLES_PER_US as u32);
         timers
             .1
             .set_counter((TASK1.period_us - TASK1.start_offset_us) * CYCLES_PER_US as u32);
+        timers.2.set_cmp(TASK2.period_us * CYCLES_PER_US as u32);
         timers
             .2
             .set_counter((TASK2.period_us - TASK2.start_offset_us) * CYCLES_PER_US as u32);
+        timers.3.set_cmp(TASK3.period_us * CYCLES_PER_US as u32);
         timers
             .3
             .set_counter((TASK3.period_us - TASK3.start_offset_us) * CYCLES_PER_US as u32);
@@ -172,7 +172,7 @@ fn main() -> ! {
         unsafe { asm!("fence") };
 
         // Test will end when MachineTimer fires
-        mtimer.start((TEST_DURATION_US as u64).micros());
+        mtimer.start(TEST_DURATION);
         timers.0.enable();
         timers.1.enable();
         timers.2.enable();
@@ -188,17 +188,7 @@ fn main() -> ! {
         unsafe { asm!("fence") };
         // --- Test critical end ---
 
-        // Safety: interrupt handlers have been torn down, no race
         unsafe {
-            timers.0.disable();
-            timers.1.disable();
-            timers.2.disable();
-            timers.3.disable();
-            Clic::ip(Interrupt::Timer0Cmp).unpend();
-            Clic::ip(Interrupt::Timer1Cmp).unpend();
-            Clic::ip(Interrupt::Timer2Cmp).unpend();
-            Clic::ip(Interrupt::Timer3Cmp).unpend();
-            Clic::ip(Interrupt::MachineTimer).unpend();
             sprintln!(
                 "Task counts:\r\n{} | {} | {} | {}",
                 TASK0_COUNT,
@@ -300,6 +290,11 @@ unsafe fn MachineTimer() {
     // TimerXCmp interrupts fall through.
     timer.set_counter(u64::MAX);
 
+    // Disable all timers & interrupts, so no more instances will fire
+    Timer0::instance().disable();
+    Timer1::instance().disable();
+    Timer2::instance().disable();
+    Timer3::instance().disable();
     Clic::ip(Interrupt::MachineTimer).unpend();
     Clic::ip(Interrupt::Timer0Cmp).unpend();
     Clic::ip(Interrupt::Timer1Cmp).unpend();
@@ -308,10 +303,20 @@ unsafe fn MachineTimer() {
 }
 
 pub fn setup_irq(irq: Interrupt, level: u8) {
-    sprintln!("Set up {:?} (id = {})", irq, irq.number());
     Clic::attr(irq).set_trig(Trig::Edge);
     Clic::attr(irq).set_polarity(Polarity::Pos);
     Clic::attr(irq).set_shv(true);
     Clic::ctl(irq).set_level(level);
     unsafe { Clic::ie(irq).enable() };
+}
+
+/// Tear down the IRQ configuration to avoid side-effects for further testing
+///
+/// Copy and customize this function if you need more involved configurations.
+pub fn tear_irq(irq: Interrupt) {
+    Clic::ie(irq).disable();
+    Clic::ctl(irq).set_level(0x0);
+    Clic::attr(irq).set_shv(false);
+    Clic::attr(irq).set_trig(Trig::Level);
+    Clic::attr(irq).set_polarity(Polarity::Pos);
 }
