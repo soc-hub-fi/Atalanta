@@ -1,4 +1,3 @@
-//!
 #![no_main]
 #![no_std]
 #![allow(static_mut_refs)]
@@ -9,8 +8,6 @@ use core::arch::asm;
 use bsp::{
     clic::{Clic, Polarity, Trig},
     embedded_io::Write,
-    mask_u32,
-    mmap::CLIC_BASE_ADDR,
     mtimer::{self, MTimer},
     nested_interrupt,
     riscv::{self, asm::wfi},
@@ -19,9 +16,8 @@ use bsp::{
     tb::signal_pass,
     timer_group::{Timer0, Timer1, Timer2, Timer3},
     uart::*,
-    unmask_u32, Interrupt, CPU_FREQ,
+    Interrupt, CPU_FREQ,
 };
-use hello_rt::{print_example_name, UART_BAUD};
 use ufmt::derive::uDebug;
 
 #[cfg_attr(feature = "ufmt", derive(uDebug))]
@@ -83,7 +79,9 @@ static mut TASK2_COUNT: usize = 0;
 static mut TASK3_COUNT: usize = 0;
 static mut TIMEOUT: bool = false;
 
+#[cfg(feature = "pcs")]
 fn enable_pcs(irq: Interrupt) {
+    use bsp::{mask_u32, mmap::CLIC_BASE_ADDR};
     const PCS_BIT_IDX: u32 = 12;
     mask_u32(
         CLIC_BASE_ADDR + 0x1000 + 0x04 * irq as usize,
@@ -91,7 +89,9 @@ fn enable_pcs(irq: Interrupt) {
     );
 }
 
+#[cfg(feature = "pcs")]
 fn disable_pcs(irq: Interrupt) {
+    use bsp::{mmap::CLIC_BASE_ADDR, unmask_u32};
     const PCS_BIT_IDX: u32 = 12;
     unmask_u32(
         CLIC_BASE_ADDR + 0x1000 + 0x04 * irq as usize,
@@ -101,9 +101,8 @@ fn disable_pcs(irq: Interrupt) {
 
 #[entry]
 fn main() -> ! {
-    let mut serial = ApbUart::init(CPU_FREQ, UART_BAUD);
-    print_example_name!();
-
+    let mut serial = ApbUart::init(CPU_FREQ, 115_200);
+    sprintln!("[periodic_tasks (PCS={:?})]", cfg!(feature = "pcs"));
     sprintln!("Running test {} times", RUN_COUNT);
 
     sprintln!(
@@ -123,10 +122,13 @@ fn main() -> ! {
     setup_irq(Interrupt::Timer2Cmp, TASK2.level);
     setup_irq(Interrupt::Timer3Cmp, TASK3.level);
     setup_irq(Interrupt::MachineTimer, u8::MAX);
-    enable_pcs(Interrupt::Timer0Cmp);
-    enable_pcs(Interrupt::Timer1Cmp);
-    enable_pcs(Interrupt::Timer2Cmp);
-    enable_pcs(Interrupt::Timer3Cmp);
+    #[cfg(feature = "pcs")]
+    {
+        enable_pcs(Interrupt::Timer0Cmp);
+        enable_pcs(Interrupt::Timer1Cmp);
+        enable_pcs(Interrupt::Timer2Cmp);
+        enable_pcs(Interrupt::Timer3Cmp);
+    }
 
     for run_idx in 0..RUN_COUNT {
         sprintln!("Run {}", run_idx);
@@ -219,10 +221,13 @@ fn main() -> ! {
     tear_irq(Interrupt::Timer2Cmp);
     tear_irq(Interrupt::Timer3Cmp);
     tear_irq(Interrupt::MachineTimer);
-    disable_pcs(Interrupt::Timer0Cmp);
-    disable_pcs(Interrupt::Timer1Cmp);
-    disable_pcs(Interrupt::Timer2Cmp);
-    disable_pcs(Interrupt::Timer3Cmp);
+    #[cfg(feature = "pcs")]
+    {
+        disable_pcs(Interrupt::Timer0Cmp);
+        disable_pcs(Interrupt::Timer1Cmp);
+        disable_pcs(Interrupt::Timer2Cmp);
+        disable_pcs(Interrupt::Timer3Cmp);
+    }
 
     signal_pass(Some(&mut serial));
     loop {
@@ -231,7 +236,8 @@ fn main() -> ! {
     }
 }
 
-#[nested_interrupt(pcs)]
+#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer0Cmp() {
     let plevel: u8;
     asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK0.level);
@@ -243,7 +249,8 @@ unsafe fn Timer0Cmp() {
     asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
-#[nested_interrupt(pcs)]
+#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer1Cmp() {
     let plevel: u8;
     asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK1.level);
@@ -255,7 +262,8 @@ unsafe fn Timer1Cmp() {
     asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
-#[nested_interrupt(pcs)]
+#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer2Cmp() {
     let plevel: u8;
     asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK2.level);
@@ -267,7 +275,8 @@ unsafe fn Timer2Cmp() {
     asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
-#[nested_interrupt(pcs)]
+#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer3Cmp() {
     let plevel: u8;
     asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK3.level);

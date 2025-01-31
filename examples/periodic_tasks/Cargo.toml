@@ -1,0 +1,31 @@
+[package]
+name = "periodic_tasks"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bsp = { package = "rt_ss_bsp", path = "../rt_ss_bsp", features = [
+    "rt",
+    "clic-smclic",
+    "clic-smclicshv",
+] }
+fugit = "0.3.7"
+ufmt = "0.2.0"
+
+[features]
+default = ["ufmt"]
+ufmt = ["bsp/ufmt"]
+
+# Turn on PCS interrupts for the 4 timers
+pcs = []
+
+# Use this feature when using cosimulators such as QuestaSim
+rtl-tb = ["bsp/rtl-tb"]
+# Use this feature when deploying on FPGA
+fpga = ["bsp/fpga"]
+
+[profile.dev]
+# There seems to be a problem in riscv-rt with regards to linking in default_start_trap in debug
+# mode. `codegen-units = 1` avoids that
+codegen-units = 1
+opt-level = "s"
