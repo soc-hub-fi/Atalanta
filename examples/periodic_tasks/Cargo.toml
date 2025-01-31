@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bsp = { package = "rt_ss_bsp", path = "../rt_ss_bsp", features = [
+bsp = { package = "atalanta_bsp", path = "../atalanta_bsp", features = [
     "rt",
     "clic-smclic",
     "clic-smclicshv",

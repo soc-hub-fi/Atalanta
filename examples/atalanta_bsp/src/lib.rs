@@ -34,21 +34,21 @@ pub use ufmt;
 
 // Generate the `_continue_nested_trap` symbol
 #[cfg(riscve)]
-rt_ss_bsp_macros::generate_continue_nested_trap_riscv32e!();
+atalanta_bsp_macros::generate_continue_nested_trap_riscv32e!();
 #[cfg(riscvi)]
-rt_ss_bsp_macros::generate_continue_nested_trap_riscv32i!();
+atalanta_bsp_macros::generate_continue_nested_trap_riscv32i!();
 
 // Generate the `_continue_nested_pcs_trap` symbol
 #[cfg(riscve)]
-rt_ss_bsp_macros::generate_continue_nested_pcs_trap_riscv32e!();
+atalanta_bsp_macros::generate_continue_nested_pcs_trap_riscv32e!();
 #[cfg(riscvi)]
-rt_ss_bsp_macros::generate_continue_nested_pcs_trap_riscv32i!();
+atalanta_bsp_macros::generate_continue_nested_pcs_trap_riscv32i!();
 
 // Import macro for nested_interrupt
 #[cfg(riscve)]
-pub use rt_ss_bsp_macros::nested_interrupt_riscv32e as nested_interrupt;
+pub use atalanta_bsp_macros::nested_interrupt_riscv32e as nested_interrupt;
 #[cfg(riscvi)]
-pub use rt_ss_bsp_macros::nested_interrupt_riscv32i as nested_interrupt;
+pub use atalanta_bsp_macros::nested_interrupt_riscv32i as nested_interrupt;
 
 use core::arch::asm;
 

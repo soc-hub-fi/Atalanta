@@ -107,7 +107,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rt_ss_bsp"
+name = "atalanta_bsp"
 version = "0.1.0"
 dependencies = [
  "bitmask-enum",
@@ -117,12 +117,12 @@ dependencies = [
  "riscv-pac",
  "riscv-peripheral",
  "riscv-rt",
- "rt_ss_bsp_macros",
+ "atalanta_bsp_macros",
  "ufmt",
 ]
 
 [[package]]
-name = "rt_ss_bsp_macros"
+name = "atalanta_bsp_macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
