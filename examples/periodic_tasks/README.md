@@ -1,0 +1,9 @@
+# Periodic Tasks -benchmark
+
+```sh
+# Run the non-PCS version
+make verilate simv RUST=1 TEST_DIR=examples/periodic_tasks TEST=periodic_tasks
+
+# Run the PCS version
+make verilate simv RUST=1 TEST_DIR=examples/periodic_tasks TEST=periodic_tasks CARGO_FLAGS="-Fpcs"
+```
