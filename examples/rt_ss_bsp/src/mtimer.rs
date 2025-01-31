@@ -110,6 +110,7 @@ pub struct OneShot(MTimer);
 
 impl OneShot {
     /// Schedules the `MachineTimer` interrupt to trigger after `duration`
+    #[inline]
     pub fn start(&mut self, duration: Duration) {
         let cnt = self.0.counter();
         self.0.set_cmp(cnt + duration.ticks());
@@ -121,6 +122,7 @@ impl OneShot {
     ///
     /// Note that an interrupt may be pending already when this is called, which
     /// won't be unscheduled. Call `Clic::ip(int).unpend` instead.
+    #[inline]
     pub fn cancel(&mut self) {
         self.0.set_cmp(u64::MAX);
     }
