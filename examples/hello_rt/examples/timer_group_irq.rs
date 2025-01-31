@@ -45,8 +45,8 @@ fn main() -> ! {
     setup_irq(Interrupt::MachineTimer);
 
     // Use mtimer for timeout
-    let mut mtimer = MTimer::init();
-    unsafe { mtimer.set_cmp(5 * INTERVAL as u64) };
+    let mut mtimer = MTimer::instance();
+    mtimer.set_cmp(5 * INTERVAL as u64);
 
     let mut timers = (
         Timer0::init(),
@@ -141,5 +141,5 @@ fn Timer3Cmp() {
 #[interrupt]
 fn MachineTimer() {
     unsafe { TIMEOUT = true };
-    unsafe { MTimer::instance() }.reset();
+    MTimer::instance().reset();
 }

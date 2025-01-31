@@ -35,7 +35,7 @@ fn main() -> ! {
     Clic::smclicconfig().set_mnlbits(8);
 
     // Set a timer to trigger an interrupt every `ÌNTERVAL`
-    let mut mtimer = MTimer::init();
+    let mut mtimer = MTimer::instance();
     setup_irq(Interrupt::MachineTimer);
     unsafe {
         let counter = mtimer.counter();

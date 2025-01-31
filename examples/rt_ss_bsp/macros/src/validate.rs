@@ -39,11 +39,11 @@ pub(crate) fn validate_interrupt_handler(args: TokenStream, f: &ItemFn) -> Optio
         );
     }
 
-    if !args.is_empty() && args.into_iter().next().unwrap().to_string() != "hw_stack" {
+    if !args.is_empty() && args.into_iter().next().unwrap().to_string() != "pcs" {
         return Some(
             parse::Error::new(
                 Span::call_site(),
-                "This attribute accepts no arguments other than 'hw_stack'",
+                "This attribute accepts no arguments other than 'pcs'",
             )
             .to_compile_error()
             .into(),

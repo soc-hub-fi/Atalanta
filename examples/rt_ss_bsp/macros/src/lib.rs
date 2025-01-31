@@ -34,13 +34,13 @@ pub fn generate_continue_nested_trap_riscv32i(_input: TokenStream) -> TokenStrea
 }
 
 #[proc_macro]
-pub fn generate_continue_nested_hw_stack_trap_riscv32e(_input: TokenStream) -> TokenStream {
+pub fn generate_continue_nested_pcs_trap_riscv32e(_input: TokenStream) -> TokenStream {
     const USE_HW_STACK: bool = true;
     generate_continue_nested_trap(RiscvArch::Rv32E, USE_HW_STACK)
 }
 
 #[proc_macro]
-pub fn generate_continue_nested_hw_stack_trap_riscv32i(_input: TokenStream) -> TokenStream {
+pub fn generate_continue_nested_pcs_trap_riscv32i(_input: TokenStream) -> TokenStream {
     const USE_HW_STACK: bool = true;
     generate_continue_nested_trap(RiscvArch::Rv32I, USE_HW_STACK)
 }
