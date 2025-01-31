@@ -1,9 +1,9 @@
 use crate::{mask_u32, mmap::apb_timer::*, read_u32, unmask_u32, write_u32, CPU_FREQ};
 
 /// Relocatable driver for PULP APB Timer IP
-pub struct TimerUnit<const BASE_ADDR: usize>;
+pub struct Timer<const BASE_ADDR: usize>;
 
-impl<const BASE_ADDR: usize> TimerUnit<BASE_ADDR> {
+impl<const BASE_ADDR: usize> Timer<BASE_ADDR> {
     /// Initializes a timer with all values initialized to zero
     #[inline]
     pub fn init() -> Self {
@@ -80,19 +80,19 @@ impl<const BASE_ADDR: usize> TimerUnit<BASE_ADDR> {
 }
 
 /// Type alias that should be used to interface timer 0.
-pub type Timer0 = TimerUnit<TIMER0_ADDR>;
+pub type Timer0 = Timer<TIMER0_ADDR>;
 /// Type alias that should be used to interface timer 1.
-pub type Timer1 = TimerUnit<TIMER1_ADDR>;
+pub type Timer1 = Timer<TIMER1_ADDR>;
 /// Type alias that should be used to interface timer 2.
-pub type Timer2 = TimerUnit<TIMER2_ADDR>;
+pub type Timer2 = Timer<TIMER2_ADDR>;
 /// Type alias that should be used to interface timer 3.
-pub type Timer3 = TimerUnit<TIMER3_ADDR>;
+pub type Timer3 = Timer<TIMER3_ADDR>;
 
 const PERIPH_CLK_DIV: u32 = 2;
 const DENOM: u32 = CPU_FREQ / PERIPH_CLK_DIV;
 pub type Duration = fugit::Duration<u32, 1, DENOM>;
 
-pub struct Periodic<const BASE_ADDR: usize>(TimerUnit<BASE_ADDR>);
+pub struct Periodic<const BASE_ADDR: usize>(Timer<BASE_ADDR>);
 
 impl<const BASE_ADDR: usize> Periodic<BASE_ADDR> {
     /// Schedules an interrupt to be fired every `duration`
