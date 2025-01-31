@@ -141,5 +141,5 @@ fn Timer3Cmp() {
 #[interrupt]
 fn MachineTimer() {
     unsafe { TIMEOUT = true };
-    unsafe { MTimer::instance() }.disable();
+    unsafe { MTimer::instance() }.reset();
 }

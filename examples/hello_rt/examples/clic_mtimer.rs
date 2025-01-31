@@ -12,14 +12,13 @@ use core::ptr;
 
 use bsp::{
     clic::Clic,
-    interrupt::Interrupt,
     led::{led_off, led_on, led_toggle, Led},
     mmap::*,
     riscv,
     rt::entry,
     sprintln, tb,
     uart::ApbUart,
-    write_u32, CPU_FREQ,
+    write_u32, Interrupt, CPU_FREQ,
 };
 use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 

@@ -6,6 +6,7 @@
 #![allow(non_snake_case)]
 
 use bsp::{
+    clic::Clic,
     mtimer::MTimer,
     riscv::{self, asm::wfi},
     rt::{entry, interrupt},
@@ -29,6 +30,9 @@ static mut STOP: bool = false;
 fn main() -> ! {
     let mut serial = ApbUart::init(CPU_FREQ, UART_BAUD);
     print_example_name!();
+
+    // Set level bits to 8
+    Clic::smclicconfig().set_mnlbits(8);
 
     // Set a timer to trigger an interrupt every `ÌNTERVAL`
     let mut mtimer = MTimer::init();
@@ -66,6 +70,5 @@ unsafe fn MachineTimer() {
         STOP = true;
         return;
     }
-    let counter = mtimer.counter();
-    mtimer.set_cmp(counter + INTERVAL);
+    mtimer.set_cmp(sample + INTERVAL);
 }

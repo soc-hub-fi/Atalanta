@@ -8,11 +8,11 @@ use core::ptr::{self, addr_of, addr_of_mut};
 use bsp::{
     asm_delay,
     clic::{Clic, InterruptNumber, CLIC},
-    interrupt::Interrupt,
     riscv,
     rt::entry,
     sprintln, tb,
     uart::ApbUart,
+    Interrupt,
 };
 use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 
