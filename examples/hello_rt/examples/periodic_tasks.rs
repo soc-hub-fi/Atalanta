@@ -190,10 +190,10 @@ fn main() -> ! {
 
         // Safety: interrupt handlers have been torn down, no race
         unsafe {
-            timers.0.reset();
-            timers.1.reset();
-            timers.2.reset();
-            timers.3.reset();
+            timers.0.disable();
+            timers.1.disable();
+            timers.2.disable();
+            timers.3.disable();
             Clic::ip(Interrupt::Timer0Cmp).unpend();
             Clic::ip(Interrupt::Timer1Cmp).unpend();
             Clic::ip(Interrupt::Timer2Cmp).unpend();
@@ -289,6 +289,7 @@ unsafe fn Timer3Cmp() {
     asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
+/// Timeout interrupt (per test-run)
 #[interrupt]
 unsafe fn MachineTimer() {
     unsafe { TIMEOUT = true };
