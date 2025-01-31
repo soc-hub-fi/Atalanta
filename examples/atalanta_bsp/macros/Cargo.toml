@@ -1,5 +1,5 @@
 [package]
-name = "rt_ss_bsp_macros"
+name = "atalanta_bsp_macros"
 version = "0.1.0"
 edition = "2021"
 

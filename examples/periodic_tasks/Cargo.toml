@@ -1,9 +1,7 @@
 [package]
-name = "hello-rt"
+name = "periodic_tasks"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 bsp = { package = "atalanta_bsp", path = "../atalanta_bsp", features = [
@@ -16,7 +14,10 @@ ufmt = "0.2.0"
 
 [features]
 default = ["ufmt"]
-ufmt = ["bsp/ufmt", "heapless/ufmt"]
+ufmt = ["bsp/ufmt"]
+
+# Turn on PCS interrupts for the 4 timers
+pcs = []
 
 # Use this feature when using cosimulators such as QuestaSim
 rtl-tb = ["bsp/rtl-tb"]
@@ -28,13 +29,3 @@ fpga = ["bsp/fpga"]
 # mode. `codegen-units = 1` avoids that
 codegen-units = 1
 opt-level = "s"
-
-[profile.release]
-debug = true
-
-[profile.'bloat']
-inherits = "release"
-strip = false
-
-[dev-dependencies]
-heapless = "0.8.0"
