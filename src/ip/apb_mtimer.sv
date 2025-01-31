@@ -64,8 +64,8 @@ always_comb
 
 always_comb
   begin : apb_access
-    mtime_hi    = mtime_d[63:32];
-    mtime_lo    = mtime_d[31:0];
+    mtime_hi    = mtime_q[63:32];
+    mtime_lo    = mtime_q[31:0];
     mtimecmp_hi = mtimecmp_q[63:32];
     mtimecmp_lo = mtimecmp_q[31:0];
     prdata_o    = '0;
