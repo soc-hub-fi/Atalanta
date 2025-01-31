@@ -63,7 +63,7 @@ impl Peripherals {
 
 pub const CPU_FREQ: u32 = match () {
     #[cfg(feature = "rtl-tb")]
-    () => 100_000_000,
+    () => 30_000_000,
     #[cfg(not(feature = "rtl-tb"))]
     () => 30_000_000,
 };

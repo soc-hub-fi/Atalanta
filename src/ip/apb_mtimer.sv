@@ -51,7 +51,9 @@ always_comb
   begin
     mtime_d   = mtime_q;
     counter_d = 0;
-    if (enable_q) begin
+    if (penable_i && pwrite_i) begin
+      mtime_d = {mtime_hi, mtime_lo};
+    end else if (enable_q) begin
       counter_d = counter_q + 1;
       if (counter_q == prescaler_q) begin
         counter_d = 0;
