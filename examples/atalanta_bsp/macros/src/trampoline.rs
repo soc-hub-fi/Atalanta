@@ -1,4 +1,4 @@
-use crate::archi::{RiscvArch, CALLEE_SAVE_EABI_RVE, CALLEE_SAVE_EABI_RVI, CALLER_SAVE_EABI};
+use crate::archi::CALLER_SAVE_EABI;
 use crate::validate::validate_interrupt_handler;
 use proc_macro::TokenStream;
 use quote::quote;
@@ -107,15 +107,8 @@ core::arch::global_asm!(
 /// The '_continue_nested_trap' function stores the trap frame partially (all
 /// registers except a0), jumps to the interrupt handler, and restores the trap
 /// frame.
-pub(crate) fn generate_continue_nested_trap(arch: RiscvArch, pcs: bool) -> TokenStream {
+pub(crate) fn generate_continue_nested_trap(pcs: bool) -> TokenStream {
     let width = 4;
-    let callee_save = match arch {
-        RiscvArch::Rv32E => CALLEE_SAVE_EABI_RVE,
-        RiscvArch::Rv32I => CALLEE_SAVE_EABI_RVI,
-    };
-    let callee_save_count = callee_save.len();
-    let store_callee_save_regs = store_trap(callee_save);
-    let load_callee_save_regs = load_trap(callee_save);
     let load_caller_save_regs = load_trap(CALLER_SAVE_EABI);
     let exit_save_count = CALLER_SAVE_EABI.len() + 2;
 
@@ -148,11 +141,7 @@ core::arch::global_asm!(
 .align 4
 .global {asm_label}
 {asm_label}:
-    addi sp, sp, -{callee_save_count} * {width} // Create frame for caller save registers, mcause, and mepc
-    {store_callee_save_regs}
     jalr ra, a0, 0                              // jump to corresponding interrupt handler proper (address stored in a0)
-    {load_callee_save_regs}                     // restore trap frame
-    addi sp, sp, {callee_save_count} * {width}  // deallocate space for trap frame
     csrci mstatus, 8 # disable interrupts
     #----- Interrupts disabled  ---------#
     {load_exit_regs}
