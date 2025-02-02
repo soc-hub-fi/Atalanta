@@ -34,17 +34,19 @@ Then, you'll just need a compiler with a RV32E backend. Currently, there are two
 
 ### VS Code settings for Rust
 
+Adjust your settings at the workspace root (".../Atalanta"):
+
 ```json
 // .vscode/settings.json
 {
     "rust-analyzer.linkedProjects": [
         "examples/rust_minimal/Cargo.toml",
-        "examples/hello_rt/Cargo.toml"
+        "examples/hello_rt/Cargo.toml",
+        "examples/periodic_tasks/Cargo.toml"
     ],
     "rust-analyzer.cargo.features": [
-        // hello-rt must be compiled with either `fpga` or `rtl-tb` depending on target platform
-        "hello-rt/fpga",
-        //"hello-rt/rtl-tb",
+        // crates must be compiled with either `fpga` or `rtl-tb` depending on target platform
+        "fpga",
     ],
     "rust-analyzer.cargo.target": "riscv32emc-unknown-none-elf",
     // check.allTargets & cargo.extraArgs helps us avoid the superfluous error on "can't find crate
