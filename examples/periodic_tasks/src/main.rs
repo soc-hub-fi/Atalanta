@@ -253,53 +253,41 @@ fn main() -> ! {
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer0Cmp() {
-    let plevel: u8;
-    asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK0.level);
-    let mtimer = MTimer::instance();
+    let mtimer = MTimer::instance().into_lo();
     let sample = mtimer.counter();
     TASK0_COUNT += 1;
-    let task_end = sample + TASK0.duration_us as u64 * CYCLES_PER_US;
+    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
     while mtimer.counter() <= task_end {}
-    asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer1Cmp() {
-    let plevel: u8;
-    asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK1.level);
-    let mtimer: MTimer = MTimer::instance();
+    let mtimer = MTimer::instance().into_lo();
     let sample = mtimer.counter();
     TASK1_COUNT += 1;
-    let task_end = sample + TASK1.duration_us as u64 * CYCLES_PER_US;
+    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
     while mtimer.counter() <= task_end {}
-    asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer2Cmp() {
-    let plevel: u8;
-    asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK2.level);
-    let mtimer = MTimer::instance();
+    let mtimer = MTimer::instance().into_lo();
     let sample = mtimer.counter();
     TASK2_COUNT += 1;
-    let task_end = sample + TASK2.duration_us as u64 * CYCLES_PER_US;
+    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
     while mtimer.counter() <= task_end {}
-    asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer3Cmp() {
-    let plevel: u8;
-    asm!("csrrw {0}, 0x347, {1}", out(reg) plevel, in(reg) TASK3.level);
-    let mtimer = MTimer::instance();
+    let mtimer = MTimer::instance().into_lo();
     let sample = mtimer.counter();
     TASK3_COUNT += 1;
-    let task_end = sample + TASK3.duration_us as u64 * CYCLES_PER_US;
+    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
     while mtimer.counter() <= task_end {}
-    asm!("csrw 0x347, {0}", in(reg) plevel);
 }
 
 /// Timeout interrupt (per test-run)
