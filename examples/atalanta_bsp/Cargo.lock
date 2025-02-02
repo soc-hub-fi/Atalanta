@@ -3,6 +3,30 @@
 version = 4
 
 [[package]]
+name = "atalanta_bsp"
+version = "0.1.0"
+dependencies = [
+ "atalanta_bsp_macros",
+ "bitmask-enum",
+ "embedded-io",
+ "fugit",
+ "riscv",
+ "riscv-pac",
+ "riscv-peripheral",
+ "riscv-rt",
+ "ufmt",
+]
+
+[[package]]
+name = "atalanta_bsp_macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "bitmask-enum"
 version = "2.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -100,30 +124,6 @@ dependencies = [
 name = "riscv-rt-macros"
 version = "0.2.1"
 source = "git+https://github.com/hegza/riscv?branch=feat%2Frt-ibex#de734f3e3e36eaa8c657d1f09dd9e9b74e4973f8"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "atalanta_bsp"
-version = "0.1.0"
-dependencies = [
- "bitmask-enum",
- "embedded-io",
- "fugit",
- "riscv",
- "riscv-pac",
- "riscv-peripheral",
- "riscv-rt",
- "atalanta_bsp_macros",
- "ufmt",
-]
-
-[[package]]
-name = "atalanta_bsp_macros"
-version = "0.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
