@@ -23,7 +23,7 @@ pub(crate) fn nested_interrupt(args: TokenStream, input: TokenStream) -> TokenSt
     let start_trap = if use_pcs {
         start_pcs_trap(ident.to_string())
     } else {
-        start_nested_interrupt_trap(ident)
+        start_nested_trap(ident)
     };
 
     quote!(
@@ -81,7 +81,7 @@ fn start_pcs_trap(interrupt: String) -> proc_macro2::TokenStream {
     instructions.parse().unwrap()
 }
 
-fn start_nested_interrupt_trap(interrupt: &syn::Ident) -> proc_macro2::TokenStream {
+fn start_nested_trap(interrupt: &syn::Ident) -> proc_macro2::TokenStream {
     let interrupt = interrupt.to_string();
     let width = 4;
     let enter_save_count = CALLER_SAVE_EABI.len() + 2;
