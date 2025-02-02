@@ -1,4 +1,4 @@
-use crate::archi::{RiscvArch, CALLEE_SAVE_EABI_RVE, CALLEE_SAVE_EABI_RVI, CALLER_SAVE_EABI};
+use crate::archi::CALLER_SAVE_EABI;
 use crate::validate::validate_interrupt_handler;
 use proc_macro::TokenStream;
 use quote::quote;
@@ -20,7 +20,11 @@ pub(crate) fn nested_interrupt(args: TokenStream, input: TokenStream) -> TokenSt
     let export_name = format!("{:#}", ident);
     let use_pcs = args.into_iter().any(|arg| arg.to_string() == "pcs");
 
-    let start_trap = start_nested_interrupt_trap(ident, use_pcs);
+    let start_trap = if use_pcs {
+        start_pcs_trap(ident.to_string())
+    } else {
+        start_nested_interrupt_trap(ident)
+    };
 
     quote!(
         #start_trap
@@ -56,15 +60,35 @@ const CALLER_SAVE_COUNT: usize = CALLER_SAVE_EABI.len();
 const CAUSE_POS: usize = CALLER_SAVE_COUNT * 4;
 const EPC_POS: usize = (CALLER_SAVE_COUNT + 1) * 4;
 
-fn start_nested_interrupt_trap(interrupt: &syn::Ident, pcs: bool) -> proc_macro2::TokenStream {
+fn start_pcs_trap(interrupt: String) -> proc_macro2::TokenStream {
+    let instructions = format!(
+        r#"core::arch::global_asm!("
+                .section .trap, \"ax\"
+                .align 4
+                .global _start_{interrupt}_trap
+                _start_{interrupt}_trap:
+                    #----- Interrupts disabled on entry ---#
+                    csrsi mstatus, 8            // enable interrupts
+                    #----- Interrupts enabled ---------#
+                    la x10, {interrupt}         // load proper interrupt handler address into x10/a0 (x10/a0 is caller-save => saved by hardware in PCS mode)
+                    jalr ra, x10, 0             // jump to corresponding interrupt handler proper (address stored in x10/a0)
+                    csrci mstatus, 8            // disable interrupts
+                    #----- Interrupts disabled  ---------#
+                    mret                        // return from interrupt
+                    ");"#
+    );
+
+    instructions.parse().unwrap()
+}
+
+fn start_nested_interrupt_trap(interrupt: &syn::Ident) -> proc_macro2::TokenStream {
     let interrupt = interrupt.to_string();
     let width = 4;
     let enter_save_count = CALLER_SAVE_EABI.len() + 2;
     let store_caller_save_regs = store_trap(CALLER_SAVE_EABI);
 
-    let store_caller_save = if !pcs {
-        format!(
-            r#"
+    let store_caller_save = format!(
+        r#"
         addi sp, sp, -{enter_save_count} * {width}  // Create frame for caller save registers, mcause, and mepc
         {store_caller_save_regs}
         csrr x5, mcause                             // read cause into x5 / t0
@@ -72,30 +96,21 @@ fn start_nested_interrupt_trap(interrupt: &syn::Ident, pcs: bool) -> proc_macro2
         sw x5, {CAUSE_POS}(sp)                      // save cause / x5 / t0
         sw x15, {EPC_POS}(sp)                       // save epc / x15 / t1 / a5
         "#
-        )
-    } else {
-        "// hardware stacks epc, cause & caller save".to_string()
-    };
-
-    let continue_label = if pcs {
-        "_continue_nested_pcs_trap"
-    } else {
-        "_continue_nested_trap"
-    };
+    );
 
     let instructions = format!(
         r#"core::arch::global_asm!("
-            .section .trap, \"ax\"
-            .align 4
-            .global _start_{interrupt}_trap
-            _start_{interrupt}_trap:
-                #----- Interrupts disabled on entry ---#
-                {store_caller_save}
-                csrsi mstatus, 8          // enable interrupts
-                #----- Interrupts enabled ---------#
-                la a0, {interrupt}        // load proper interrupt handler address into a0
-                j {continue_label}   // jump to common part of interrupt trap
-            ");"#
+                .section .trap, \"ax\"
+                    .align 4
+                    .global _start_{interrupt}_trap
+                    _start_{interrupt}_trap:
+                        #----- Interrupts disabled on entry ---#
+                        {store_caller_save}
+                        csrsi mstatus, 8          // enable interrupts
+                        #----- Interrupts enabled ---------#
+                        la a0, {interrupt}        // load proper interrupt handler address into a0
+                        j _continue_nested_trap   // jump to common part of interrupt trap
+                    ");"#
     );
 
     instructions.parse().unwrap()
@@ -106,27 +121,13 @@ fn start_nested_interrupt_trap(interrupt: &syn::Ident, pcs: bool) -> proc_macro2
 /// The '_continue_nested_trap' function stores the trap frame partially (all
 /// registers except a0), jumps to the interrupt handler, and restores the trap
 /// frame.
-pub(crate) fn generate_continue_nested_trap(arch: RiscvArch, pcs: bool) -> TokenStream {
+pub(crate) fn generate_continue_nested_trap() -> TokenStream {
     let width = 4;
-    let callee_save = match arch {
-        RiscvArch::Rv32E => CALLEE_SAVE_EABI_RVE,
-        RiscvArch::Rv32I => CALLEE_SAVE_EABI_RVI,
-    };
-    let callee_save_count = callee_save.len();
-    let store_callee_save_regs = store_trap(callee_save);
-    let load_callee_save_regs = load_trap(callee_save);
     let load_caller_save_regs = load_trap(CALLER_SAVE_EABI);
     let exit_save_count = CALLER_SAVE_EABI.len() + 2;
 
-    let asm_label = if !pcs {
-        "_continue_nested_trap"
-    } else {
-        "_continue_nested_pcs_trap"
-    };
-
-    let load_exit_regs = if !pcs {
-        format!(
-            r#"
+    let load_exit_regs = format!(
+        r#"
         lw x15, {EPC_POS}(sp)                       // restore epc from stack into x15 / t1 / a5
         lw x5, {CAUSE_POS}(sp)                      // restore cause from stack into x5 / t0
         csrw mepc, x15                              // put epc back into CSR
@@ -134,23 +135,16 @@ pub(crate) fn generate_continue_nested_trap(arch: RiscvArch, pcs: bool) -> Token
         {load_caller_save_regs}
         addi sp, sp, {exit_save_count} * {width}    // free stack frame
     "#
-        )
-    } else {
-        "// hardware unstacks epc, cause & caller save".to_string()
-    };
+    );
 
     let instructions = format!(
         r#"
         core::arch::global_asm!("
             .section .trap, \"ax\"
             .align 4
-            .global {asm_label}
-            {asm_label}:
-                addi sp, sp, -{callee_save_count} * {width} // Create frame for caller save registers, mcause, and mepc
-                {store_callee_save_regs}
+            .global _continue_nested_trap
+            _continue_nested_trap:
                 jalr ra, a0, 0                              // jump to corresponding interrupt handler proper (address stored in a0)
-                {load_callee_save_regs}                     // restore trap frame
-                addi sp, sp, {callee_save_count} * {width}  // deallocate space for trap frame
                 csrci mstatus, 8 # disable interrupts
                 #----- Interrupts disabled  ---------#
                 {load_exit_regs}

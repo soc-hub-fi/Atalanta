@@ -38,12 +38,6 @@ atalanta_bsp_macros::generate_continue_nested_trap_riscv32e!();
 #[cfg(riscvi)]
 atalanta_bsp_macros::generate_continue_nested_trap_riscv32i!();
 
-// Generate the `_continue_nested_pcs_trap` symbol
-#[cfg(riscve)]
-atalanta_bsp_macros::generate_continue_nested_pcs_trap_riscv32e!();
-#[cfg(riscvi)]
-atalanta_bsp_macros::generate_continue_nested_pcs_trap_riscv32i!();
-
 // Import macro for nested_interrupt
 #[cfg(riscve)]
 pub use atalanta_bsp_macros::nested_interrupt_riscv32e as nested_interrupt;

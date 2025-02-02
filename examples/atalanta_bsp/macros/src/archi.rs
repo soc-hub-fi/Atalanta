@@ -16,6 +16,8 @@ pub(crate) const CALLER_SAVE_EABI: &[&str] = &[
     "x15",
 ];
 
+// Kept for reference
+#[allow(dead_code)]
 #[rustfmt::skip]
 pub(crate) const CALLEE_SAVE_EABI_RVE: &[&str] = &[
     // `sp`: stack pointer
@@ -32,6 +34,8 @@ pub(crate) const CALLEE_SAVE_EABI_RVE: &[&str] = &[
     "x14",
 ];
 
+// Kept for reference
+#[allow(dead_code)]
 #[rustfmt::skip]
 pub(crate) const CALLEE_SAVE_EABI_RVI: &[&str] = &[
     // `sp`: stack pointer
@@ -50,9 +54,3 @@ pub(crate) const CALLEE_SAVE_EABI_RVI: &[&str] = &[
     "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23",
     "x24", "x25", "x26", "x27", "x28", "x29", "x30", "x31",
 ];
-
-#[derive(Clone, Copy)]
-pub(crate) enum RiscvArch {
-    Rv32E,
-    Rv32I,
-}
