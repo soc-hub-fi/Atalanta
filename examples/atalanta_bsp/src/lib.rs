@@ -33,10 +33,7 @@ pub use riscv_rt::{self as rt, interrupt};
 pub use ufmt;
 
 // Generate the `_continue_nested_trap` symbol
-#[cfg(riscve)]
-atalanta_bsp_macros::generate_continue_nested_trap_riscv32e!();
-#[cfg(riscvi)]
-atalanta_bsp_macros::generate_continue_nested_trap_riscv32i!();
+atalanta_bsp_macros::generate_continue_nested_trap!();
 
 // Import macro for nested_interrupt
 #[cfg(riscve)]

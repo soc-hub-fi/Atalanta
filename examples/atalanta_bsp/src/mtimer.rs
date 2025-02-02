@@ -87,7 +87,6 @@ impl MTimer {
     ///
     /// Interrupt signal is raised (and held) on `timer >= timer_cmp`.
     #[inline]
-    #[no_mangle]
     pub fn set_cmp(&mut self, cmp: u64) {
         // Setting low value to max first prevents the register from being temporarily
         // reduced by a transaction that is intended for increasing the total
@@ -97,8 +96,84 @@ impl MTimer {
         write_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS, cmp as u32);
     }
 
+    #[inline]
+    pub fn into_lo(self) -> MTimerLo {
+        MTimerLo(self)
+    }
+
+    #[inline]
     pub fn into_oneshot(self) -> OneShot {
         OneShot(self)
+    }
+}
+
+/// Machine Timer, lower bits only
+///
+/// This timer is associated with [crate::Interrupt::MachineTimer]
+pub struct MTimerLo(MTimer);
+
+impl MTimerLo {
+    /// Starts the count
+    ///
+    /// `prescaler` must be less than or equal to 7
+    #[inline]
+    pub fn enable_with_prescaler(&mut self, prescaler: u32) {
+        self.0.enable_with_prescaler(prescaler)
+    }
+
+    /// Starts the count
+    #[inline]
+    pub fn enable(&mut self) {
+        self.0.enable()
+    }
+
+    /// Stops the count & disables the interrupt line on the core
+    ///
+    /// Note that disabling the mtimer can be unexpected behavior.
+    #[inline]
+    pub fn disable(&mut self) {
+        self.0.disable()
+    }
+
+    #[inline]
+    pub fn counter(&self) -> u32 {
+        read_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS)
+    }
+
+    #[inline]
+    pub unsafe fn set_counter(&mut self, cnt: u32) {
+        write_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS, cnt);
+    }
+
+    /// Resets mtime to zero, disables the count & sets compare to u32::MAX,
+    /// making sure no more interrupts will fire (n.b., an interrupt might
+    /// already be pending and this will not lower it).
+    #[inline]
+    pub fn reset(&mut self) {
+        self.0.reset()
+    }
+
+    /// Gets the timer compare value
+    ///
+    /// Safety: needs to be called in an interrupt critical-section, otherwise
+    /// you risk getting interrupted in between reading the hi & low address and
+    /// getting a disjoint value
+    #[inline]
+    pub unsafe fn cmp(&mut self) -> u32 {
+        read_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS)
+    }
+
+    /// Sets the timer compare value
+    ///
+    /// Interrupt signal is raised (and held) on `timer >= timer_cmp`.
+    #[inline]
+    pub fn set_cmp(&mut self, cmp: u32) {
+        // Setting low value to max first prevents the register from being temporarily
+        // reduced by a transaction that is intended for increasing the total
+        // value.
+        write_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS, u32::MAX);
+        write_u32(MTIMER_BASE + MTIMECMP_HIGH_ADDR_OFS, 0x0);
+        write_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS, cmp as u32);
     }
 }
 
