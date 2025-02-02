@@ -26,7 +26,7 @@ Verilator simulations can be invoked from the repository root with
 # C
 make verilate simv TEST=<name of test, e.g. 'uart_sanity'>
 # Rust
-make verilate simv TEST_DIR=examples/hello_rt TEST=<name of test, e.g. 'uart'>
+make verilate simv RUST=1 TEST_DIR=examples/hello_rt TEST=<name of test, e.g. 'uart'>
 ```
 
 This will clean and compile the design and the software test, then invoke the simulation.
