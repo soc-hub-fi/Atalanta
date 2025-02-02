@@ -84,19 +84,18 @@ fn start_nested_interrupt_trap(interrupt: &syn::Ident, pcs: bool) -> proc_macro2
     };
 
     let instructions = format!(
-        r#"
-core::arch::global_asm!(
-    ".section .trap, \"ax\"
-    .align 4
-    .global _start_{interrupt}_trap
-    _start_{interrupt}_trap:
-        #----- Interrupts disabled on entry ---#
-        {store_caller_save}
-        csrsi mstatus, 8          // enable interrupts
-        #----- Interrupts enabled ---------#
-        la a0, {interrupt}        // load proper interrupt handler address into a0
-        j {continue_label}   // jump to common part of interrupt trap
-");"#
+        r#"core::arch::global_asm!("
+            .section .trap, \"ax\"
+            .align 4
+            .global _start_{interrupt}_trap
+            _start_{interrupt}_trap:
+                #----- Interrupts disabled on entry ---#
+                {store_caller_save}
+                csrsi mstatus, 8          // enable interrupts
+                #----- Interrupts enabled ---------#
+                la a0, {interrupt}        // load proper interrupt handler address into a0
+                j {continue_label}   // jump to common part of interrupt trap
+            ");"#
     );
 
     instructions.parse().unwrap()
@@ -142,22 +141,21 @@ pub(crate) fn generate_continue_nested_trap(arch: RiscvArch, pcs: bool) -> Token
 
     let instructions = format!(
         r#"
-core::arch::global_asm!(
-".section .trap, \"ax\"
-
-.align 4
-.global {asm_label}
-{asm_label}:
-    addi sp, sp, -{callee_save_count} * {width} // Create frame for caller save registers, mcause, and mepc
-    {store_callee_save_regs}
-    jalr ra, a0, 0                              // jump to corresponding interrupt handler proper (address stored in a0)
-    {load_callee_save_regs}                     // restore trap frame
-    addi sp, sp, {callee_save_count} * {width}  // deallocate space for trap frame
-    csrci mstatus, 8 # disable interrupts
-    #----- Interrupts disabled  ---------#
-    {load_exit_regs}
-    mret                                        // return from interrupt
-");"#
+        core::arch::global_asm!("
+            .section .trap, \"ax\"
+            .align 4
+            .global {asm_label}
+            {asm_label}:
+                addi sp, sp, -{callee_save_count} * {width} // Create frame for caller save registers, mcause, and mepc
+                {store_callee_save_regs}
+                jalr ra, a0, 0                              // jump to corresponding interrupt handler proper (address stored in a0)
+                {load_callee_save_regs}                     // restore trap frame
+                addi sp, sp, {callee_save_count} * {width}  // deallocate space for trap frame
+                csrci mstatus, 8 # disable interrupts
+                #----- Interrupts disabled  ---------#
+                {load_exit_regs}
+                mret                                        // return from interrupt
+            ");"#
     );
 
     instructions.parse().unwrap()
