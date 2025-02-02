@@ -87,17 +87,6 @@ fn start_nested_trap(interrupt: &syn::Ident) -> proc_macro2::TokenStream {
     let enter_save_count = CALLER_SAVE_EABI.len() + 2;
     let store_caller_save_regs = store_trap(CALLER_SAVE_EABI);
 
-    let store_caller_save = format!(
-        r#"
-        addi sp, sp, -{enter_save_count} * {width}  // Create frame for caller save registers, mcause, and mepc
-        {store_caller_save_regs}
-        csrr x5, mcause                             // read cause into x5 / t0
-        csrr x15, mepc                              // read epc into x15 / t1 / a5
-        sw x5, {CAUSE_POS}(sp)                      // save cause / x5 / t0
-        sw x15, {EPC_POS}(sp)                       // save epc / x15 / t1 / a5
-        "#
-    );
-
     let instructions = format!(
         r#"core::arch::global_asm!("
                 .section .trap, \"ax\"
@@ -105,7 +94,12 @@ fn start_nested_trap(interrupt: &syn::Ident) -> proc_macro2::TokenStream {
                     .global _start_{interrupt}_trap
                     _start_{interrupt}_trap:
                         #----- Interrupts disabled on entry ---#
-                        {store_caller_save}
+                        addi sp, sp, -{enter_save_count} * {width}  // Create frame for caller save registers, mcause, and mepc
+                        {store_caller_save_regs}
+                        csrr x5, mcause                             // read cause into x5 / t0
+                        csrr x15, mepc                              // read epc into x15 / t1 / a5
+                        sw x5, {CAUSE_POS}(sp)                      // save cause / x5 / t0
+                        sw x15, {EPC_POS}(sp)                       // save epc / x15 / t1 / a5
                         csrsi mstatus, 8          // enable interrupts
                         #----- Interrupts enabled ---------#
                         la a0, {interrupt}        // load proper interrupt handler address into a0
@@ -126,17 +120,6 @@ pub(crate) fn generate_continue_nested_trap() -> TokenStream {
     let load_caller_save_regs = load_trap(CALLER_SAVE_EABI);
     let exit_save_count = CALLER_SAVE_EABI.len() + 2;
 
-    let load_exit_regs = format!(
-        r#"
-        lw x15, {EPC_POS}(sp)                       // restore epc from stack into x15 / t1 / a5
-        lw x5, {CAUSE_POS}(sp)                      // restore cause from stack into x5 / t0
-        csrw mepc, x15                              // put epc back into CSR
-        csrw mcause, t0                             // put cause back into CSR
-        {load_caller_save_regs}
-        addi sp, sp, {exit_save_count} * {width}    // free stack frame
-    "#
-    );
-
     let instructions = format!(
         r#"
         core::arch::global_asm!("
@@ -147,7 +130,12 @@ pub(crate) fn generate_continue_nested_trap() -> TokenStream {
                 jalr ra, a0, 0                              // jump to corresponding interrupt handler proper (address stored in a0)
                 csrci mstatus, 8 # disable interrupts
                 #----- Interrupts disabled  ---------#
-                {load_exit_regs}
+                lw x15, {EPC_POS}(sp)                       // restore epc from stack into x15 / t1 / a5
+                lw x5, {CAUSE_POS}(sp)                      // restore cause from stack into x5 / t0
+                csrw mepc, x15                              // put epc back into CSR
+                csrw mcause, t0                             // put cause back into CSR
+                {load_caller_save_regs}
+                addi sp, sp, {exit_save_count} * {width}    // free stack frame
                 mret                                        // return from interrupt
             ");"#
     );
