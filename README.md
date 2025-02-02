@@ -16,7 +16,7 @@ make repository_init
 - This build is developed on top of version *5.008*. Currently, this requires a manual [installation](https://verilator.org/guide/latest/install.html#git-quick-install).
 - [Elf2Hex](https://github.com/sifive/elf2hex) is used to create hex-stims from ELF-binaries when loading programs with `$readmemh`.
 
-> ***NOTE:***  The design is compatible with at least Verilator 5.024, but 5.008 is preferded due to our experienced better compilation performance.
+> ***NOTE:***  The design is compatible with at least Verilator 5.024, but 5.008 is preferred due to our experienced better compilation performance.
 
 ### with Verilator
 
