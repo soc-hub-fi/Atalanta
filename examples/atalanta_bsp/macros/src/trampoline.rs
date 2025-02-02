@@ -119,7 +119,7 @@ fn start_nested_trap(interrupt: &syn::Ident) -> proc_macro2::TokenStream {
 /// The '_continue_nested_trap' function stores the trap frame partially (all
 /// registers except a0), jumps to the interrupt handler, and restores the trap
 /// frame.
-pub(crate) fn generate_continue_nested_trap() -> TokenStream {
+pub(crate) fn generate_continue_nested_trap_impl() -> TokenStream {
     let width = 4;
     let load_caller_save_regs = load_trap(CALLER_SAVE_EABI);
     let exit_save_count = CALLER_SAVE_EABI.len() + 2;
