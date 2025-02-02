@@ -96,10 +96,12 @@ impl MTimer {
         write_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS, cmp as u32);
     }
 
+    #[inline]
     pub fn into_lo(self) -> MTimerLo {
         MTimerLo(self)
     }
 
+    #[inline]
     pub fn into_oneshot(self) -> OneShot {
         OneShot(self)
     }
