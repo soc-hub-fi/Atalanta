@@ -210,6 +210,20 @@ fn main() -> ! {
                 total_in_task3,
                 total_in_task0 + total_in_task1 + total_in_task2 + total_in_task3,
             );
+
+            // Assert that each task runs the expected number of times
+            for (count, task) in &[
+                (TASK0_COUNT, TASK0),
+                (TASK1_COUNT, TASK1),
+                (TASK2_COUNT, TASK2),
+                (TASK3_COUNT, TASK3),
+            ] {
+                assert_eq!(
+                    *count,
+                    (TEST_DURATION.to_micros() as usize + task.start_offset_us as usize)
+                        / task.period_us as usize
+                )
+            }
             // Make sure serial is done printing before proceeding to the next iteration
             serial.flush().unwrap_unchecked();
         }
