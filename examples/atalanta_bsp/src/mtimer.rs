@@ -48,8 +48,8 @@ impl MTimer {
     /// interrupted in the middle of the read transaction
     #[inline]
     pub fn counter(&self) -> u64 {
-        let lo = read_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS);
         let hi = read_u32(MTIMER_BASE + MTIME_HIGH_ADDR_OFS);
+        let lo = read_u32(MTIMER_BASE + MTIME_LOW_ADDR_OFS);
         let mtime = ((hi as u64) << 32) | lo as u64;
         mtime
     }
