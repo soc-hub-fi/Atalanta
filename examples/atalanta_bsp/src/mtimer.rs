@@ -87,7 +87,6 @@ impl MTimer {
     ///
     /// Interrupt signal is raised (and held) on `timer >= timer_cmp`.
     #[inline]
-    #[no_mangle]
     pub fn set_cmp(&mut self, cmp: u64) {
         // Setting low value to max first prevents the register from being temporarily
         // reduced by a transaction that is intended for increasing the total
@@ -166,7 +165,6 @@ impl MTimerLo {
     ///
     /// Interrupt signal is raised (and held) on `timer >= timer_cmp`.
     #[inline]
-    #[no_mangle]
     pub fn set_cmp(&mut self, cmp: u32) {
         // Setting low value to max first prevents the register from being temporarily
         // reduced by a transaction that is intended for increasing the total
