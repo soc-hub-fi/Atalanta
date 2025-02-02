@@ -60,6 +60,7 @@ const CALLER_SAVE_COUNT: usize = CALLER_SAVE_EABI.len();
 const CAUSE_POS: usize = CALLER_SAVE_COUNT * 4;
 const EPC_POS: usize = (CALLER_SAVE_COUNT + 1) * 4;
 
+/// Generates the entry & exit for nested hardware-accelerated PCS trap
 fn start_pcs_trap(interrupt: String) -> proc_macro2::TokenStream {
     let instructions = format!(
         r#"core::arch::global_asm!("
