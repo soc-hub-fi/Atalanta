@@ -45,6 +45,7 @@ pub fn tear_irq(irq: Interrupt) {
 #[macro_export]
 macro_rules! print_example_name {
     () => {
+        use bsp::sprintln;
         sprintln!("[{}]", core::file!());
     };
 }
