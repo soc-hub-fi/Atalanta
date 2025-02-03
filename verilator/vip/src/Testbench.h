@@ -3,7 +3,7 @@
 #include <cstdint>
 
 // Clock period in picoseconds, used for generating waveforms
-const uint32_t CLOCK_PERIOD_PS = /* 50 MHz */ 20'000;
+const uint32_t CLOCK_PERIOD_PS = /* 100 MHz */ 10'000;
 
 template <class VA>
 class Testbench {
