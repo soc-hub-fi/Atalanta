@@ -66,7 +66,7 @@ localparam int unsigned ClicEndAddr       = 32'h0005_FFFF;
 
 localparam int unsigned NrApbPerip    = 6;
 localparam int unsigned SelWidth      = $clog2(NrApbPerip);
-localparam int unsigned ClkDivDef     = 2;
+localparam int unsigned ClkDivDef     = 1;
 localparam int unsigned DivValueWidth = 4;
 
 logic                   irq_ready_slow;

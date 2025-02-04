@@ -16,11 +16,21 @@ module irq_pulse_cdc #(
   output logic pulse_o
 );
 
-logic [DivMax-1:0] cnt_d, cnt_q;
+localparam int unsigned CntWidth = $clog2(DivMax);
+
+logic [CntWidth-1:0] cnt_d, cnt_q;
+logic [DivMax-1:0] decode;
 logic pulse_d, pulse_q;
 
+always_comb
+  begin
+    cnt_d = 0;
+    if (pulse_i) cnt_d = 1;
+    else if (cnt_q == divisor_i) cnt_d = 0;
+    else if (cnt_q != 0) cnt_d = cnt_q + 1;
+  end
 
-assign cnt_d = ((pulse_i | cnt_q != 0) & cnt_q != divisor_i) ? cnt_q | 1 << cnt_q : '0;
+assign decode = (2**cnt_q) - 1;
 
 always_ff @(posedge clk_a_i or negedge rst_ni)
   begin
@@ -28,8 +38,7 @@ always_ff @(posedge clk_a_i or negedge rst_ni)
     else         cnt_q <= cnt_d;
   end
 
-assign pulse_d = pulse_i; // | (|pulse[0+:DivMax-1] & mask);
-//assign pulse_d = pulse_i | (|pulse[0+:DivMax-1] & mask);
+assign pulse_d = |decode;
 
 always_ff @(posedge(clk_b_i) or negedge(rst_ni))
   begin : slow_register
