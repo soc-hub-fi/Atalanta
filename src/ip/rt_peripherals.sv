@@ -64,9 +64,10 @@ localparam int unsigned ApbSpiMasterEndAddr   = 32'h0003_04FF;
 localparam int unsigned ClicStartAddr     = 32'h0005_0000;
 localparam int unsigned ClicEndAddr       = 32'h0005_FFFF;
 
-localparam int unsigned NrApbPerip = 6;
-localparam int unsigned SelWidth   = $clog2(NrApbPerip);
-localparam int unsigned ClkDiv     = 2;
+localparam int unsigned NrApbPerip    = 6;
+localparam int unsigned SelWidth      = $clog2(NrApbPerip);
+localparam int unsigned ClkDivDef     = 2;
+localparam int unsigned DivValueWidth = 4;
 
 logic                   irq_ready_slow;
 logic [rt_pkg::NumDMAs-1:0] dma_irqs_q;
@@ -81,8 +82,11 @@ logic                       gpio_irq;
 logic [2*TimerGroupSize-1:0]apb_timer_irq;
 logic [1:0]                 spi_irqs;
 
+logic [DivValueWidth-1:0]   periph_div;
+logic                       periph_clk;
 
-logic                   periph_clk;
+// TODO: make SW-configurable
+assign periph_div = ClkDivDef;
 
 APB #(
   .ADDR_WIDTH (AddrWidth),
@@ -116,15 +120,20 @@ apb_cdc_intf #(
 
 `ifndef FPGA
 
-  clk_int_div_static #(
-    .DIV_VALUE (ClkDiv),
-    .ENABLE_CLOCK_IN_RESET (1'b0)
-  ) i_clk_div (
-    .clk_i          (clk_i),
-    .rst_ni         (rst_ni),
+  clk_int_div #(
+    .DIV_VALUE_WIDTH       (DivValueWidth),
+    .DEFAULT_DIV_VALUE     (ClkDivDef),
+    .ENABLE_CLOCK_IN_RESET (1'b1)
+  ) i_clk_int_div (
+    .clk_i,
+    .rst_ni,
     .en_i           (1'b1),
     .test_mode_en_i (1'b0),
-    .clk_o          (periph_clk)
+    .div_i          (periph_div),
+    .div_valid_i    (1'b1),
+    .div_ready_o    (),
+    .clk_o          (periph_clk),
+    .cycl_count_o   ()
   );
 
 `else
@@ -132,7 +141,7 @@ apb_cdc_intf #(
   configurable_clock_divider_fpga i_clk_div (
     .clk_in       (clk_i),
     .rst_n        (rst_ni),
-    .divider_conf (ClkDiv),
+    .divider_conf (periph_div),
     .clk_out      (periph_clk)
   );
 
@@ -150,25 +159,27 @@ apb_demux_intf #(
 );
 
 irq_pulse_cdc #(
-  .Divisor (ClkDiv)
+  .DivMax (DivValueWidth)
 ) i_irq_ready_sync (
   .rst_ni,
-  .clk_a_i (clk_i),
-  .clk_b_i (periph_clk),
-  .pulse_i (irq_ready_i),
-  .pulse_o (irq_ready_slow)
+  .divisor_i (periph_div),
+  .clk_a_i   (clk_i),
+  .clk_b_i   (periph_clk),
+  .pulse_i   (irq_ready_i),
+  .pulse_o   (irq_ready_slow)
 );
 
 for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++)
   begin : g_dma_sync
     irq_pulse_cdc #(
-      .Divisor (ClkDiv)
+      .DivMax (DivValueWidth)
     ) i_dma_sync (
       .rst_ni,
-      .clk_a_i (clk_i),
-      .clk_b_i (periph_clk),
-      .pulse_i (dma_irqs_i[ii]),
-      .pulse_o (dma_irqs_q[ii])
+      .divisor_i (periph_div),
+      .clk_a_i   (clk_i),
+      .clk_b_i   (periph_clk),
+      .pulse_i   (dma_irqs_i[ii]),
+      .pulse_o   (dma_irqs_q[ii])
     );
   end : g_dma_sync
 
