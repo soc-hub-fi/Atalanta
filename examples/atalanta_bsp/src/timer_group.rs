@@ -95,7 +95,8 @@ pub type Duration = fugit::Duration<u32, 1, DENOM>;
 pub struct Periodic<const BASE_ADDR: usize>(Timer<BASE_ADDR>);
 
 impl<const BASE_ADDR: usize> Periodic<BASE_ADDR> {
-    /// Schedules an interrupt to be fired every `duration`
+    /// Schedules an interrupt to be fired every `duration`. Call [Self::start]
+    /// to start the timer.
     ///
     /// Also resets the internal counter.
     #[inline]

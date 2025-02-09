@@ -25,6 +25,7 @@ compile_error!(
 );
 
 pub use embedded_io;
+pub use fugit;
 pub use interrupt::{nested, Interrupt};
 pub use riscv;
 #[cfg(feature = "rt")]
