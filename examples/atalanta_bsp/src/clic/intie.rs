@@ -70,4 +70,18 @@ impl INTIE {
         // > The enable bit is located in bit 0 of the byte.
         reg.clear_bit(0 + 8 * Self::INTIE_OFFSET);
     }
+
+    /// Sets the interrupt source as PCS or not
+    #[inline]
+    pub fn set_pcs(self, set_pcs: bool) {
+        // SAFETY: valid interrupt number
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
+
+        // The PCS enable bit is located in bit 4 of the byte.
+        if set_pcs {
+            reg.set_bit(4 + 8 * Self::INTIE_OFFSET);
+        } else {
+            reg.clear_bit(4 + 8 * Self::INTIE_OFFSET);
+        }
+    }
 }
