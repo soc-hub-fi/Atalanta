@@ -79,26 +79,6 @@ static mut TASK2_COUNT: usize = 0;
 static mut TASK3_COUNT: usize = 0;
 static mut TIMEOUT: bool = false;
 
-#[cfg(feature = "pcs")]
-fn enable_pcs(irq: Interrupt) {
-    use bsp::{mask_u32, mmap::CLIC_BASE_ADDR};
-    const PCS_BIT_IDX: u32 = 12;
-    mask_u32(
-        CLIC_BASE_ADDR + 0x1000 + 0x04 * irq as usize,
-        0b1 << PCS_BIT_IDX,
-    );
-}
-
-#[cfg(feature = "pcs")]
-fn disable_pcs(irq: Interrupt) {
-    use bsp::{mmap::CLIC_BASE_ADDR, unmask_u32};
-    const PCS_BIT_IDX: u32 = 12;
-    unmask_u32(
-        CLIC_BASE_ADDR + 0x1000 + 0x04 * irq as usize,
-        0b1 << PCS_BIT_IDX,
-    );
-}
-
 #[entry]
 fn main() -> ! {
     let mut serial = ApbUart::init(CPU_FREQ, 115_200);
@@ -124,10 +104,10 @@ fn main() -> ! {
     setup_irq(Interrupt::MachineTimer, u8::MAX);
     #[cfg(feature = "pcs")]
     {
-        enable_pcs(Interrupt::Timer0Cmp);
-        enable_pcs(Interrupt::Timer1Cmp);
-        enable_pcs(Interrupt::Timer2Cmp);
-        enable_pcs(Interrupt::Timer3Cmp);
+        Clic::ie(Interrupt::Timer0Cmp).set_pcs(true);
+        Clic::ie(Interrupt::Timer1Cmp).set_pcs(true);
+        Clic::ie(Interrupt::Timer2Cmp).set_pcs(true);
+        Clic::ie(Interrupt::Timer3Cmp).set_pcs(true);
     }
 
     for run_idx in 0..RUN_COUNT {
@@ -237,10 +217,10 @@ fn main() -> ! {
     tear_irq(Interrupt::MachineTimer);
     #[cfg(feature = "pcs")]
     {
-        disable_pcs(Interrupt::Timer0Cmp);
-        disable_pcs(Interrupt::Timer1Cmp);
-        disable_pcs(Interrupt::Timer2Cmp);
-        disable_pcs(Interrupt::Timer3Cmp);
+        Clic::ie(Interrupt::Timer0Cmp).set_pcs(false);
+        Clic::ie(Interrupt::Timer1Cmp).set_pcs(false);
+        Clic::ie(Interrupt::Timer2Cmp).set_pcs(false);
+        Clic::ie(Interrupt::Timer3Cmp).set_pcs(false);
     }
 
     signal_pass(Some(&mut serial));
