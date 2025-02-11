@@ -3,9 +3,11 @@ use crate::uart::ApbUartHal;
 #[macro_export]
 macro_rules! sprint {
     ($s:expr) => {{
+        use $crate::ufmt;
         ufmt::uwrite!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }> {}, $s).unwrap()
     }};
     ($($tt:tt)*) => {{
+        use $crate::ufmt;
         ufmt::uwrite!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }>, $($tt)*).unwrap()
     }};
 }
