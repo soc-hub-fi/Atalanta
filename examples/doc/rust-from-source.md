@@ -25,7 +25,7 @@ the right backends already exist in LLVM & Rust, so we only need to configure Ru
     ./x install compiler/rustc library/std
 
     # Build extra tools if required
-    ./x install rust-analyzer rusfmt src clippy
+    ./x install rust-analyzer rustfmt src clippy
     ```
 
 6. Link the installed compiler for rustup so that we can use it easily from anywhere on the system
