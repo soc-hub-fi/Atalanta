@@ -29,6 +29,3 @@ fpga = []
 rt = ["dep:riscv-rt", "panic"]
 panic = []
 ufmt = ["dep:ufmt"]
-clic-smclic = []
-# CLIC selective hardware vectoring extension
-clic-smclicshv = []

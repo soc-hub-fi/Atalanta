@@ -126,7 +126,6 @@ impl INTATTR {
 
     /// Check the selective hardware vectoring mode for this interrupt.
     #[inline]
-    #[cfg(feature = "clic-smclicshv")]
     pub fn shv(self) -> bool {
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
@@ -136,7 +135,6 @@ impl INTATTR {
 
     /// Set selective hardware vectoring mode for this interrupt.
     #[inline]
-    #[cfg(feature = "clic-smclicshv")]
     pub fn set_shv(self, shv: bool) {
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };

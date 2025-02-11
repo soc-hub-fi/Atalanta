@@ -8,8 +8,6 @@ edition = "2021"
 [dependencies]
 bsp = { package = "atalanta_bsp", path = "../atalanta_bsp", features = [
     "rt",
-    "clic-smclic",
-    "clic-smclicshv",
 ] }
 fugit = "0.3.7"
 ufmt = "0.2.0"
