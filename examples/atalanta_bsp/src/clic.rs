@@ -7,7 +7,6 @@ pub mod intctl;
 pub mod intie;
 pub mod intip;
 pub mod inttrig;
-#[cfg(feature = "clic-smclic")]
 pub mod smclicconfig;
 
 pub use intattr::{Polarity, Trig};
@@ -23,7 +22,6 @@ pub type CLIC = Clic;
 impl Clic {
     const BASE: usize = crate::mmap::CLIC_BASE_ADDR;
 
-    #[cfg(feature = "clic-smclic")]
     const SMCLICCONFIG_OFFSET: usize = 0x0;
 
     const INTTRIG_OFFSET: usize = 0x40;
@@ -34,7 +32,6 @@ impl Clic {
 
     /// Returns the smclicconfig register of the CLIC.
     #[inline]
-    #[cfg(feature = "clic-smclic")]
     pub fn smclicconfig() -> smclicconfig::SMCLICCONFIG {
         // SAFETY: valid address
         unsafe { smclicconfig::SMCLICCONFIG::new(Self::BASE + Self::SMCLICCONFIG_OFFSET) }
