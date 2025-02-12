@@ -3,7 +3,7 @@
 //! PULP APB UART conforms to the NS16550.
 use embedded_io::Write;
 
-use crate::{mask_u8, mmap::*, unmask_u8};
+use crate::{mask_u8, mmap::*, read_u8_masked, unmask_u8};
 use crate::{read_u8, write_u8};
 
 // Hack to cover some more error cases with outputful panics
@@ -48,7 +48,7 @@ impl<const BASE_ADDR: usize> ApbUartHal<BASE_ADDR> {
         // always valid
         unsafe {
             // Read current peripheral clock divider
-            let periph_clk_div = read_u8(CFG_BASE + PERIPH_CLK_DIV_OFS);
+            let periph_clk_div = read_u8_masked(CFG_BASE + PERIPH_CLK_DIV_OFS, 0xf);
             let divisor: u32 = freq / periph_clk_div as u32 / (baud << 4);
 
             // Disable all interrupts
