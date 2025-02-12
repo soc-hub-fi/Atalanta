@@ -43,7 +43,7 @@ impl<const BASE_ADDR: usize> ApbUartHal<BASE_ADDR> {
     ///   divisor
     /// * `baud` - target BAUD (sa. UART protocol)
     #[inline]
-    pub fn init(freq: u32, baud: u32 ) -> Self {
+    pub fn init(freq: u32, baud: u32) -> Self {
         // This is the hardware default value; it could be made configurable
         const PERIPH_CLK_DIV: u32 = 2;
         let divisor: u32 = freq / PERIPH_CLK_DIV / (baud << 4);
