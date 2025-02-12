@@ -1,5 +1,5 @@
 module rt_interconnect #(
-  parameter bit CutMgrPorts = 0,
+  parameter bit CutMgrPorts = 1,
   parameter bit CutSbrPorts = 1
 )(
   input  logic        clk_i,
