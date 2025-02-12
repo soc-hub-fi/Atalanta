@@ -84,6 +84,16 @@ pub unsafe fn read_u8(addr: usize) -> u8 {
     core::ptr::read_volatile(addr as *const _)
 }
 
+/// Reads the masked bits from the register
+///
+/// # Safety
+///
+/// Unaligned reads may fail to produce expected results on rt-ss.
+#[inline(always)]
+pub unsafe fn read_u8_masked(addr: usize, mask: u8) -> u8 {
+    core::ptr::read_volatile(addr as *const u8) | mask
+}
+
 /// # Safety
 ///
 /// Unaligned writes may fail to produce expected results on rt-ss.
