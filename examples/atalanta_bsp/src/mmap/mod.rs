@@ -8,12 +8,14 @@
 #![allow(clippy::identity_op)]
 
 pub(crate) mod apb_timer;
+mod cfg;
 mod clic;
 pub mod gpio;
 mod mtimer;
 mod spi;
 mod uart;
 
+pub use cfg::*;
 pub use clic::*;
 pub use mtimer::*;
 pub use spi::*;

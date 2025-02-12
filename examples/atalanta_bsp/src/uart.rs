@@ -43,16 +43,14 @@ impl<const BASE_ADDR: usize> ApbUartHal<BASE_ADDR> {
     ///   divisor
     /// * `baud` - target BAUD (sa. UART protocol)
     #[inline]
-    pub fn init(freq: u32, baud: u32 ) -> Self {
-        // This is the hardware default value; it could be made configurable
-        const PERIPH_CLK_DIV: u32 = 2;
-        let divisor: u32 = freq / PERIPH_CLK_DIV / (baud << 4);
-
+    pub fn init(freq: u32, baud: u32) -> Self {
         // Safety: all UART registers are 4-byte aligned which makes the below writes
         // always valid
         unsafe {
-            // set peripheral clock divider
-            write_u8(0x0003_0500, 0x2);
+            // Read current peripheral clock divider
+            let periph_clk_div = read_u8(CFG_BASE + PERIPH_CLK_DIV_OFS);
+            let divisor: u32 = freq / periph_clk_div as u32 / (baud << 4);
+
             // Disable all interrupts
             write_u8(BASE_ADDR + UART_IER_DLM_OFS, 0x00);
 
