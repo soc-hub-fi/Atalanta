@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Mtimer with new implementation
 
 ### Changed
+- Peripherals frequency to be runtime-configurable
 - Make Mtimer writable
 
 ## [v0.2.0] - 2025-01-24

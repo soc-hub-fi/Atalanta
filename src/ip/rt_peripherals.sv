@@ -61,10 +61,12 @@ localparam int unsigned ApbTimerStartAddr = 32'h0003_0300;
 localparam int unsigned ApbTimerEndAddr   = 32'h0003_03FF;
 localparam int unsigned ApbSpiMasterStartAddr = 32'h0003_0400;
 localparam int unsigned ApbSpiMasterEndAddr   = 32'h0003_04FF;
+localparam int unsigned CfgRegsStartAddr  = 32'h0003_0500;
+localparam int unsigned CfgRegsEndAddr    = 32'h0003_05FF;
 localparam int unsigned ClicStartAddr     = 32'h0005_0000;
 localparam int unsigned ClicEndAddr       = 32'h0005_FFFF;
 
-localparam int unsigned NrApbPerip    = 6;
+localparam int unsigned NrApbPerip    = 7;
 localparam int unsigned SelWidth      = $clog2(NrApbPerip);
 localparam int unsigned ClkDivDef     = 1;
 localparam int unsigned DivValueWidth = 4;
@@ -84,9 +86,6 @@ logic [1:0]                 spi_irqs;
 
 logic [DivValueWidth-1:0]   periph_div;
 logic                       periph_clk;
-
-// TODO: make SW-configurable
-assign periph_div = ClkDivDef;
 
 APB #(
   .ADDR_WIDTH (AddrWidth),
@@ -198,11 +197,14 @@ always_comb
       [rt_pkg::ClicStartAddr:rt_pkg::ClicEndAddr]: begin
         demux_sel = SelWidth'('h3);
       end
-      [rt_pkg::SpiStartAddr:rt_pkg::SpiEndAddr]: begin
+      [ApbSpiMasterStartAddr:ApbSpiMasterEndAddr]: begin
         demux_sel = SelWidth'('h4);
       end
       [ApbTimerStartAddr:ApbTimerEndAddr]: begin
         demux_sel = SelWidth'('h5);
+      end
+      [CfgRegsStartAddr:CfgRegsEndAddr]: begin
+        demux_sel = SelWidth'('h6);
       end
       default: begin
         demux_sel = SelWidth'('h0);
@@ -330,6 +332,21 @@ apb_timer #(
   .irq_o          (apb_timer_irq)
 );
 
+apb_cfg_regs #(
+  .DivDefault (ClkDivDef)
+) i_cfg_regs (
+  .clk_i       (periph_clk),
+  .rst_ni      (rst_ni),
+  .penable_i   (apb_out[6].penable),
+  .pwrite_i    (apb_out[6].pwrite),
+  .paddr_i     (apb_out[6].paddr),
+  .psel_i      (apb_out[6].psel),
+  .pwdata_i    (apb_out[6].pwdata),
+  .prdata_o    (apb_out[6].prdata),
+  .pready_o    (apb_out[6].pready),
+  .pslverr_o   (apb_out[6].pslverr),
+  .div_o       (periph_div)
+);
 
 apb_spi_master #(
   .APB_ADDR_WIDTH      (AddrWidth),
