@@ -6,32 +6,39 @@
  */
 
 module irq_pulse_cdc #(
-  parameter int unsigned Divisor = 2
+  parameter int unsigned DivMax = 2
 )(
   input  logic rst_ni,
+  input  logic [DivMax-1:0] divisor_i,
   input  logic clk_a_i,
   input  logic clk_b_i,
   input  logic pulse_i,
   output logic pulse_o
 );
 
-logic [Divisor-1:0] pulse;
+localparam int unsigned CntWidth = $clog2(DivMax);
+
+logic [CntWidth-1:0] cnt_d, cnt_q;
+logic [DivMax-1:0] decode;
 logic pulse_d, pulse_q;
 
-for (genvar ii=0; ii<Divisor; ii++)
-  always_ff @(posedge(clk_a_i) or negedge(rst_ni))
-    begin : g_delay_regs
-      if (~rst_ni) begin
-        pulse[ii] <= 0;
-      end else begin
-        if (ii == 0)
-          pulse[ii] <= pulse_i;
-        else
-          pulse[ii] <= pulse[ii-1];
-      end
-    end : g_delay_regs
+always_comb
+  begin
+    cnt_d = 0;
+    if (pulse_i) cnt_d = 1;
+    else if (cnt_q == divisor_i) cnt_d = 0;
+    else if (cnt_q != 0) cnt_d = cnt_q + 1;
+  end
 
-assign pulse_d = pulse_i | (|pulse[0+:Divisor-1]);
+assign decode = (2**cnt_q) - 1;
+
+always_ff @(posedge clk_a_i or negedge rst_ni)
+  begin
+    if (~rst_ni) cnt_q <= '0;
+    else         cnt_q <= cnt_d;
+  end
+
+assign pulse_d = |decode;
 
 always_ff @(posedge(clk_b_i) or negedge(rst_ni))
   begin : slow_register

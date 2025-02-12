@@ -49,6 +49,7 @@ sources:
     - fpga/hdl/src/xilinx_sp_BRAM.sv
     - src/ip/mock_uart.sv
     - src/ip/rt_core.sv
+    - src/ip/apb_cfg_regs.sv
     - src/ip/apb_mtimer.sv
     - src/ip/rt_ibex_bootrom.sv
     - src/ip/rt_interconnect.sv

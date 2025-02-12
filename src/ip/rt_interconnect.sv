@@ -70,14 +70,14 @@ if (CutMgrPorts) begin : g_mgr_cut
 
 end else begin : g_no_mgr_cut
 
-  obi_join i_core_mgr_join (.Src( core_mgr),    .Dst (sbr_bus[0]));
-  obi_join i_dbg_rom_join  (.Src( dbg_rom_mgr), .Dst (sbr_bus[1]));
-  obi_join i_apb_join      (.Src( apb_bus),     .Dst (sbr_bus[2]));
-  obi_join i_axi_mgr_join  (.Src( axi_mgr),     .Dst (sbr_bus[3]));
-  obi_join i_dma_mgr_join  (.Src( dma_mgr),     .Dst (sbr_bus[4]));
+  obi_join i_core_mgr_join (.Dst(core_mgr),    .Src (sbr_bus[0]));
+  obi_join i_dbg_rom_join  (.Dst(dbg_rom_mgr), .Src (sbr_bus[1]));
+  obi_join i_apb_join      (.Dst(apb_bus),     .Src (sbr_bus[2]));
+  obi_join i_axi_mgr_join  (.Dst(axi_mgr),     .Src (sbr_bus[3]));
+  obi_join i_dma_mgr_join  (.Dst(dma_mgr),     .Src (sbr_bus[4]));
 
   for (genvar i = 0; i < NumMemBanks; i++) begin : g_mem_ports
-    obi_join i_sram_join (.Src(sram_bus[i]), .Dst(sbr_bus[5+i]));
+    obi_join i_sram_join (.Dst(sram_bus[i]), .Src(sbr_bus[5+i]));
   end : g_mem_ports
 end
 
