@@ -302,8 +302,6 @@ pub fn setup_irq(irq: Interrupt, level: u8) {
 }
 
 /// Tear down the IRQ configuration to avoid side-effects for further testing
-///
-/// Copy and customize this function if you need more involved configurations.
 pub fn tear_irq(irq: Interrupt) {
     Clic::ie(irq).disable();
     Clic::ctl(irq).set_level(0x0);
