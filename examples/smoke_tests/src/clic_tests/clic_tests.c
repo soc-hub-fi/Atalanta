@@ -221,6 +221,8 @@ void clic_perf(){
 
 int main(){
     
+    // set peripherals to half freq
+    write_reg_u8(0x00030500, 0x2);
     init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 30 MHz for FPGA
     init();
 

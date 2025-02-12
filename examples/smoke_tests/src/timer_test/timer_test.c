@@ -19,6 +19,8 @@
 
 int main() {
 
+  // set peripherals to half freq
+  write_reg_u8(0x00030500, 0x2);
   init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 40 MHz for FPGA
   //Init OUTPUT_REG_ADDR
 
