@@ -10,7 +10,7 @@ use bsp::{
     embedded_io::Write,
     mtimer::{self, MTimer},
     nested_interrupt,
-    riscv::{self, asm::wfi},
+    riscv::{self, asm::{self, nop, wfi}, read_csr},
     rt::{entry, interrupt},
     sprint, sprintln,
     tb::signal_pass,
@@ -72,6 +72,11 @@ const PERIPH_CLK_DIV: u64 = 2;
 const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
 const CYCLES_PER_MS: u64 = CYCLES_PER_SEC / 1_000;
 const CYCLES_PER_US: u64 = CYCLES_PER_MS / 1_000;
+
+static mut TASK0_INC: usize = 0;
+static mut TASK1_INC: usize = 0;
+static mut TASK2_INC: usize = 0;
+static mut TASK3_INC: usize = 0;
 
 static mut TASK0_COUNT: usize = 0;
 static mut TASK1_COUNT: usize = 0;
@@ -171,6 +176,7 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
+            /*
             sprintln!(
                 "Task counts:\r\n{} | {} | {} | {}",
                 TASK0_COUNT,
@@ -204,6 +210,7 @@ fn main() -> ! {
                         / task.period_us as usize
                 )
             }
+             */
             // Make sure serial is done printing before proceeding to the next iteration
             serial.flush().unwrap_unchecked();
         }
@@ -230,48 +237,58 @@ fn main() -> ! {
     }
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+//#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+//#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+#[nested_interrupt]
 unsafe fn Timer0Cmp() {
-    let mtimer = MTimer::instance().into_lo();
-    let sample = mtimer.counter();
+    nop();
+    //let mtimer = MTimer::instance().into_lo();
+    //let sample = mtimer.counter();
     TASK0_COUNT += 1;
-    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
-    while mtimer.counter() <= task_end {}
+
+    //let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
+    //while mtimer.counter() <= task_end {}
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer1Cmp() {
-    let mtimer = MTimer::instance().into_lo();
-    let sample = mtimer.counter();
+    nop();
+
+    //let mtimer = MTimer::instance().into_lo();
+    //let sample = mtimer.counter();
     TASK1_COUNT += 1;
-    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
-    while mtimer.counter() <= task_end {}
+    //let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
+    //while mtimer.counter() <= task_end {}
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer2Cmp() {
-    let mtimer = MTimer::instance().into_lo();
-    let sample = mtimer.counter();
+    nop();
+
+    //let mtimer = MTimer::instance().into_lo();
+    //let sample = mtimer.counter();
     TASK2_COUNT += 1;
-    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
-    while mtimer.counter() <= task_end {}
+    //let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
+    //while mtimer.counter() <= task_end {}
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer3Cmp() {
-    let mtimer = MTimer::instance().into_lo();
-    let sample = mtimer.counter();
+    nop();
+
+    //let mtimer = MTimer::instance().into_lo();
+    //let sample = mtimer.counter();
     TASK3_COUNT += 1;
-    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
-    while mtimer.counter() <= task_end {}
+    //let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
+    //while mtimer.counter() <= task_end {}
 }
 
 /// Timeout interrupt (per test-run)
-#[interrupt]
+#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn MachineTimer() {
     unsafe { TIMEOUT = true };
     let mut timer = MTimer::instance();
@@ -287,13 +304,14 @@ unsafe fn MachineTimer() {
     Timer2::instance().disable();
     Timer3::instance().disable();
 
+
     // check ip status
-    let none_pending: bool = Clic::ip(Interrupt::Timer0Cmp).is_pending()
+    let any_pending: bool = Clic::ip(Interrupt::Timer0Cmp).is_pending()
                            | Clic::ip(Interrupt::Timer1Cmp).is_pending()
                            | Clic::ip(Interrupt::Timer2Cmp).is_pending()
                            | Clic::ip(Interrupt::Timer3Cmp).is_pending();
 
-    if none_pending {
+    if !any_pending {
         sprintln!("No IRQs pending");
     } else {
         sprintln!("IRQs still pending!");
