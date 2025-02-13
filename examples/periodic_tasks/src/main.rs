@@ -286,6 +286,19 @@ unsafe fn MachineTimer() {
     Timer1::instance().disable();
     Timer2::instance().disable();
     Timer3::instance().disable();
+
+    // check ip status
+    let none_pending: bool = Clic::ip(Interrupt::Timer0Cmp).is_pending()
+                           | Clic::ip(Interrupt::Timer1Cmp).is_pending()
+                           | Clic::ip(Interrupt::Timer2Cmp).is_pending()
+                           | Clic::ip(Interrupt::Timer3Cmp).is_pending();
+
+    if none_pending {
+        sprintln!("No IRQs pending");
+    } else {
+        sprintln!("IRQs still pending!");
+    }
+
     Clic::ip(Interrupt::MachineTimer).unpend();
     Clic::ip(Interrupt::Timer0Cmp).unpend();
     Clic::ip(Interrupt::Timer1Cmp).unpend();
