@@ -73,7 +73,7 @@ const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
 const CYCLES_PER_MS: u64 = CYCLES_PER_SEC / 1_000;
 const CYCLES_PER_US: u64 = CYCLES_PER_MS / 1_000;
 
-static mut TASK0_INC: usize = 0;
+static mut TASK0_INC: u32 = 0;
 static mut TASK1_INC: usize = 0;
 static mut TASK2_INC: usize = 0;
 static mut TASK3_INC: usize = 0;
@@ -176,6 +176,15 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
+
+            // tässä tapahtuu hirveitä
+            sprintln!("do all printing here to be safe");
+            sprintln!("more printing 1234 asda\n\r testtest");
+            sprintln!("still more 1234 asda\n\r testtest");
+
+            // tämän lisääminen rikkoo edelliset
+            sprintln!("print something {}", 123);
+
             /*
             sprintln!(
                 "Task counts:\r\n{} | {} | {} | {}",
@@ -241,7 +250,10 @@ fn main() -> ! {
 //#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 #[nested_interrupt]
 unsafe fn Timer0Cmp() {
-    nop();
+
+    //let mintstatus: u32;
+    //core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
+    //TASK0_INC = mintstatus;
     //let mtimer = MTimer::instance().into_lo();
     //let sample = mtimer.counter();
     TASK0_COUNT += 1;
@@ -304,7 +316,7 @@ unsafe fn MachineTimer() {
     Timer2::instance().disable();
     Timer3::instance().disable();
 
-
+/* 
     // check ip status
     let any_pending: bool = Clic::ip(Interrupt::Timer0Cmp).is_pending()
                            | Clic::ip(Interrupt::Timer1Cmp).is_pending()
@@ -316,6 +328,14 @@ unsafe fn MachineTimer() {
     } else {
         sprintln!("IRQs still pending!");
     }
+*/
+    // ei roiku
+
+    // roikkuu
+    //sprintln!("OK {}", 0x1);
+    //sprintln!("all printing done ;)");
+
+    //sprintln!("{}", TASK0_INC);
 
     Clic::ip(Interrupt::MachineTimer).unpend();
     Clic::ip(Interrupt::Timer0Cmp).unpend();
