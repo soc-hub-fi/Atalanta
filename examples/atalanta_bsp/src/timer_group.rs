@@ -1,17 +1,17 @@
-use crate::{mask_u32, mmap::apb_timer::*, read_u32, unmask_u32, write_u32, CPU_FREQ};
+use crate::{mask_u32p, mmap::apb_timer::*, read_u32p, unmask_u32p, write_u32p, CPU_FREQ};
 
 /// Relocatable driver for PULP APB Timer IP
-pub struct Timer<const BASE_ADDR: usize>;
+pub struct Timer(*mut RegisterBlock);
 
-impl<const BASE_ADDR: usize> Timer<BASE_ADDR> {
+impl Timer {
     /// Initializes a timer with all values initialized to zero
     #[inline]
-    pub fn init() -> Self {
-        let timer = Self {};
+    pub fn init<const BASE_ADDR: usize>() -> Self {
+        let timer = Self(BASE_ADDR as *mut _);
         // Disable timer & zero prescaler
-        write_u32(BASE_ADDR + TIMER_CTRL_OFS, 0);
+        write_u32p(unsafe { &mut (*timer.0).ctrl as *mut u32 }, 0);
         // Set compare to max. N.b., setting compare also zeros the counter.
-        write_u32(BASE_ADDR + TIMER_CMP_OFS, u32::MAX);
+        write_u32p(unsafe { &mut (*timer.0).cmp as *mut u32 }, u32::MAX);
         timer
     }
 
@@ -19,14 +19,17 @@ impl<const BASE_ADDR: usize> Timer<BASE_ADDR> {
     ///
     /// Returns a potentially uninitialized instance of APB Timer
     #[inline]
-    pub unsafe fn instance() -> Self {
-        Self {}
+    pub unsafe fn instance<const BASE_ADDR: usize>() -> Self {
+        Self(BASE_ADDR as *mut _)
     }
 
     /// Starts the count
     #[inline]
     pub fn enable(&mut self) {
-        mask_u32(BASE_ADDR + TIMER_CTRL_OFS, TIMER_CTRL_ENABLE_BIT);
+        mask_u32p(
+            unsafe { &mut (*self.0).ctrl as *mut u32 },
+            TIMER_CTRL_ENABLE_BIT,
+        );
     }
 
     /// Starts the count
@@ -36,8 +39,8 @@ impl<const BASE_ADDR: usize> Timer<BASE_ADDR> {
     pub fn enable_with_prescaler(&mut self, prescaler: u32) {
         debug_assert!(prescaler <= 0b111);
 
-        write_u32(
-            BASE_ADDR + TIMER_CTRL_OFS,
+        write_u32p(
+            unsafe { &mut (*self.0).ctrl as *mut u32 },
             (prescaler << TIMER_CTRL_PRESCALER_BIT_IDX) | TIMER_CTRL_ENABLE_BIT,
         );
     }
@@ -45,19 +48,22 @@ impl<const BASE_ADDR: usize> Timer<BASE_ADDR> {
     /// Stops the count
     #[inline]
     pub fn disable(&mut self) {
-        unmask_u32(BASE_ADDR + TIMER_CTRL_OFS, TIMER_CTRL_ENABLE_BIT);
+        unmask_u32p(
+            unsafe { &mut (*self.0).ctrl as *mut u32 },
+            TIMER_CTRL_ENABLE_BIT,
+        );
     }
 
     /// Get current timer counter value
     #[inline]
     pub fn counter(&mut self) -> u32 {
-        read_u32(BASE_ADDR + TIMER_COUNTER_OFS)
+        read_u32p(unsafe { &mut (*self.0).cnt as *mut u32 })
     }
 
     /// Set current timer counter value
     #[inline]
     pub fn set_counter(&mut self, cnt: u32) {
-        write_u32(BASE_ADDR + TIMER_COUNTER_OFS, cnt)
+        write_u32p(unsafe { &mut (*self.0).cnt as *mut u32 }, cnt)
     }
 
     /// Sets the timer compare value
@@ -70,31 +76,22 @@ impl<const BASE_ADDR: usize> Timer<BASE_ADDR> {
     /// * `counter` value is reset to zero.
     #[inline]
     pub fn set_cmp(&mut self, cmp: u32) {
-        write_u32(BASE_ADDR + TIMER_CMP_OFS, cmp);
+        write_u32p(unsafe { &mut (*self.0).cmp as *mut u32 }, cmp);
     }
 
     #[inline]
-    pub fn into_periodic(self) -> Periodic<BASE_ADDR> {
+    pub fn into_periodic(self) -> Periodic {
         Periodic(self)
     }
 }
-
-/// Type alias that should be used to interface timer 0.
-pub type Timer0 = Timer<TIMER0_ADDR>;
-/// Type alias that should be used to interface timer 1.
-pub type Timer1 = Timer<TIMER1_ADDR>;
-/// Type alias that should be used to interface timer 2.
-pub type Timer2 = Timer<TIMER2_ADDR>;
-/// Type alias that should be used to interface timer 3.
-pub type Timer3 = Timer<TIMER3_ADDR>;
 
 const PERIPH_CLK_DIV: u32 = 2;
 const DENOM: u32 = CPU_FREQ / PERIPH_CLK_DIV;
 pub type Duration = fugit::Duration<u32, 1, DENOM>;
 
-pub struct Periodic<const BASE_ADDR: usize>(Timer<BASE_ADDR>);
+pub struct Periodic(Timer);
 
-impl<const BASE_ADDR: usize> Periodic<BASE_ADDR> {
+impl Periodic {
     /// Schedules an interrupt to be fired every `duration`. Call [Self::start]
     /// to start the timer.
     ///
