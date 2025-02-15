@@ -47,25 +47,25 @@ const TEST_BASE_PERIOD_US: u32 = 100;
 const TASK0: Task = Task::new(
     3,
     TEST_BASE_PERIOD_US / 2,
-    /* 20 % */ TEST_BASE_PERIOD_US / 5,
+    /* 5 % */ TEST_BASE_PERIOD_US / 20,
     /* 10 % */ TEST_BASE_PERIOD_US / 10,
 );
 const TASK1: Task = Task::new(
     4,
     TEST_BASE_PERIOD_US / 4,
-    /* 5 % */ TEST_BASE_PERIOD_US / 20,
+    /* 2,5 % */ TEST_BASE_PERIOD_US / 40,
     /* 60 % */ 3 * TEST_BASE_PERIOD_US / 5,
 );
 const TASK2: Task = Task::new(
     5,
     TEST_BASE_PERIOD_US / 8,
-    /* 2 % */ TEST_BASE_PERIOD_US / 50,
+    /* 1 % */ TEST_BASE_PERIOD_US / 100,
     /* 37.5 % */ 3 * TEST_BASE_PERIOD_US / 8,
 );
 const TASK3: Task = Task::new(
     6,
     TEST_BASE_PERIOD_US / 16,
-    /* 1 % */ TEST_BASE_PERIOD_US / 100,
+    /* 0,5 % */ TEST_BASE_PERIOD_US / 200,
     /* 12.5 % */ TEST_BASE_PERIOD_US / 8,
 );
 const PERIPH_CLK_DIV: u64 = 1;
@@ -183,9 +183,9 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
-            //         -12,8,     -13,3
-            // PCS: cc 60042, ins 44959
-            // SW:  cc 68881, ins 51884
+            //           -8%,      -11%
+            // PCS: cc 42939, ins 31512 abs_sleep 14%
+            // SW:  cc 46675, ins 35410 abs_sleep 8,7%
             
             // TODO: figure out bsp access to CSRs
             let mut cycle_lo: u32;
