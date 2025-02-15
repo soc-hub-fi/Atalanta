@@ -71,6 +71,6 @@ unsafe fn MachineTimer() {
 #[interrupt]
 unsafe fn Timer0Cmp() {
     unsafe { T0_COUNTER += 1 };
-    let mut t0 = unsafe { Timer::instance::<TIMER0_ADDR>() };
+    let t0 = unsafe { Timer::instance::<TIMER0_ADDR>() };
     sprintln!("Seconds passed: {} (t0 = {})", T0_COUNTER, t0.counter());
 }

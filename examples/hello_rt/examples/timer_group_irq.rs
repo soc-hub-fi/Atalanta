@@ -49,24 +49,21 @@ fn main() -> ! {
     let mut mtimer = MTimer::instance();
     mtimer.set_cmp(5 * INTERVAL as u64);
 
-    let mut timers = (
+    let timers = &mut [
         Timer::init::<TIMER0_ADDR>(),
         Timer::init::<TIMER1_ADDR>(),
         Timer::init::<TIMER2_ADDR>(),
         Timer::init::<TIMER3_ADDR>(),
-    );
-    timers.0.set_cmp(INTERVAL);
-    timers.1.set_cmp(2 * INTERVAL);
-    timers.2.set_cmp(3 * INTERVAL);
-    timers.3.set_cmp(4 * INTERVAL);
+    ];
+    timers[0].set_cmp(INTERVAL);
+    timers[1].set_cmp(2 * INTERVAL);
+    timers[2].set_cmp(3 * INTERVAL);
+    timers[3].set_cmp(4 * INTERVAL);
 
     sprintln!("dispatching 4 timers...");
 
     // Enable interrupts globally and dispatch all timers
-    timers.0.enable();
-    timers.1.enable();
-    timers.2.enable();
-    timers.3.enable();
+    timers.iter_mut().for_each(Timer::enable);
     mtimer.enable();
     unsafe { riscv::interrupt::enable() };
 
