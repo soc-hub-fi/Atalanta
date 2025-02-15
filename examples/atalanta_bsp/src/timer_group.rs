@@ -56,7 +56,7 @@ impl Timer {
 
     /// Get current timer counter value
     #[inline]
-    pub fn counter(&mut self) -> u32 {
+    pub fn counter(&self) -> u32 {
         read_u32p(unsafe { &mut (*self.0).cnt as *mut u32 })
     }
 
