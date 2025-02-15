@@ -10,7 +10,7 @@ use bsp::{
     embedded_io::Write,
     mtimer::{self, MTimer},
     nested_interrupt,
-    riscv::{self, asm::{self, nop, wfi}, read_csr},
+    riscv::{self, asm::{self, nop, wfi}, read_csr, register::cycle},
     rt::{entry, interrupt},
     sprint, sprintln,
     tb::signal_pass,
@@ -45,38 +45,38 @@ impl Task {
 
 const TEST_BASE_PERIOD_US: u32 = 100;
 const TASK0: Task = Task::new(
-    1,
-    TEST_BASE_PERIOD_US / 1,
-    /* 20 % */ TEST_BASE_PERIOD_US / 5,
+    3,
+    TEST_BASE_PERIOD_US / 3,
+    /* 10 % */ TEST_BASE_PERIOD_US / 10,
     /* 10 % */ TEST_BASE_PERIOD_US / 10,
 );
 const TASK1: Task = Task::new(
-    2,
-    TEST_BASE_PERIOD_US / 1,
-    /* 10 % */ TEST_BASE_PERIOD_US / 10,
+    4,
+    TEST_BASE_PERIOD_US / 4,
+    /* 5 % */ TEST_BASE_PERIOD_US / 20,
     /* 60 % */ 3 * TEST_BASE_PERIOD_US / 5,
 );
 const TASK2: Task = Task::new(
-    3,
-    TEST_BASE_PERIOD_US / 2,
-    /* 5 % */ TEST_BASE_PERIOD_US / 20,
+    5,
+    TEST_BASE_PERIOD_US / 8,
+    /* 2 % */ TEST_BASE_PERIOD_US / 50,
     /* 37.5 % */ 3 * TEST_BASE_PERIOD_US / 8,
 );
 const TASK3: Task = Task::new(
-    4,
-    TEST_BASE_PERIOD_US / 4,
-    /* 2.5 % */ TEST_BASE_PERIOD_US / 40,
+    6,
+    TEST_BASE_PERIOD_US / 16,
+    /* 1 % */ TEST_BASE_PERIOD_US / 100,
     /* 12.5 % */ TEST_BASE_PERIOD_US / 8,
 );
-const PERIPH_CLK_DIV: u64 = 2;
+const PERIPH_CLK_DIV: u64 = 1;
 const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
 const CYCLES_PER_MS: u64 = CYCLES_PER_SEC / 1_000;
 const CYCLES_PER_US: u64 = CYCLES_PER_MS / 1_000;
 
-static mut TASK0_INC: u32 = 0;
-static mut TASK1_INC: usize = 0;
-static mut TASK2_INC: usize = 0;
-static mut TASK3_INC: usize = 0;
+static mut TASK0_LVL: u8 = 0;
+static mut TASK1_LVL: u8 = 0;
+static mut TASK2_LVL: u8 = 0;
+static mut TASK3_LVL: u8 = 0;
 
 static mut TASK0_COUNT: usize = 0;
 static mut TASK1_COUNT: usize = 0;
@@ -113,6 +113,7 @@ fn main() -> ! {
         Clic::ie(Interrupt::Timer1Cmp).set_pcs(true);
         Clic::ie(Interrupt::Timer2Cmp).set_pcs(true);
         Clic::ie(Interrupt::Timer3Cmp).set_pcs(true);
+        //Clic::ie(Interrupt::MachineTimer).set_pcs(true);
     }
 
     for run_idx in 0..RUN_COUNT {
@@ -176,15 +177,25 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
+            sprintln!("T0 LVL {:#x}", TASK0_LVL);
+            sprintln!("T1 LVL {:#x}", TASK1_LVL);
+            sprintln!("T2 LVL {:#x}", TASK2_LVL);
+            sprintln!("T3 LVL {:#x}", TASK3_LVL);
 
-            // tässä tapahtuu hirveitä
-            sprintln!("do all printing here to be safe");
-            sprintln!("more printing 1234 asda\n\r testtest");
-            sprintln!("still more 1234 asda\n\r testtest");
+            // PCS: cc 80292, ins 49230
+            // SW:  cc 77721, ins 47712
 
-            // tämän lisääminen rikkoo edelliset
-            sprintln!("print something {}", 123);
-
+            // TODO: figure out bsp access to CSRs
+            let mut cycle_lo: u32;
+            let mut cycle_hi: u32;
+            let mut retired_lo: u32;
+            let mut retired_hi: u32;
+            core::arch::asm!("csrr {0}, 0xB00", out(reg) cycle_lo);
+            core::arch::asm!("csrr {0}, 0xB80", out(reg) cycle_hi);
+            core::arch::asm!("csrr {0}, 0xB02", out(reg) retired_lo);
+            core::arch::asm!("csrr {0}, 0xB82", out(reg) retired_hi);
+            sprintln!("cycles: {}{}", cycle_hi,   cycle_lo );
+            sprintln!("instrs: {}{}", retired_hi, retired_lo );
             /*
             sprintln!(
                 "Task counts:\r\n{} | {} | {} | {}",
@@ -246,18 +257,18 @@ fn main() -> ! {
     }
 }
 
-//#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-//#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
-#[nested_interrupt]
+#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer0Cmp() {
-
-    //let mintstatus: u32;
-    //core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
-    //TASK0_INC = mintstatus;
+    let mintstatus: u32;
+    core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
+    TASK0_LVL = (mintstatus >> 24) as u8;
     //let mtimer = MTimer::instance().into_lo();
     //let sample = mtimer.counter();
     TASK0_COUNT += 1;
 
+    let workload = TASK0.duration_us * CYCLES_PER_US as u32;
+    for _ in 0..workload { nop(); }
     //let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
     //while mtimer.counter() <= task_end {}
 }
@@ -265,11 +276,14 @@ unsafe fn Timer0Cmp() {
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer1Cmp() {
-    nop();
-
+    let mintstatus: u32;
+    core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
+    TASK1_LVL = (mintstatus >> 24) as u8;
     //let mtimer = MTimer::instance().into_lo();
     //let sample = mtimer.counter();
     TASK1_COUNT += 1;
+    let workload = TASK1.duration_us * CYCLES_PER_US as u32;
+    for _ in 0..workload { nop(); }
     //let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
     //while mtimer.counter() <= task_end {}
 }
@@ -277,11 +291,14 @@ unsafe fn Timer1Cmp() {
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer2Cmp() {
-    nop();
-
+    let mintstatus: u32;
+    core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
+    TASK2_LVL = (mintstatus >> 24) as u8;
     //let mtimer = MTimer::instance().into_lo();
     //let sample = mtimer.counter();
     TASK2_COUNT += 1;
+    let workload = TASK2.duration_us * CYCLES_PER_US as u32;
+    for _ in 0..workload { nop(); }
     //let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
     //while mtimer.counter() <= task_end {}
 }
@@ -289,18 +306,20 @@ unsafe fn Timer2Cmp() {
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer3Cmp() {
-    nop();
-
+    let mintstatus: u32;
+    core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
+    TASK3_LVL = (mintstatus >> 24) as u8;
     //let mtimer = MTimer::instance().into_lo();
     //let sample = mtimer.counter();
     TASK3_COUNT += 1;
+    let workload = TASK3.duration_us * CYCLES_PER_US as u32;
+    for _ in 0..workload { nop(); }
     //let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
     //while mtimer.counter() <= task_end {}
 }
 
 /// Timeout interrupt (per test-run)
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+#[nested_interrupt]
 unsafe fn MachineTimer() {
     unsafe { TIMEOUT = true };
     let mut timer = MTimer::instance();
@@ -315,27 +334,6 @@ unsafe fn MachineTimer() {
     Timer1::instance().disable();
     Timer2::instance().disable();
     Timer3::instance().disable();
-
-/* 
-    // check ip status
-    let any_pending: bool = Clic::ip(Interrupt::Timer0Cmp).is_pending()
-                           | Clic::ip(Interrupt::Timer1Cmp).is_pending()
-                           | Clic::ip(Interrupt::Timer2Cmp).is_pending()
-                           | Clic::ip(Interrupt::Timer3Cmp).is_pending();
-
-    if !any_pending {
-        sprintln!("No IRQs pending");
-    } else {
-        sprintln!("IRQs still pending!");
-    }
-*/
-    // ei roiku
-
-    // roikkuu
-    //sprintln!("OK {}", 0x1);
-    //sprintln!("all printing done ;)");
-
-    //sprintln!("{}", TASK0_INC);
 
     Clic::ip(Interrupt::MachineTimer).unpend();
     Clic::ip(Interrupt::Timer0Cmp).unpend();
