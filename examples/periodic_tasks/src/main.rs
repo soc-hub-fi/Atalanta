@@ -46,8 +46,8 @@ impl Task {
 const TEST_BASE_PERIOD_US: u32 = 100;
 const TASK0: Task = Task::new(
     3,
-    TEST_BASE_PERIOD_US / 3,
-    /* 10 % */ TEST_BASE_PERIOD_US / 10,
+    TEST_BASE_PERIOD_US / 2,
+    /* 20 % */ TEST_BASE_PERIOD_US / 5,
     /* 10 % */ TEST_BASE_PERIOD_US / 10,
 );
 const TASK1: Task = Task::new(
@@ -182,8 +182,8 @@ fn main() -> ! {
             sprintln!("T2 LVL {:#x}", TASK2_LVL);
             sprintln!("T3 LVL {:#x}", TASK3_LVL);
 
-            // PCS: cc 80292, ins 49230
-            // SW:  cc 77721, ins 47712
+            // PCS: cc 80272, ins 49232
+            // SW:  cc 89269, ins 56371
 
             // TODO: figure out bsp access to CSRs
             let mut cycle_lo: u32;
