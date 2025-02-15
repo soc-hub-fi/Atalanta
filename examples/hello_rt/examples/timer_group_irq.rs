@@ -7,12 +7,13 @@
 
 use bsp::{
     clic::Clic,
+    mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
     mtimer::MTimer,
     riscv::{self, asm::wfi},
     rt::{entry, interrupt},
     sprint, sprintln,
     tb::signal_pass,
-    timer_group::{Timer0, Timer1, Timer2, Timer3},
+    timer_group::Timer,
     uart::*,
     Interrupt, CPU_FREQ, NOPS_PER_SEC,
 };
@@ -48,24 +49,21 @@ fn main() -> ! {
     let mut mtimer = MTimer::instance();
     mtimer.set_cmp(5 * INTERVAL as u64);
 
-    let mut timers = (
-        Timer0::init(),
-        Timer1::init(),
-        Timer2::init(),
-        Timer3::init(),
-    );
-    timers.0.set_cmp(INTERVAL);
-    timers.1.set_cmp(2 * INTERVAL);
-    timers.2.set_cmp(3 * INTERVAL);
-    timers.3.set_cmp(4 * INTERVAL);
+    let timers = &mut [
+        Timer::init::<TIMER0_ADDR>(),
+        Timer::init::<TIMER1_ADDR>(),
+        Timer::init::<TIMER2_ADDR>(),
+        Timer::init::<TIMER3_ADDR>(),
+    ];
+    timers[0].set_cmp(INTERVAL);
+    timers[1].set_cmp(2 * INTERVAL);
+    timers[2].set_cmp(3 * INTERVAL);
+    timers[3].set_cmp(4 * INTERVAL);
 
     sprintln!("dispatching 4 timers...");
 
     // Enable interrupts globally and dispatch all timers
-    timers.0.enable();
-    timers.1.enable();
-    timers.2.enable();
-    timers.3.enable();
+    timers.iter_mut().for_each(Timer::enable);
     mtimer.enable();
     unsafe { riscv::interrupt::enable() };
 
@@ -100,7 +98,7 @@ fn main() -> ! {
 
 #[interrupt]
 fn Timer0Cmp() {
-    unsafe { Timer0::instance() }.disable();
+    unsafe { Timer::instance::<TIMER0_ADDR>() }.disable();
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
     sprintln!(" code: {}", irq_code);
@@ -110,7 +108,7 @@ fn Timer0Cmp() {
 
 #[interrupt]
 fn Timer1Cmp() {
-    unsafe { Timer1::instance() }.disable();
+    unsafe { Timer::instance::<TIMER1_ADDR>() }.disable();
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
     sprintln!(" code: {}", irq_code);
@@ -120,7 +118,7 @@ fn Timer1Cmp() {
 
 #[interrupt]
 fn Timer2Cmp() {
-    unsafe { Timer2::instance() }.disable();
+    unsafe { Timer::instance::<TIMER2_ADDR>() }.disable();
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
     sprintln!(" code: {}", irq_code);
@@ -130,7 +128,7 @@ fn Timer2Cmp() {
 
 #[interrupt]
 fn Timer3Cmp() {
-    unsafe { Timer3::instance() }.disable();
+    unsafe { Timer::instance::<TIMER3_ADDR>() }.disable();
     sprint!("enter {}", function!());
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
     sprintln!(" code: {}", irq_code);

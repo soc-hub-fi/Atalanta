@@ -108,10 +108,18 @@ pub fn read_u32(addr: usize) -> u32 {
 }
 
 #[inline(always)]
+pub fn read_u32p(ptr: *const u32) -> u32 {
+    unsafe { core::ptr::read_volatile(ptr) }
+}
+
+#[inline(always)]
 pub fn write_u32(addr: usize, val: u32) {
-    unsafe {
-        core::ptr::write_volatile(addr as *mut _, val);
-    }
+    write_u32p(addr as *mut _, val)
+}
+
+#[inline(always)]
+pub fn write_u32p(ptr: *mut u32, val: u32) {
+    unsafe { core::ptr::write_volatile(ptr, val) }
 }
 
 #[inline(always)]
@@ -123,15 +131,26 @@ pub fn modify_u32(addr: usize, val: u32, mask: u32, bit_pos: usize) {
 
 #[inline(always)]
 pub fn mask_u32(addr: usize, mask: u32) {
-    let r = unsafe { core::ptr::read_volatile(addr as *const u32) };
-    unsafe { core::ptr::write_volatile(addr as *mut _, r | mask) }
+    mask_u32p(addr as *mut u32, mask)
+}
+
+#[inline(always)]
+pub fn mask_u32p(ptr: *mut u32, mask: u32) {
+    let r = unsafe { core::ptr::read_volatile(ptr) };
+    unsafe { core::ptr::write_volatile(ptr, r | mask) }
 }
 
 /// Unmasks specified bits from given register
 #[inline(always)]
 pub fn unmask_u32(addr: usize, unmask: u32) {
-    let r = unsafe { core::ptr::read_volatile(addr as *const u32) };
-    unsafe { core::ptr::write_volatile(addr as *mut _, r & !unmask) }
+    unmask_u32p(addr as *mut _, unmask);
+}
+
+/// Unmasks specified bits from given register
+#[inline(always)]
+pub fn unmask_u32p(ptr: *mut u32, unmask: u32) {
+    let r = unsafe { core::ptr::read_volatile(ptr) };
+    unsafe { core::ptr::write_volatile(ptr as *mut _, r & !unmask) }
 }
 
 #[inline(always)]
