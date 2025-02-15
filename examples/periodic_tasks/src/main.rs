@@ -10,7 +10,7 @@ use bsp::{
     embedded_io::Write,
     mtimer::{self, MTimer},
     nested_interrupt,
-    riscv::{self, asm::{self, nop, wfi}, read_csr, register::cycle},
+    riscv::{self, asm::{self, nop, wfi}, read_csr, register::{cycle, mcounteren}},
     rt::{entry, interrupt},
     sprint, sprintln,
     tb::signal_pass,
@@ -157,8 +157,14 @@ fn main() -> ! {
             .set_counter((TASK3.period_us - TASK3.start_offset_us) * CYCLES_PER_US as u32);
 
         // --- Test critical ---
-        unsafe { asm!("fence") };
+        unsafe { 
+            asm!("fence");
+            // clear mcycle, minstret at start of critical section
+            asm!("csrw 0xB00, {0}", in(reg) 0x0);
+            asm!("csrw 0xB02, {0}", in(reg) 0x0);
+        };
 
+        
         // Test will end when MachineTimer fires
         mtimer.start(TEST_DURATION);
         timers.0.enable();
@@ -177,14 +183,10 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
-            sprintln!("T0 LVL {:#x}", TASK0_LVL);
-            sprintln!("T1 LVL {:#x}", TASK1_LVL);
-            sprintln!("T2 LVL {:#x}", TASK2_LVL);
-            sprintln!("T3 LVL {:#x}", TASK3_LVL);
-
-            // PCS: cc 80272, ins 49232
-            // SW:  cc 89269, ins 56371
-
+            //         -12,8,     -13,3
+            // PCS: cc 60042, ins 44959
+            // SW:  cc 68881, ins 51884
+            
             // TODO: figure out bsp access to CSRs
             let mut cycle_lo: u32;
             let mut cycle_hi: u32;
