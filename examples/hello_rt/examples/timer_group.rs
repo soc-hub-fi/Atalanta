@@ -5,9 +5,10 @@
 
 use bsp::{
     asm_delay,
+    mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
     rt::entry,
     sprintln,
-    timer_group::{Timer0, Timer1, Timer2, Timer3},
+    timer_group::Timer,
     uart::*,
     CPU_FREQ, NOPS_PER_SEC,
 };
@@ -19,10 +20,10 @@ fn main() -> ! {
     print_example_name!();
 
     let mut timers = (
-        Timer0::init(),
-        Timer1::init(),
-        Timer2::init(),
-        Timer3::init(),
+        Timer::init::<TIMER0_ADDR>(),
+        Timer::init::<TIMER1_ADDR>(),
+        Timer::init::<TIMER2_ADDR>(),
+        Timer::init::<TIMER3_ADDR>(),
     );
     timers.0.enable_with_prescaler(0);
     timers.1.enable_with_prescaler(1);

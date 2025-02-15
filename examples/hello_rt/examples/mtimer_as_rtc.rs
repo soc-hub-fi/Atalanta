@@ -6,11 +6,12 @@
 
 use bsp::{
     clic::Clic,
+    mmap::apb_timer::TIMER0_ADDR,
     mtimer::MTimer,
     riscv::{self, asm::wfi},
     rt::{entry, interrupt},
     sprintln,
-    timer_group::Timer0,
+    timer_group::Timer,
     uart::ApbUart,
     Interrupt, CPU_FREQ,
 };
@@ -32,7 +33,7 @@ fn main() -> ! {
     let mut mtimer = MTimer::instance().into_oneshot();
     setup_irq(Interrupt::MachineTimer);
 
-    let mut t0 = Timer0::init();
+    let mut t0 = Timer::init::<TIMER0_ADDR>();
     setup_irq(Interrupt::Timer0Cmp);
 
     unsafe {
@@ -70,6 +71,6 @@ unsafe fn MachineTimer() {
 #[interrupt]
 unsafe fn Timer0Cmp() {
     unsafe { T0_COUNTER += 1 };
-    let mut t0 = unsafe { Timer0::instance() };
+    let mut t0 = unsafe { Timer::instance::<TIMER0_ADDR>() };
     sprintln!("Seconds passed: {} (t0 = {})", T0_COUNTER, t0.counter());
 }
