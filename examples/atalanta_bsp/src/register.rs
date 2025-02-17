@@ -3,6 +3,25 @@
 // Re-export base ISA registers
 pub use crate::riscv::register::*;
 
+/// Insert a new value into a bitfield
+///
+/// `value` is masked to `width` bits and inserted into `orig`.`
+#[inline]
+pub fn bf_insert(orig: usize, bit: usize, width: usize, value: usize) -> usize {
+    let mask = (1 << width) - 1;
+    orig & !(mask << bit) | ((value & mask) << bit)
+}
+
+/// Extract a value from a bitfield
+///
+/// Extracts `width` bits from bit offset `bit` and returns it shifted to bit
+/// 0.s
+#[inline]
+pub fn bf_extract(orig: usize, bit: usize, width: usize) -> usize {
+    let mask = (1 << width) - 1;
+    (orig >> bit) & mask
+}
+
 pub mod mconfigptr {
     use riscv::read_csr_as_usize;
 
@@ -179,4 +198,53 @@ pub mod mnxti {
     write_csr_as!(Mnxti, 0x345);
     set!(0x345);
     clear!(0x345);
+}
+
+pub mod mintstatus {
+    use riscv::read_csr_as;
+
+    use super::bf_extract;
+
+    /// mintstatus register
+    ///
+    /// Holds the active interrupt level for each supported privilege mode.
+    /// These fields are read-only. The primary reason to expose these
+    /// fields is to support debug.
+    #[derive(Clone, Copy)]
+    #[cfg_attr(feature = "ufmt", derive(crate::ufmt::derive::uDebug))]
+    #[cfg_attr(not(feature = "ufmt"), derive(Debug))]
+    pub struct Mintstatus {
+        bits: usize,
+    }
+
+    impl From<usize> for Mintstatus {
+        #[inline]
+        fn from(bits: usize) -> Self {
+            Self { bits }
+        }
+    }
+
+    impl Mintstatus {
+        /// Returns the contents of the register as raw bits
+        #[inline]
+        pub fn bits(&self) -> usize {
+            self.bits
+        }
+
+        /// Machine Interrupt Level
+        #[inline]
+        pub fn mil(&self) -> usize {
+            bf_extract(self.bits, 31, 24)
+        }
+
+        // if ssclic is supported
+        /*
+        #[inline]
+        pub fn sil(&self) -> usize {
+            bf_extract(self.bits, 15, 8)
+        }
+        */
+    }
+
+    read_csr_as!(Mintstatus, 0x346);
 }
