@@ -160,6 +160,8 @@ pub mod menvcfg;
 pub mod menvcfgh
 */
 
+// # CLIC registers
+
 pub mod mnxti {
     use riscv::{clear, read_csr_as, set, write_csr_as};
 
@@ -261,3 +263,5 @@ pub mod mclicbase {
     // Supported operations
     read_csr_as_usize!(0x350);
 }
+
+// # CLIC registers end
