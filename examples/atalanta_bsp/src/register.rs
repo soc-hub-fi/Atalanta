@@ -140,3 +140,43 @@ pub mod mtvt {
 pub mod menvcfg;
 pub mod menvcfgh
 */
+
+pub mod mnxti {
+    use riscv::{clear, read_csr_as, set, write_csr_as};
+
+    /// mnxti register
+    ///
+    /// The mnxti CSR is used by software to improve the performance of handling
+    /// back-to-back software vectored interrupts. It does this by avoiding the
+    /// overhead of additional interrupt pipeline flushes and redundant context
+    /// save/restore for these back-to-back software vectored interrupts. The
+    /// mnxti CSR is intended to be used inside an interrupt handler after an
+    /// initial interrupt has been taken and mcause and mepc registers have been
+    /// updated with the interrupted context and the id of the interrupt.
+    #[derive(Clone, Copy)]
+    #[cfg_attr(feature = "ufmt", derive(crate::ufmt::derive::uDebug))]
+    #[cfg_attr(not(feature = "ufmt"), derive(Debug))]
+    pub struct Mnxti {
+        bits: usize,
+    }
+
+    impl From<usize> for Mnxti {
+        #[inline]
+        fn from(bits: usize) -> Self {
+            Self { bits }
+        }
+    }
+
+    impl Mnxti {
+        /// Returns the contents of the register as raw bits
+        #[inline]
+        pub fn bits(&self) -> usize {
+            self.bits
+        }
+    }
+
+    read_csr_as!(Mnxti, 0x345);
+    write_csr_as!(Mnxti, 0x345);
+    set!(0x345);
+    clear!(0x345);
+}
