@@ -63,3 +63,74 @@ pub mod mintthresh {
     set!(0x347);
     clear!(0x347);
 }
+
+pub mod mtvt {
+    use riscv::{clear, read_csr_as, set, write_csr};
+
+    /// Trap mode
+    #[derive(Copy, Clone, Eq, PartialEq)]
+    #[cfg_attr(feature = "ufmt", derive(crate::ufmt::derive::uDebug))]
+    #[cfg_attr(not(feature = "ufmt"), derive(Debug))]
+    pub enum TrapMode {
+        Direct = 0,
+        Vectored = 1,
+        Clic = 0b11,
+    }
+
+    /// mtvt register
+    #[derive(Clone, Copy)]
+    #[cfg_attr(feature = "ufmt", derive(crate::ufmt::derive::uDebug))]
+    #[cfg_attr(not(feature = "ufmt"), derive(Debug))]
+    pub struct Mtvt {
+        bits: usize,
+    }
+
+    impl From<usize> for Mtvt {
+        #[inline]
+        fn from(bits: usize) -> Self {
+            Self { bits }
+        }
+    }
+
+    impl Mtvt {
+        /// Returns the contents of the register as raw bits
+        #[inline]
+        pub fn bits(&self) -> usize {
+            self.bits
+        }
+
+        /// Returns the trap-vector base-address
+        #[inline]
+        pub fn address(&self) -> usize {
+            self.bits - (self.bits & 0b11)
+        }
+
+        /// Returns the trap-vector mode
+        #[inline]
+        pub fn trap_mode(&self) -> Option<TrapMode> {
+            let mode = self.bits & 0b11;
+            match mode {
+                0 => Some(TrapMode::Direct),
+                1 => Some(TrapMode::Vectored),
+                0b11 => Some(TrapMode::Clic),
+                _ => None,
+            }
+        }
+    }
+
+    // # Supported operations
+
+    // Bring in `_write` for `write`
+    write_csr!(0x307);
+
+    /// Writes the CSR
+    #[inline]
+    pub unsafe fn write(addr: usize, mode: TrapMode) {
+        let bits = addr + mode as usize;
+        _write(bits);
+    }
+
+    read_csr_as!(Mtvt, 0x307);
+    set!(0x307);
+    clear!(0x307);
+}
