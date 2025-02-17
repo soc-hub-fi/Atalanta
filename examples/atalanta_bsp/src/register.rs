@@ -200,7 +200,7 @@ pub mod mintstatus {
 }
 
 pub mod mintthresh {
-    use riscv::{clear, read_csr_as, set, write_csr_as};
+    use riscv::{clear, read_csr_as, set};
 
     /// mintthresh register
     ///
@@ -248,7 +248,15 @@ pub mod mintthresh {
     }
 
     read_csr_as!(Mintthresh, 0x347);
-    write_csr_as!(Mintthresh, 0x347);
+
+    /// Writes the CSR and returns the previous value
+    #[inline]
+    pub fn write(value: Mintthresh) -> usize {
+        let pvalue: usize;
+        unsafe { core::arch::asm!("csrrw {0}, 0x347, {1}", out(reg) pvalue, in(reg) value.bits) }
+        pvalue
+    }
+
     set!(0x347);
     clear!(0x347);
 }
