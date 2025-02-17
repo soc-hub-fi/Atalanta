@@ -186,6 +186,7 @@ ibex_top #(
 //  //.RegFile          ( ibex_pkg::RegFileLatch),
 //`endif
   .RegFile          (ibex_pkg::RegFilePCS),
+//  .RegFile          ( ibex_pkg::RegFileFF),
   .ICache           (0),
   .ICacheECC        (0),
   .ICacheScramble   (0),
