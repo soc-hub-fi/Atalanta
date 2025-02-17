@@ -134,3 +134,9 @@ pub mod mtvt {
     set!(0x307);
     clear!(0x307);
 }
+
+// If U-mode is not supported, then registers menvcfg and menvcfgh do not exist.
+/*
+pub mod menvcfg;
+pub mod menvcfgh
+*/
