@@ -265,3 +265,31 @@ pub mod mclicbase {
 }
 
 // # CLIC registers end
+
+// # Debug registers
+
+/*
+CSR_SCONTEXT  = 12'h5A8,
+
+// ePMP control
+CSR_MSECCFG   = 12'h747,
+CSR_MSECCFGH  = 12'h757,
+
+// Debug trigger
+CSR_TSELECT   = 12'h7A0,
+CSR_TDATA1    = 12'h7A1,
+CSR_TDATA2    = 12'h7A2,
+CSR_TDATA3    = 12'h7A3,
+CSR_MCONTEXT  = 12'h7A8,
+CSR_MSCONTEXT = 12'h7AA,
+
+// Debug/trace
+CSR_DCSR      = 12'h7b0,
+CSR_DPC       = 12'h7b1,
+
+// Debug
+CSR_DSCRATCH0 = 12'h7b2, // optional
+CSR_DSCRATCH1 = 12'h7b3, // optional
+*/
+// # Debug registers end
+
