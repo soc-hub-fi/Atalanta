@@ -248,3 +248,16 @@ pub mod mintstatus {
 
     read_csr_as!(Mintstatus, 0x346);
 }
+
+// mscratchsw, mscratchswl are useful for multi-privilege only
+/*
+pub mod mscratchsw;
+pub mod mscratchswl;
+*/
+
+pub mod mclicbase {
+    use riscv::read_csr_as_usize;
+
+    // Supported operations
+    read_csr_as_usize!(0x350);
+}
