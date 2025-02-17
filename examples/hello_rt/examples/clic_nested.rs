@@ -6,7 +6,7 @@
 #![no_main]
 #![no_std]
 
-use core::{arch::asm, ptr};
+use core::ptr;
 
 use bsp::{
     asm_delay,
@@ -38,9 +38,8 @@ fn main() -> ! {
 
     unsafe {
         // Raise interrupt threshold in RT-Ibex before enabling interrupts
-        // mintthresh = 0x347
         sprintln!("mintthresh <- 0xff");
-        asm!("csrw 0x347, {0}", in(reg) 0xff);
+        bsp::register::mintthresh::write(0xff.into());
 
         // Enable global interrupts
         riscv::interrupt::enable();
@@ -53,7 +52,7 @@ fn main() -> ! {
 
         // Lower interrupt threshold in RT-Ibex. Interrupts should fire.
         sprintln!("mintthresh <- 0x0");
-        asm!("csrw 0x347, {0}", in(reg) 0x0);
+        bsp::register::mintthresh::write(0x0.into());
     }
 
     asm_delay(1000);
