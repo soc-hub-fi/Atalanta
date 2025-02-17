@@ -109,8 +109,8 @@ fn main() -> ! {
     setup_irq(Interrupt::MachineTimer, u8::MAX);
     #[cfg(feature = "pcs")]
     {
-        //Clic::ie(Interrupt::Timer0Cmp).set_pcs(true);
-        //Clic::ie(Interrupt::Timer1Cmp).set_pcs(true);
+        Clic::ie(Interrupt::Timer0Cmp).set_pcs(true);
+        Clic::ie(Interrupt::Timer1Cmp).set_pcs(true);
         Clic::ie(Interrupt::Timer2Cmp).set_pcs(true);
         Clic::ie(Interrupt::Timer3Cmp).set_pcs(true);
         //Clic::ie(Interrupt::MachineTimer).set_pcs(true);
@@ -188,6 +188,7 @@ fn main() -> ! {
             //         -15,2%,    -22,2%
             // 2PCS: cc 30361, ins 20892
             //   SW: cc 35783, ins 26845
+            //  HWS: cc 35276, ins 25976
             
             // TODO: figure out bsp access to CSRs
             let mut cycle_lo: u32;
@@ -261,9 +262,9 @@ fn main() -> ! {
     }
 }
 
-//#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-//#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
-#[nested_interrupt]
+#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+// #[nested_interrupt]
 unsafe fn Timer0Cmp() {
     //let mintstatus: u32;
     //core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
@@ -278,9 +279,9 @@ unsafe fn Timer0Cmp() {
     //while mtimer.counter() <= task_end {}
 }
 
-//#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-//#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
-#[nested_interrupt]
+#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+// #[nested_interrupt]
 unsafe fn Timer1Cmp() {
     //let mintstatus: u32;
     //core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
