@@ -1,4 +1,6 @@
 //! Unified access to base ISA CSRs + Ibex/Atalanta specific CSRs
+//!
+//! * [Ibex register documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html)
 
 // Re-export base ISA registers
 pub use crate::riscv::register::*;
