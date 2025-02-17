@@ -293,3 +293,20 @@ CSR_DSCRATCH1 = 12'h7b3, // optional
 */
 // # Debug registers end
 
+pub mod cpuctrlsts {
+    //! CPU Control and Status Register (Ibex Custom CSR)
+
+    use riscv::read_csr_as_usize;
+
+    // Supported operations
+    read_csr_as_usize!(0x7C0);
+}
+
+pub mod secureseed {
+    //! Security feature random seed (Ibex Custom CSR)
+
+    use riscv::read_csr_as_usize;
+
+    // Supported operations
+    read_csr_as_usize!(0x7C1);
+}
