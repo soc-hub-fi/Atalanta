@@ -9,6 +9,7 @@ mod interrupt;
 pub mod led;
 pub mod mmap;
 pub mod mtimer;
+pub mod register;
 pub mod tb;
 pub mod timer_group;
 #[cfg(feature = "rt")]
