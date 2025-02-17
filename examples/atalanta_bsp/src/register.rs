@@ -3,6 +3,13 @@
 // Re-export base ISA registers
 pub use crate::riscv::register::*;
 
+pub mod mconfigptr {
+    use riscv::read_csr_as_usize;
+
+    // Supported operations
+    read_csr_as_usize!(0xF15);
+}
+
 pub mod mintthresh {
     use riscv::{clear, read_csr_as, set, write_csr_as};
 
