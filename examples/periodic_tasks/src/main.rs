@@ -187,8 +187,9 @@ fn main() -> ! {
             // 4PCS: cc 29362, ins 19782
             //         -15,2%,    -22,2%
             // 2PCS: cc 30361, ins 20892
-            //   SW: cc 35783, ins 26845
+            //         -1,4%,     -3,2%
             //  HWS: cc 35276, ins 25976
+            //   SW: cc 35783, ins 26845
             
             // TODO: figure out bsp access to CSRs
             let mut cycle_lo: u32;
