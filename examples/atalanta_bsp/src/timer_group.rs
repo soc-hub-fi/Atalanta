@@ -63,6 +63,12 @@ impl Timer {
     /// Set current timer counter value
     #[inline]
     pub fn set_counter(&mut self, cnt: u32) {
+        #[cfg(debug_assertions)]
+        {
+            // Counter must not be set to a value higher than compare
+            let cmp = read_u32p(unsafe { &mut (*self.0).cmp as *mut u32 });
+            debug_assert!(cnt <= cmp);
+        }
         write_u32p(unsafe { &mut (*self.0).cnt as *mut u32 }, cnt)
     }
 
