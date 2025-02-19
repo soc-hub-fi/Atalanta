@@ -92,7 +92,7 @@ pub unsafe fn read_u8(addr: usize) -> u8 {
 /// Unaligned reads may fail to produce expected results on rt-ss.
 #[inline(always)]
 pub unsafe fn read_u8_masked(addr: usize, mask: u8) -> u8 {
-    core::ptr::read_volatile(addr as *const u8) | mask
+    core::ptr::read_volatile(addr as *const u8) & mask
 }
 
 /// # Safety
