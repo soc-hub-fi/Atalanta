@@ -157,14 +157,14 @@ fn main() -> ! {
             .set_counter((TASK3.period_us - TASK3.start_offset_us) * CYCLES_PER_US as u32);
 
         // --- Test critical ---
-        unsafe { 
+        unsafe {
             asm!("fence");
             // clear mcycle, minstret at start of critical section
             asm!("csrw 0xB00, {0}", in(reg) 0x0);
             asm!("csrw 0xB02, {0}", in(reg) 0x0);
         };
 
-        
+
         // Test will end when MachineTimer fires
         mtimer.start(TEST_DURATION);
         timers.0.enable();
@@ -190,7 +190,7 @@ fn main() -> ! {
             //         -1,4%,     -3,2%
             //  HWS: cc 35276, ins 25976
             //   SW: cc 35783, ins 26845
-            
+
             // TODO: figure out bsp access to CSRs
             let mut cycle_lo: u32;
             let mut cycle_hi: u32;
