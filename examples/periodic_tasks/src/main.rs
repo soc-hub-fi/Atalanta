@@ -6,18 +6,10 @@
 use core::arch::asm;
 
 use bsp::{
-    clic::{Clic, Polarity, Trig},
-    embedded_io::Write,
-    mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
-    mtimer::{self, MTimer},
-    nested_interrupt,
-    riscv::{self, asm::{self, nop, wfi}, read_csr, register::{cycle, mcounteren}},
-    rt::{entry, interrupt},
-    sprint, sprintln,
-    tb::signal_pass,
-    timer_group::Timer,
-    uart::*,
-    Interrupt, CPU_FREQ,
+    clic::{Clic, Polarity, Trig}, embedded_io::Write, interrupt, mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR}, mtimer::{self, MTimer}, nested_interrupt, register::{cycleh, minstret}, riscv::{
+        self,
+        asm::{nop, wfi}
+    }, rt::entry, sprint, sprintln, tb::signal_pass, timer_group::Timer, uart::*, Interrupt, CPU_FREQ
 };
 use ufmt::derive::uDebug;
 
@@ -27,19 +19,17 @@ struct Task {
     level: u8,
     period_ns: u32,
     duration_ns: u32,
-    start_offset_ns: u32,
 }
 
 const RUN_COUNT: usize = 1;
 const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(1_000);
 
 impl Task {
-    pub const fn new(level: u8, period_ns: u32, duration_ns: u32, start_offset_ns: u32) -> Self {
+    pub const fn new(level: u8, period_ns: u32, duration_ns: u32, ) -> Self {
         Self {
             period_ns,
             duration_ns,
             level,
-            start_offset_ns,
         }
     }
 }
@@ -48,39 +38,30 @@ const TEST_BASE_PERIOD_NS: u32 = 100_000;
 const TASK0: Task = Task::new(
     3,
     TEST_BASE_PERIOD_NS / 4,
-    /*  % */ TEST_BASE_PERIOD_NS / 40,
-    /* 10 % */ TEST_BASE_PERIOD_NS / 10,
+    /* % */ TEST_BASE_PERIOD_NS / 40,
 );
 const TASK1: Task = Task::new(
     4,
     TEST_BASE_PERIOD_NS / 8,
-    /*  % */ TEST_BASE_PERIOD_NS / 80,
-    /* 60 % */ 3 * TEST_BASE_PERIOD_NS / 5,
+    /* % */ TEST_BASE_PERIOD_NS / 80,
 );
 const TASK2: Task = Task::new(
     5,
     TEST_BASE_PERIOD_NS / 16,
     /*  */ TEST_BASE_PERIOD_NS / 200,
-    /* 37.5 % */ 3 * TEST_BASE_PERIOD_NS / 8,
 );
 const TASK3: Task = Task::new(
     6,
     TEST_BASE_PERIOD_NS / 32,
-    /*  % */ TEST_BASE_PERIOD_NS / 400,
-    /* 12.5 % */ TEST_BASE_PERIOD_NS / 8,
+    /* % */ TEST_BASE_PERIOD_NS / 400,
 );
 const PERIPH_CLK_DIV: u64 = 1;
 const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
 const CYCLES_PER_MS: u64 = CYCLES_PER_SEC / 1_000;
 const CYCLES_PER_US: u32 = CYCLES_PER_MS as u32 / 1_000;
-// !!!: this would saturate to zero, so we must not use it. Use `X * CYCLES_PER_US / 1_000 instead`
-// and verify the output value is not saturated.
+// !!!: this would saturate to zero, so we must not use it. Use `X *
+// CYCLES_PER_US / 1_000 instead` and verify the output value is not saturated.
 /* const CYCLES_PER_NS: u64 = CYCLES_PER_US / 1_000; */
-
-static mut TASK0_LVL: u8 = 0;
-static mut TASK1_LVL: u8 = 0;
-static mut TASK2_LVL: u8 = 0;
-static mut TASK3_LVL: u8 = 0;
 
 static mut TASK0_COUNT: usize = 0;
 static mut TASK1_COUNT: usize = 0;
@@ -101,7 +82,11 @@ fn main() -> ! {
         TASK2,
         TASK3
     );
-    sprintln!("Test duration: {} us ({} ns)", TEST_DURATION.to_micros(), TEST_DURATION.to_nanos());
+    sprintln!(
+        "Test duration: {} us ({} ns)",
+        TEST_DURATION.to_micros(),
+        TEST_DURATION.to_nanos()
+    );
 
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
@@ -117,7 +102,6 @@ fn main() -> ! {
         Clic::ie(Interrupt::Timer1Cmp).set_pcs(true);
         Clic::ie(Interrupt::Timer2Cmp).set_pcs(true);
         Clic::ie(Interrupt::Timer3Cmp).set_pcs(true);
-        //Clic::ie(Interrupt::MachineTimer).set_pcs(true);
     }
 
     for run_idx in 0..RUN_COUNT {
@@ -144,21 +128,9 @@ fn main() -> ! {
         );
 
         timers.0.set_cmp(TASK0.period_ns * CYCLES_PER_US / 1_000);
-        timers
-            .0
-            .set_counter((TASK0.period_ns - TASK0.start_offset_ns) * CYCLES_PER_US / 1_000);
         timers.1.set_cmp(TASK1.period_ns * CYCLES_PER_US / 1_000);
-        timers
-            .1
-            .set_counter((TASK1.period_ns - TASK1.start_offset_ns) * CYCLES_PER_US / 1_000);
         timers.2.set_cmp(TASK2.period_ns * CYCLES_PER_US / 1_000);
-        timers
-            .2
-            .set_counter((TASK2.period_ns - TASK2.start_offset_ns) * CYCLES_PER_US / 1_000);
         timers.3.set_cmp(TASK3.period_ns * CYCLES_PER_US / 1_000);
-        timers
-            .3
-            .set_counter((TASK3.period_ns - TASK3.start_offset_ns) * CYCLES_PER_US / 1_000);
 
         // --- Test critical ---
         unsafe {
@@ -167,7 +139,6 @@ fn main() -> ! {
             asm!("csrw 0xB00, {0}", in(reg) 0x0);
             asm!("csrw 0xB02, {0}", in(reg) 0x0);
         };
-
 
         // Test will end when MachineTimer fires
         mtimer.start(TEST_DURATION);
@@ -187,26 +158,34 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
-            //         -18,6%,    -27,1%
-            // 4PCS: cc 29362, ins 19782
-            //         -15,2%,    -22,2%
-            // 2PCS: cc 30361, ins 20892
-            //         -1,4%,     -3,2%
-            //  HWS: cc 35276, ins 25976
-            //   SW: cc 35783, ins 26845
 
-            // TODO: figure out bsp access to CSRs
-            let mut cycle_lo: u32;
+
             let mut cycle_hi: u32;
-            let mut retired_lo: u32;
-            let mut retired_hi: u32;
+            let mut cycle_lo: u32;
+            let mut minstret_hi: u32;
+            let mut minstret_lo: u32;
+            
             core::arch::asm!("csrr {0}, 0xB00", out(reg) cycle_lo);
             core::arch::asm!("csrr {0}, 0xB80", out(reg) cycle_hi);
-            core::arch::asm!("csrr {0}, 0xB02", out(reg) retired_lo);
-            core::arch::asm!("csrr {0}, 0xB82", out(reg) retired_hi);
+            core::arch::asm!("csrr {0}, 0xB02", out(reg) minstret_lo);
+            core::arch::asm!("csrr {0}, 0xB82", out(reg) minstret_hi);
+
             sprintln!("cycles: {}{}", cycle_hi,   cycle_lo );
-            sprintln!("instrs: {}{}", retired_hi, retired_lo );
-            /*
+            sprintln!("instrs: {}{}", minstret_hi, minstret_lo );
+            
+            /* Both of these alternatives cause an illegal instruction
+
+            //let cycle_lo = riscv::register::cycle::read();
+            //let cycle_hi = riscv::register::cycleh::read();
+            //let minstret_lo = riscv::register::minstret::read();
+            //let minstret_hi = riscv::register::minstret::read();
+            //-----------------------------------------------------
+            let cycle = riscv::register::cycle::read64();
+            let minstret = riscv::register::minstret::read64();
+
+            sprintln!("cycles: {}", cycle );
+            sprintln!("instrs: {}", minstret);
+            */
             sprintln!(
                 "Task counts:\r\n{} | {} | {} | {}",
                 TASK0_COUNT,
@@ -227,6 +206,7 @@ fn main() -> ! {
                 total_in_task0 + total_in_task1 + total_in_task2 + total_in_task3,
             );
 
+            /* TODO: reintroduce after mtimer div fixed
             // Assert that each task runs the expected number of times
             for (count, task) in &[
                 (TASK0_COUNT, TASK0),
@@ -239,8 +219,12 @@ fn main() -> ! {
                     (TEST_DURATION.to_nanos() as usize + task.start_offset_ns as usize)
                         / task.period_ns as usize
                 )
-            }
-             */
+            } TODO: remove below repplacement prints */ 
+           sprintln!("{}, {}",  TASK0_COUNT, (TEST_DURATION.to_nanos() / TASK0.period_ns as u64));
+           sprintln!("{}, {}",  TASK1_COUNT, (TEST_DURATION.to_nanos() / TASK1.period_ns as u64));
+           sprintln!("{}, {}",  TASK2_COUNT, (TEST_DURATION.to_nanos() / TASK2.period_ns as u64));
+           sprintln!("{}, {}",  TASK3_COUNT, (TEST_DURATION.to_nanos() / TASK3.period_ns as u64));
+
             // Make sure serial is done printing before proceeding to the next iteration
             serial.flush().unwrap_unchecked();
         }
@@ -269,69 +253,46 @@ fn main() -> ! {
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
-// #[nested_interrupt]
 unsafe fn Timer0Cmp() {
-    //let mintstatus: u32;
-    //core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
-    //TASK0_LVL = (mintstatus >> 24) as u8;
-    //let mtimer = MTimer::instance().into_lo();
-    //let sample = mtimer.counter();
     TASK0_COUNT += 1;
-
     let workload = TASK0.duration_ns * CYCLES_PER_US / 1_000 as u32;
-    for _ in 0..workload { nop(); }
-    //let task_end = sample + TASK0.duration_ns * CYCLES_PER_US / 1_000 as u32;
-    //while mtimer.counter() <= task_end {}
+    for _ in 0..workload {
+        nop();
+    }
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
-// #[nested_interrupt]
 unsafe fn Timer1Cmp() {
-    //let mintstatus: u32;
-    //core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
-    //TASK1_LVL = (mintstatus >> 24) as u8;
-    //let mtimer = MTimer::instance().into_lo();
-    //let sample = mtimer.counter();
     TASK1_COUNT += 1;
     let workload = TASK1.duration_ns * CYCLES_PER_US / 1_000;
-    for _ in 0..workload { nop(); }
-    //let task_end = sample + TASK0.duration_ns * CYCLES_PER_US / 1_000;
-    //while mtimer.counter() <= task_end {}
+    for _ in 0..workload {
+        nop();
+    }
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer2Cmp() {
-    //let mintstatus: u32;
-    //core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
-    //TASK2_LVL = (mintstatus >> 24) as u8;
-    //let mtimer = MTimer::instance().into_lo();
-    //let sample = mtimer.counter();
     TASK2_COUNT += 1;
     let workload = TASK2.duration_ns * CYCLES_PER_US / 1_000;
-    for _ in 0..workload { nop(); }
-    //let task_end = sample + TASK0.duration_ns * CYCLES_PER_US / 1_000;
-    //while mtimer.counter() <= task_end {}
+    for _ in 0..workload {
+        nop();
+    }
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer3Cmp() {
-    //let mintstatus: u32;
-    //core::arch::asm!("csrr {0}, 0x346", out(reg) mintstatus);
-    //TASK3_LVL = (mintstatus >> 24) as u8;
-    //let mtimer = MTimer::instance().into_lo();
-    //let sample = mtimer.counter();
     TASK3_COUNT += 1;
     let workload = TASK3.duration_ns * CYCLES_PER_US / 1_000;
-    for _ in 0..workload { nop(); }
-    //let task_end = sample + TASK0.duration_ns * CYCLES_PER_US / 1_000;
-    //while mtimer.counter() <= task_end {}
+    for _ in 0..workload {
+        nop();
+    }
 }
 
 /// Timeout interrupt (per test-run)
-#[nested_interrupt]
+#[interrupt]
 unsafe fn MachineTimer() {
     unsafe { TIMEOUT = true };
     let mut timer = MTimer::instance();
