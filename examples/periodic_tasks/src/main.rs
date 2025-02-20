@@ -6,10 +6,23 @@
 use core::arch::asm;
 
 use bsp::{
-    clic::{Clic, Polarity, Trig}, embedded_io::Write, interrupt, mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR}, mtimer::{self, MTimer}, nested_interrupt, register::{cycleh, minstret}, riscv::{
+    clic::{Clic, Polarity, Trig},
+    embedded_io::Write,
+    interrupt,
+    mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
+    mtimer::{self, MTimer},
+    nested_interrupt,
+    register::{cycleh, minstret},
+    riscv::{
         self,
-        asm::{nop, wfi}
-    }, rt::entry, sprint, sprintln, tb::signal_pass, timer_group::Timer, uart::*, Interrupt, CPU_FREQ
+        asm::{nop, wfi},
+    },
+    rt::entry,
+    sprint, sprintln,
+    tb::signal_pass,
+    timer_group::Timer,
+    uart::*,
+    Interrupt, CPU_FREQ,
 };
 use ufmt::derive::uDebug;
 
@@ -25,7 +38,7 @@ const RUN_COUNT: usize = 1;
 const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(1_000);
 
 impl Task {
-    pub const fn new(level: u8, period_ns: u32, duration_ns: u32, ) -> Self {
+    pub const fn new(level: u8, period_ns: u32, duration_ns: u32) -> Self {
         Self {
             period_ns,
             duration_ns,
@@ -158,21 +171,19 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
-
-
             let mut cycle_hi: u32;
             let mut cycle_lo: u32;
             let mut minstret_hi: u32;
             let mut minstret_lo: u32;
-            
+
             core::arch::asm!("csrr {0}, 0xB00", out(reg) cycle_lo);
             core::arch::asm!("csrr {0}, 0xB80", out(reg) cycle_hi);
             core::arch::asm!("csrr {0}, 0xB02", out(reg) minstret_lo);
             core::arch::asm!("csrr {0}, 0xB82", out(reg) minstret_hi);
 
-            sprintln!("cycles: {}{}", cycle_hi,   cycle_lo );
-            sprintln!("instrs: {}{}", minstret_hi, minstret_lo );
-            
+            sprintln!("cycles: {}{}", cycle_hi, cycle_lo);
+            sprintln!("instrs: {}{}", minstret_hi, minstret_lo);
+
             /* Both of these alternatives cause an illegal instruction
 
             //let cycle_lo = riscv::register::cycle::read();
@@ -219,11 +230,27 @@ fn main() -> ! {
                     (TEST_DURATION.to_nanos() as usize + task.start_offset_ns as usize)
                         / task.period_ns as usize
                 )
-            } TODO: remove below repplacement prints */ 
-           sprintln!("{}, {}",  TASK0_COUNT, (TEST_DURATION.to_nanos() / TASK0.period_ns as u64));
-           sprintln!("{}, {}",  TASK1_COUNT, (TEST_DURATION.to_nanos() / TASK1.period_ns as u64));
-           sprintln!("{}, {}",  TASK2_COUNT, (TEST_DURATION.to_nanos() / TASK2.period_ns as u64));
-           sprintln!("{}, {}",  TASK3_COUNT, (TEST_DURATION.to_nanos() / TASK3.period_ns as u64));
+            } TODO: remove below repplacement prints */
+            sprintln!(
+                "{}, {}",
+                TASK0_COUNT,
+                (TEST_DURATION.to_nanos() / TASK0.period_ns as u64)
+            );
+            sprintln!(
+                "{}, {}",
+                TASK1_COUNT,
+                (TEST_DURATION.to_nanos() / TASK1.period_ns as u64)
+            );
+            sprintln!(
+                "{}, {}",
+                TASK2_COUNT,
+                (TEST_DURATION.to_nanos() / TASK2.period_ns as u64)
+            );
+            sprintln!(
+                "{}, {}",
+                TASK3_COUNT,
+                (TEST_DURATION.to_nanos() / TASK3.period_ns as u64)
+            );
 
             // Make sure serial is done printing before proceeding to the next iteration
             serial.flush().unwrap_unchecked();
