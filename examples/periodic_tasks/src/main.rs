@@ -51,22 +51,22 @@ const TEST_BASE_PERIOD_NS: u32 = 100_000;
 const TASK0: Task = Task::new(
     3,
     TEST_BASE_PERIOD_NS / 4,
-    /* % */ TEST_BASE_PERIOD_NS / 40,
+    /* 25 ‰)*/ TEST_BASE_PERIOD_NS / 40,
 );
 const TASK1: Task = Task::new(
     4,
     TEST_BASE_PERIOD_NS / 8,
-    /* % */ TEST_BASE_PERIOD_NS / 80,
+    /*12,5 ‰) */ TEST_BASE_PERIOD_NS / 80,
 );
 const TASK2: Task = Task::new(
     5,
     TEST_BASE_PERIOD_NS / 16,
-    /*  */ TEST_BASE_PERIOD_NS / 200,
+    /* 5 ‰) */ TEST_BASE_PERIOD_NS / 200,
 );
 const TASK3: Task = Task::new(
     6,
     TEST_BASE_PERIOD_NS / 32,
-    /* % */ TEST_BASE_PERIOD_NS / 400,
+    /* 2,5 ‰) */ TEST_BASE_PERIOD_NS / 400,
 );
 const PERIPH_CLK_DIV: u64 = 1;
 const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
