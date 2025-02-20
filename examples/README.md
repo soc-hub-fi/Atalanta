@@ -40,7 +40,6 @@ Adjust your settings at the workspace root (".../Atalanta"):
 // .vscode/settings.json
 {
     "rust-analyzer.linkedProjects": [
-        "examples/rust_minimal/Cargo.toml",
         "examples/hello_rt/Cargo.toml",
         "examples/periodic_tasks/Cargo.toml"
     ],

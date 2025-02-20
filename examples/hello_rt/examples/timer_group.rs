@@ -5,9 +5,10 @@
 
 use bsp::{
     asm_delay,
+    mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
     rt::entry,
-    sprintln,
-    timer_group::{Timer0, Timer1, Timer2, Timer3},
+    sprint, sprintln,
+    timer_group::Timer,
     uart::*,
     CPU_FREQ, NOPS_PER_SEC,
 };
@@ -18,29 +19,22 @@ fn main() -> ! {
     let _serial = ApbUart::init(CPU_FREQ, UART_BAUD);
     print_example_name!();
 
-    let mut timers = (
-        Timer0::init(),
-        Timer1::init(),
-        Timer2::init(),
-        Timer3::init(),
-    );
-    timers.0.enable_with_prescaler(0);
-    timers.1.enable_with_prescaler(1);
-    timers.2.enable_with_prescaler(2);
-    timers.3.enable_with_prescaler(3);
+    let timers = &mut [
+        Timer::init::<TIMER0_ADDR>(),
+        Timer::init::<TIMER1_ADDR>(),
+        Timer::init::<TIMER2_ADDR>(),
+        Timer::init::<TIMER3_ADDR>(),
+    ];
+    timers[0].enable_with_prescaler(0);
+    timers[1].enable_with_prescaler(1);
+    timers[2].enable_with_prescaler(2);
+    timers[3].enable_with_prescaler(3);
 
     loop {
-        let time0 = timers.0.counter();
-        let time1 = timers.1.counter();
-        let time2 = timers.2.counter();
-        let time3 = timers.3.counter();
-        sprintln!(
-            "times:\r\n  {}\r\n  {}\r\n  {}\r\n  {}",
-            time0,
-            time1,
-            time2,
-            time3
-        );
+        sprint!("times:",);
+        timers.iter().for_each(|t| sprint!("\r\n {}", t.counter()));
+
+        sprintln!();
         asm_delay(NOPS_PER_SEC);
     }
 }

@@ -7,7 +7,7 @@
 // Identity ops can improve clarity for memory maps
 #![allow(clippy::identity_op)]
 
-pub(crate) mod apb_timer;
+pub mod apb_timer;
 mod cfg;
 mod clic;
 pub mod gpio;

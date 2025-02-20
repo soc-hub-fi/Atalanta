@@ -1,5 +1,5 @@
-use core::arch::{asm, global_asm};
-use riscv::register::mtvec;
+use crate::register::{mintthresh, mtvec, mtvt};
+use core::arch::global_asm;
 
 #[cfg(feature = "rt")]
 #[export_name = "_setup_interrupts"]
@@ -13,11 +13,9 @@ fn setup_interrupt_vector() {
         // Set all the trap vectors for good measure
         let bits = _vector_table as usize;
         mtvec::write(bits, mtvec::TrapMode::Clic);
-        // 0x307 = mtvt
-        asm!("csrw 0x307, {0}", in(reg) bits | 0x3);
+        mtvt::write(bits, mtvt::TrapMode::Clic);
 
-        // 0x347 = mintthresh
-        asm!("csrw 0x347, 0x00");
+        mintthresh::write(0x00.into());
     }
 }
 

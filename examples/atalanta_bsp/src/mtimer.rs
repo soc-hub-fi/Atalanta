@@ -213,3 +213,9 @@ impl OneShot {
             | read_u32(MTIMER_BASE + MTIMECMP_LOW_ADDR_OFS) as u64
     }
 }
+
+impl From<OneShot> for MTimer {
+    fn from(value: OneShot) -> Self {
+        value.0
+    }
+}
