@@ -1,4 +1,8 @@
-use crate::{mask_u32p, mmap::apb_timer::*, read_u32p, unmask_u32p, write_u32p, CPU_FREQ};
+use crate::{
+    mask_u32p,
+    mmap::{apb_timer::*, CFG_BASE, PERIPH_CLK_DIV_OFS},
+    read_u32p, read_u8_masked, unmask_u32p, write_u32p, CPU_FREQ,
+};
 
 /// Relocatable driver for PULP APB Timer IP
 pub struct Timer(*mut RegisterBlock);
@@ -91,8 +95,7 @@ impl Timer {
     }
 }
 
-const PERIPH_CLK_DIV: u32 = 1;
-const DENOM: u32 = CPU_FREQ / PERIPH_CLK_DIV;
+const DENOM: u32 = CPU_FREQ;
 pub type Duration = fugit::Duration<u32, 1, DENOM>;
 
 pub struct Periodic(Timer);
@@ -104,8 +107,11 @@ impl Periodic {
     /// Also resets the internal counter.
     #[inline]
     pub fn set_period(&mut self, duration: Duration) {
+        // Read current peripheral clock divider to dynamically fixup fugit::Duration
+        let pclk_div = unsafe { read_u8_masked(CFG_BASE + PERIPH_CLK_DIV_OFS, 0xf) };
+
         // Setting CMP also sets COUNTER
-        self.0.set_cmp(duration.ticks());
+        self.0.set_cmp(duration.ticks() / pclk_div as u32);
     }
 
     /// Schedules an interrupt to be fired every `duration`
@@ -114,9 +120,12 @@ impl Periodic {
     /// interrupt ahead of schedule.
     #[inline]
     pub fn set_period_offset(&mut self, period: Duration, offset: Duration) {
+        // Read current peripheral clock divider to dynamically fixup fugit::Duration
+        let pclk_div = unsafe { read_u8_masked(CFG_BASE + PERIPH_CLK_DIV_OFS, 0xf) };
+
         // Setting CMP also sets COUNTER, so we override that afterwards
-        self.0.set_cmp(period.ticks());
-        self.0.set_counter(offset.ticks());
+        self.0.set_cmp(period.ticks() / pclk_div as u32);
+        self.0.set_counter(offset.ticks() / pclk_div as u32);
     }
 
     /// Starts the timer

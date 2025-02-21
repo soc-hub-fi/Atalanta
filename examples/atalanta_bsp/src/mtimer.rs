@@ -1,10 +1,10 @@
 use crate::{
     mask_u32,
     mmap::{
-        MTIMECMP_HIGH_ADDR_OFS, MTIMECMP_LOW_ADDR_OFS, MTIMER_BASE, MTIME_CTRL_ADDR_OFS,
-        MTIME_HIGH_ADDR_OFS, MTIME_LOW_ADDR_OFS,
+        CFG_BASE, MTIMECMP_HIGH_ADDR_OFS, MTIMECMP_LOW_ADDR_OFS, MTIMER_BASE, MTIME_CTRL_ADDR_OFS,
+        MTIME_HIGH_ADDR_OFS, MTIME_LOW_ADDR_OFS, PERIPH_CLK_DIV_OFS,
     },
-    read_u32, unmask_u32, write_u32, CPU_FREQ,
+    read_u32, read_u8_masked, unmask_u32, write_u32, CPU_FREQ,
 };
 
 /// Machine Timer
@@ -177,8 +177,7 @@ impl MTimerLo {
     }
 }
 
-const PERIPH_CLK_DIV: u32 = 1;
-const DENOM: u32 = CPU_FREQ / PERIPH_CLK_DIV;
+const DENOM: u32 = CPU_FREQ;
 pub type Duration = fugit::Duration<u64, 1, DENOM>;
 
 pub struct OneShot(MTimer);
@@ -187,8 +186,11 @@ impl OneShot {
     /// Schedules the `MachineTimer` interrupt to trigger after `duration`
     #[inline]
     pub fn start(&mut self, duration: Duration) {
+        // Read current peripheral clock divider to dynamically fixup fugit::Duration
+        let pclk_div = unsafe { read_u8_masked(CFG_BASE + PERIPH_CLK_DIV_OFS, 0xf) };
+
         let cnt = self.0.counter();
-        self.0.set_cmp(cnt + duration.ticks());
+        self.0.set_cmp(cnt + duration.ticks() / pclk_div as u64);
         self.0.enable();
     }
 
