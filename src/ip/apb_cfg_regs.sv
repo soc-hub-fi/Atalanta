@@ -36,6 +36,7 @@ assign div_o     = div_q;
 always_comb
   begin : apb_access
     div_d = div_q;
+    prdata_o = '0;
     if (penable_i) begin
       if (pwrite_i) begin // write logic
         case (int_addr)
