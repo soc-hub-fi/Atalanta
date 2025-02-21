@@ -213,8 +213,9 @@ fn main() -> ! {
                 (TASK2_COUNT, TASK2),
                 (TASK3_COUNT, TASK3),
             ] {
-                // Assert task count is at least the expected count. There may be one less as the
-                // final in-flight task might get interrupted by the test end.
+                // Assert task count is at least the expected count. There may be one less as
+                // the final in-flight task might get interrupted by the test
+                // end.
                 ma::assert_ge!(
                     *count,
                     (TEST_DURATION.to_nanos() as usize / task.period_ns as usize) - 1
