@@ -4,6 +4,7 @@
 #![allow(non_snake_case)]
 
 use core::arch::asm;
+use fugit::ExtU32;
 use more_asserts as ma;
 
 use bsp::{
@@ -143,16 +144,16 @@ fn main() -> ! {
         let mut mtimer = MTimer::instance().into_oneshot();
 
         let mut timers = (
-            Timer::init::<TIMER0_ADDR>(),
-            Timer::init::<TIMER1_ADDR>(),
-            Timer::init::<TIMER2_ADDR>(),
-            Timer::init::<TIMER3_ADDR>(),
+            Timer::init::<TIMER0_ADDR>().into_periodic(),
+            Timer::init::<TIMER1_ADDR>().into_periodic(),
+            Timer::init::<TIMER2_ADDR>().into_periodic(),
+            Timer::init::<TIMER3_ADDR>().into_periodic(),
         );
 
-        timers.0.set_cmp(TASK0.period_ns * CYCLES_PER_US / 1_000);
-        timers.1.set_cmp(TASK1.period_ns * CYCLES_PER_US / 1_000);
-        timers.2.set_cmp(TASK2.period_ns * CYCLES_PER_US / 1_000);
-        timers.3.set_cmp(TASK3.period_ns * CYCLES_PER_US / 1_000);
+        timers.0.set_period(TASK0.period_ns.nanos());
+        timers.1.set_period(TASK1.period_ns.nanos());
+        timers.2.set_period(TASK2.period_ns.nanos());
+        timers.3.set_period(TASK3.period_ns.nanos());
 
         // --- Test critical ---
         unsafe {
@@ -165,10 +166,10 @@ fn main() -> ! {
 
         // Test will end when MachineTimer fires
         mtimer.start(TEST_DURATION);
-        timers.0.enable();
-        timers.1.enable();
-        timers.2.enable();
-        timers.3.enable();
+        timers.0.start();
+        timers.1.start();
+        timers.2.start();
+        timers.3.start();
 
         unsafe { riscv::interrupt::enable() };
 
