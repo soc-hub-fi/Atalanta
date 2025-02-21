@@ -4,25 +4,26 @@
 #![allow(non_snake_case)]
 
 use core::arch::asm;
+use fugit::ExtU32;
 use more_asserts as ma;
 
 use bsp::{
     clic::{Clic, Polarity, Trig},
     embedded_io::Write,
     interrupt,
-    mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
-    mtimer::{self, MTimer},
-    nested_interrupt,
-    riscv::{
-        self,
-        asm::wfi,
+    mmap::{
+        apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
+        CFG_BASE, PERIPH_CLK_DIV_OFS,
     },
+    mtimer::{self, MTimer},
+    nested_interrupt, read_u32,
+    riscv::{self, asm::wfi},
     rt::entry,
     sprint, sprintln,
     tb::signal_pass,
-    timer_group::Timer,
+    timer_group::{Periodic, Timer},
     uart::*,
-    Interrupt, CPU_FREQ,
+    write_u32, Interrupt, CPU_FREQ,
 };
 use ufmt::derive::uDebug;
 
@@ -84,8 +85,17 @@ static mut TIMEOUT: bool = false;
 
 #[entry]
 fn main() -> ! {
+    // Assert that periph clk div is as configured
+    // !!!: this must be done prior to configuring any timing sensitive
+    // peripherals
+    write_u32(CFG_BASE + PERIPH_CLK_DIV_OFS, PERIPH_CLK_DIV as u32);
+
     let mut serial = ApbUart::init(CPU_FREQ, 115_200);
     sprintln!("[periodic_tasks (PCS={:?})]", cfg!(feature = "pcs"));
+    sprintln!(
+        "Periph CLK div = {}",
+        read_u32(CFG_BASE + PERIPH_CLK_DIV_OFS)
+    );
     sprintln!("Running test {} times", RUN_COUNT);
 
     sprintln!(
@@ -133,17 +143,17 @@ fn main() -> ! {
         // Use mtimer for timeout
         let mut mtimer = MTimer::instance().into_oneshot();
 
-        let mut timers = (
-            Timer::init::<TIMER0_ADDR>(),
-            Timer::init::<TIMER1_ADDR>(),
-            Timer::init::<TIMER2_ADDR>(),
-            Timer::init::<TIMER3_ADDR>(),
-        );
+        let timers = &mut [
+            Timer::init::<TIMER0_ADDR>().into_periodic(),
+            Timer::init::<TIMER1_ADDR>().into_periodic(),
+            Timer::init::<TIMER2_ADDR>().into_periodic(),
+            Timer::init::<TIMER3_ADDR>().into_periodic(),
+        ];
 
-        timers.0.set_cmp(TASK0.period_ns * CYCLES_PER_US / 1_000);
-        timers.1.set_cmp(TASK1.period_ns * CYCLES_PER_US / 1_000);
-        timers.2.set_cmp(TASK2.period_ns * CYCLES_PER_US / 1_000);
-        timers.3.set_cmp(TASK3.period_ns * CYCLES_PER_US / 1_000);
+        timers[0].set_period(TASK0.period_ns.nanos());
+        timers[1].set_period(TASK1.period_ns.nanos());
+        timers[2].set_period(TASK2.period_ns.nanos());
+        timers[3].set_period(TASK3.period_ns.nanos());
 
         // --- Test critical ---
         unsafe {
@@ -156,10 +166,9 @@ fn main() -> ! {
 
         // Test will end when MachineTimer fires
         mtimer.start(TEST_DURATION);
-        timers.0.enable();
-        timers.1.enable();
-        timers.2.enable();
-        timers.3.enable();
+
+        // Start periodic timers
+        timers.iter_mut().for_each(Periodic::start);
 
         unsafe { riscv::interrupt::enable() };
 
@@ -204,8 +213,9 @@ fn main() -> ! {
                 (TASK2_COUNT, TASK2),
                 (TASK3_COUNT, TASK3),
             ] {
-                // Assert task count is at least the expected count. There may be one less as the
-                // final in-flight task might get interrupted by the test end.
+                // Assert task count is at least the expected count. There may be one less as
+                // the final in-flight task might get interrupted by the test
+                // end.
                 ma::assert_ge!(
                     *count,
                     (TEST_DURATION.to_nanos() as usize / task.period_ns as usize) - 1
