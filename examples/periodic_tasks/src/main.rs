@@ -241,7 +241,7 @@ fn main() -> ! {
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer0Cmp() {
     TASK0_COUNT += 1;
-    let workload = TASK0.duration_ns * CYCLES_PER_US / 1_000 as u32;
+    let workload = TASK0.duration_ns * CYCLES_PER_US / 1_000;
     for _ in 0..workload {
         nop();
     }
