@@ -21,7 +21,7 @@ use bsp::{
     rt::entry,
     sprint, sprintln,
     tb::signal_pass,
-    timer_group::Timer,
+    timer_group::{Periodic, Timer},
     uart::*,
     write_u32, Interrupt, CPU_FREQ,
 };
@@ -143,17 +143,17 @@ fn main() -> ! {
         // Use mtimer for timeout
         let mut mtimer = MTimer::instance().into_oneshot();
 
-        let mut timers = (
+        let timers = &mut [
             Timer::init::<TIMER0_ADDR>().into_periodic(),
             Timer::init::<TIMER1_ADDR>().into_periodic(),
             Timer::init::<TIMER2_ADDR>().into_periodic(),
             Timer::init::<TIMER3_ADDR>().into_periodic(),
-        );
+        ];
 
-        timers.0.set_period(TASK0.period_ns.nanos());
-        timers.1.set_period(TASK1.period_ns.nanos());
-        timers.2.set_period(TASK2.period_ns.nanos());
-        timers.3.set_period(TASK3.period_ns.nanos());
+        timers[0].set_period(TASK0.period_ns.nanos());
+        timers[1].set_period(TASK1.period_ns.nanos());
+        timers[2].set_period(TASK2.period_ns.nanos());
+        timers[3].set_period(TASK3.period_ns.nanos());
 
         // --- Test critical ---
         unsafe {
@@ -166,10 +166,9 @@ fn main() -> ! {
 
         // Test will end when MachineTimer fires
         mtimer.start(TEST_DURATION);
-        timers.0.start();
-        timers.1.start();
-        timers.2.start();
-        timers.3.start();
+
+        // Start periodic timers
+        timers.iter_mut().for_each(Periodic::start);
 
         unsafe { riscv::interrupt::enable() };
 
