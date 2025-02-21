@@ -4,6 +4,7 @@
 #![allow(non_snake_case)]
 
 use core::arch::asm;
+use more_asserts as ma;
 
 use bsp::{
     clic::{Clic, Polarity, Trig},
@@ -12,7 +13,6 @@ use bsp::{
     mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
     mtimer::{self, MTimer},
     nested_interrupt,
-    register::{cycleh, minstret},
     riscv::{
         self,
         asm::{nop, wfi},
@@ -49,22 +49,22 @@ impl Task {
 
 const TEST_BASE_PERIOD_NS: u32 = 100_000;
 const TASK0: Task = Task::new(
-    3,
+    1,
     TEST_BASE_PERIOD_NS / 4,
-    /* 25 ‰)*/ TEST_BASE_PERIOD_NS / 40,
+    /* 25 ‰) */ TEST_BASE_PERIOD_NS / 40,
 );
 const TASK1: Task = Task::new(
-    4,
+    2,
     TEST_BASE_PERIOD_NS / 8,
-    /*12,5 ‰) */ TEST_BASE_PERIOD_NS / 80,
+    /* 12,5 ‰) */ TEST_BASE_PERIOD_NS / 80,
 );
 const TASK2: Task = Task::new(
-    5,
+    3,
     TEST_BASE_PERIOD_NS / 16,
     /* 5 ‰) */ TEST_BASE_PERIOD_NS / 200,
 );
 const TASK3: Task = Task::new(
-    6,
+    4,
     TEST_BASE_PERIOD_NS / 32,
     /* 2,5 ‰) */ TEST_BASE_PERIOD_NS / 400,
 );
@@ -151,6 +151,7 @@ fn main() -> ! {
             // clear mcycle, minstret at start of critical section
             asm!("csrw 0xB00, {0}", in(reg) 0x0);
             asm!("csrw 0xB02, {0}", in(reg) 0x0);
+            /* !!! mcycle and minstret are missing write-methdods in BSP !!! */
         };
 
         // Test will end when MachineTimer fires
@@ -171,32 +172,11 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
-            let mut cycle_hi: u32;
-            let mut cycle_lo: u32;
-            let mut minstret_hi: u32;
-            let mut minstret_lo: u32;
-
-            core::arch::asm!("csrr {0}, 0xB00", out(reg) cycle_lo);
-            core::arch::asm!("csrr {0}, 0xB80", out(reg) cycle_hi);
-            core::arch::asm!("csrr {0}, 0xB02", out(reg) minstret_lo);
-            core::arch::asm!("csrr {0}, 0xB82", out(reg) minstret_hi);
-
-            sprintln!("cycles: {}{}", cycle_hi, cycle_lo);
-            sprintln!("instrs: {}{}", minstret_hi, minstret_lo);
-
-            /* Both of these alternatives cause an illegal instruction
-
-            //let cycle_lo = riscv::register::cycle::read();
-            //let cycle_hi = riscv::register::cycleh::read();
-            //let minstret_lo = riscv::register::minstret::read();
-            //let minstret_hi = riscv::register::minstret::read();
-            //-----------------------------------------------------
-            let cycle = riscv::register::cycle::read64();
+            let mcycle = riscv::register::mcycle::read64();
             let minstret = riscv::register::minstret::read64();
 
-            sprintln!("cycles: {}", cycle );
+            sprintln!("cycles: {}", mcycle);
             sprintln!("instrs: {}", minstret);
-            */
             sprintln!(
                 "Task counts:\r\n{} | {} | {} | {}",
                 TASK0_COUNT,
@@ -204,20 +184,19 @@ fn main() -> ! {
                 TASK2_COUNT,
                 TASK3_COUNT
             );
-            let total_in_task0 = TASK0.duration_ns * TASK0_COUNT as u32;
-            let total_in_task1 = TASK1.duration_ns * TASK1_COUNT as u32;
-            let total_in_task2 = TASK2.duration_ns * TASK2_COUNT as u32;
-            let total_in_task3 = TASK3.duration_ns * TASK3_COUNT as u32;
+            let total_ns_in_task0 = TASK0.duration_ns * TASK0_COUNT as u32;
+            let total_ns_in_task1 = TASK1.duration_ns * TASK1_COUNT as u32;
+            let total_ns_in_task2 = TASK2.duration_ns * TASK2_COUNT as u32;
+            let total_ns_in_task3 = TASK3.duration_ns * TASK3_COUNT as u32;
             sprintln!(
                 "Theoretical total duration spent in task workload (ns):\r\n{} | {} | {} | {} = {}",
-                total_in_task0,
-                total_in_task1,
-                total_in_task2,
-                total_in_task3,
-                total_in_task0 + total_in_task1 + total_in_task2 + total_in_task3,
+                total_ns_in_task0,
+                total_ns_in_task1,
+                total_ns_in_task2,
+                total_ns_in_task3,
+                total_ns_in_task0 + total_ns_in_task1 + total_ns_in_task2 + total_ns_in_task3,
             );
 
-            /* TODO: reintroduce after mtimer div fixed
             // Assert that each task runs the expected number of times
             for (count, task) in &[
                 (TASK0_COUNT, TASK0),
@@ -225,32 +204,12 @@ fn main() -> ! {
                 (TASK2_COUNT, TASK2),
                 (TASK3_COUNT, TASK3),
             ] {
-                assert_eq!(
+                // allow off-by-one
+                ma::assert_ge!(
                     *count,
-                    (TEST_DURATION.to_nanos() as usize + task.start_offset_ns as usize)
-                        / task.period_ns as usize
+                    (TEST_DURATION.to_nanos() as usize / task.period_ns as usize) - 1
                 )
-            } TODO: remove below repplacement prints */
-            sprintln!(
-                "{}, {}",
-                TASK0_COUNT,
-                (TEST_DURATION.to_nanos() / TASK0.period_ns as u64)
-            );
-            sprintln!(
-                "{}, {}",
-                TASK1_COUNT,
-                (TEST_DURATION.to_nanos() / TASK1.period_ns as u64)
-            );
-            sprintln!(
-                "{}, {}",
-                TASK2_COUNT,
-                (TEST_DURATION.to_nanos() / TASK2.period_ns as u64)
-            );
-            sprintln!(
-                "{}, {}",
-                TASK3_COUNT,
-                (TEST_DURATION.to_nanos() / TASK3.period_ns as u64)
-            );
+            }
 
             // Make sure serial is done printing before proceeding to the next iteration
             serial.flush().unwrap_unchecked();

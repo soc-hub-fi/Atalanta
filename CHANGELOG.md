@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Mtimer with new implementation
 
 ### Changed
-- rt-ibex to version with functional HWS
+- rt-ibex to version with functional hardware stacking
 - Peripherals frequency to be runtime-configurable
 - Make Mtimer writable
 
