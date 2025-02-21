@@ -9,6 +9,7 @@ bsp = { package = "atalanta_bsp", path = "../atalanta_bsp", features = [
 ] }
 fugit = "0.3.7"
 ufmt = "0.2.0"
+more-asserts = "0.3.1"
 
 [features]
 default = ["ufmt"]

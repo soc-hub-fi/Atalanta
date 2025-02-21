@@ -4,15 +4,20 @@
 #![allow(non_snake_case)]
 
 use core::arch::asm;
+use more_asserts as ma;
 
 use bsp::{
     clic::{Clic, Polarity, Trig},
     embedded_io::Write,
+    interrupt,
     mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
     mtimer::{self, MTimer},
     nested_interrupt,
-    riscv::{self, asm::wfi},
-    rt::{entry, interrupt},
+    riscv::{
+        self,
+        asm::wfi,
+    },
+    rt::entry,
     sprint, sprintln,
     tb::signal_pass,
     timer_group::Timer,
@@ -25,54 +30,51 @@ use ufmt::derive::uDebug;
 #[cfg_attr(not(feature = "ufmt"), derive(Debug))]
 struct Task {
     level: u8,
-    period_us: u32,
-    duration_us: u32,
-    start_offset_us: u32,
+    period_ns: u32,
+    duration_ns: u32,
 }
 
 const RUN_COUNT: usize = 1;
 const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(1_000);
 
 impl Task {
-    pub const fn new(level: u8, period_us: u32, duration_us: u32, start_offset_us: u32) -> Self {
+    pub const fn new(level: u8, period_ns: u32, duration_ns: u32) -> Self {
         Self {
-            period_us,
-            duration_us,
+            period_ns,
+            duration_ns,
             level,
-            start_offset_us,
         }
     }
 }
 
-const TEST_BASE_PERIOD_US: u32 = 100;
+const TEST_BASE_PERIOD_NS: u32 = 100_000;
 const TASK0: Task = Task::new(
     1,
-    TEST_BASE_PERIOD_US / 1,
-    /* 20 % */ TEST_BASE_PERIOD_US / 5,
-    /* 10 % */ TEST_BASE_PERIOD_US / 10,
+    TEST_BASE_PERIOD_NS / 4,
+    /* 25 ‰) */ TEST_BASE_PERIOD_NS / 40,
 );
 const TASK1: Task = Task::new(
     2,
-    TEST_BASE_PERIOD_US / 1,
-    /* 10 % */ TEST_BASE_PERIOD_US / 10,
-    /* 60 % */ 3 * TEST_BASE_PERIOD_US / 5,
+    TEST_BASE_PERIOD_NS / 8,
+    /* 12,5 ‰) */ TEST_BASE_PERIOD_NS / 80,
 );
 const TASK2: Task = Task::new(
     3,
-    TEST_BASE_PERIOD_US / 2,
-    /* 5 % */ TEST_BASE_PERIOD_US / 20,
-    /* 37.5 % */ 3 * TEST_BASE_PERIOD_US / 8,
+    TEST_BASE_PERIOD_NS / 16,
+    /* 5 ‰) */ TEST_BASE_PERIOD_NS / 200,
 );
 const TASK3: Task = Task::new(
     4,
-    TEST_BASE_PERIOD_US / 4,
-    /* 2.5 % */ TEST_BASE_PERIOD_US / 40,
-    /* 12.5 % */ TEST_BASE_PERIOD_US / 8,
+    TEST_BASE_PERIOD_NS / 32,
+    /* 2,5 ‰) */ TEST_BASE_PERIOD_NS / 400,
 );
-const PERIPH_CLK_DIV: u64 = 2;
+const PERIPH_CLK_DIV: u64 = 1;
 const CYCLES_PER_SEC: u64 = CPU_FREQ as u64 / PERIPH_CLK_DIV;
 const CYCLES_PER_MS: u64 = CYCLES_PER_SEC / 1_000;
-const CYCLES_PER_US: u64 = CYCLES_PER_MS / 1_000;
+const CYCLES_PER_US: u32 = CYCLES_PER_MS as u32 / 1_000;
+// !!!: this would saturate to zero, so we must not use it. Use `X *
+// CYCLES_PER_US / 1_000 instead` and verify the output value is not saturated.
+/* const CYCLES_PER_NS: u64 = CYCLES_PER_US / 1_000; */
 
 static mut TASK0_COUNT: usize = 0;
 static mut TASK1_COUNT: usize = 0;
@@ -93,7 +95,11 @@ fn main() -> ! {
         TASK2,
         TASK3
     );
-    sprintln!("Test duration: {} us", TEST_DURATION.to_micros());
+    sprintln!(
+        "Test duration: {} us ({} ns)",
+        TEST_DURATION.to_micros(),
+        TEST_DURATION.to_nanos()
+    );
 
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
@@ -134,25 +140,19 @@ fn main() -> ! {
             Timer::init::<TIMER3_ADDR>(),
         );
 
-        timers.0.set_cmp(TASK0.period_us * CYCLES_PER_US as u32);
-        timers
-            .0
-            .set_counter((TASK0.period_us - TASK0.start_offset_us) * CYCLES_PER_US as u32);
-        timers.1.set_cmp(TASK1.period_us * CYCLES_PER_US as u32);
-        timers
-            .1
-            .set_counter((TASK1.period_us - TASK1.start_offset_us) * CYCLES_PER_US as u32);
-        timers.2.set_cmp(TASK2.period_us * CYCLES_PER_US as u32);
-        timers
-            .2
-            .set_counter((TASK2.period_us - TASK2.start_offset_us) * CYCLES_PER_US as u32);
-        timers.3.set_cmp(TASK3.period_us * CYCLES_PER_US as u32);
-        timers
-            .3
-            .set_counter((TASK3.period_us - TASK3.start_offset_us) * CYCLES_PER_US as u32);
+        timers.0.set_cmp(TASK0.period_ns * CYCLES_PER_US / 1_000);
+        timers.1.set_cmp(TASK1.period_ns * CYCLES_PER_US / 1_000);
+        timers.2.set_cmp(TASK2.period_ns * CYCLES_PER_US / 1_000);
+        timers.3.set_cmp(TASK3.period_ns * CYCLES_PER_US / 1_000);
 
         // --- Test critical ---
-        unsafe { asm!("fence") };
+        unsafe {
+            asm!("fence");
+            // clear mcycle, minstret at start of critical section
+            asm!("csrw 0xB00, {0}", in(reg) 0x0);
+            asm!("csrw 0xB02, {0}", in(reg) 0x0);
+            /* !!! mcycle and minstret are missing write-methdods in BSP !!! */
+        };
 
         // Test will end when MachineTimer fires
         mtimer.start(TEST_DURATION);
@@ -172,6 +172,11 @@ fn main() -> ! {
         // --- Test critical end ---
 
         unsafe {
+            let mcycle = riscv::register::mcycle::read64();
+            let minstret = riscv::register::minstret::read64();
+
+            sprintln!("cycles: {}", mcycle);
+            sprintln!("instrs: {}", minstret);
             sprintln!(
                 "Task counts:\r\n{} | {} | {} | {}",
                 TASK0_COUNT,
@@ -179,17 +184,17 @@ fn main() -> ! {
                 TASK2_COUNT,
                 TASK3_COUNT
             );
-            let total_in_task0 = TASK0.duration_us * TASK0_COUNT as u32;
-            let total_in_task1 = TASK1.duration_us * TASK1_COUNT as u32;
-            let total_in_task2 = TASK2.duration_us * TASK2_COUNT as u32;
-            let total_in_task3 = TASK3.duration_us * TASK3_COUNT as u32;
+            let total_ns_in_task0 = TASK0.duration_ns * TASK0_COUNT as u32;
+            let total_ns_in_task1 = TASK1.duration_ns * TASK1_COUNT as u32;
+            let total_ns_in_task2 = TASK2.duration_ns * TASK2_COUNT as u32;
+            let total_ns_in_task3 = TASK3.duration_ns * TASK3_COUNT as u32;
             sprintln!(
-                "Theoretical total duration spent in task workload (us):\r\n{} | {} | {} | {} = {}",
-                total_in_task0,
-                total_in_task1,
-                total_in_task2,
-                total_in_task3,
-                total_in_task0 + total_in_task1 + total_in_task2 + total_in_task3,
+                "Theoretical total duration spent in task workload (ns):\r\n{} | {} | {} | {} = {}",
+                total_ns_in_task0,
+                total_ns_in_task1,
+                total_ns_in_task2,
+                total_ns_in_task3,
+                total_ns_in_task0 + total_ns_in_task1 + total_ns_in_task2 + total_ns_in_task3,
             );
 
             // Assert that each task runs the expected number of times
@@ -199,12 +204,18 @@ fn main() -> ! {
                 (TASK2_COUNT, TASK2),
                 (TASK3_COUNT, TASK3),
             ] {
-                assert_eq!(
+                // Assert task count is at least the expected count. There may be one less as the
+                // final in-flight task might get interrupted by the test end.
+                ma::assert_ge!(
                     *count,
-                    (TEST_DURATION.to_micros() as usize + task.start_offset_us as usize)
-                        / task.period_us as usize
-                )
+                    (TEST_DURATION.to_nanos() as usize / task.period_ns as usize) - 1
+                );
+                ma::assert_le!(
+                    *count,
+                    (TEST_DURATION.to_nanos() as usize / task.period_ns as usize)
+                );
             }
+
             // Make sure serial is done printing before proceeding to the next iteration
             serial.flush().unwrap_unchecked();
         }
@@ -234,41 +245,45 @@ fn main() -> ! {
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer0Cmp() {
-    let mtimer = MTimer::instance().into_lo();
-    let sample = mtimer.counter();
     TASK0_COUNT += 1;
-    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
-    while mtimer.counter() <= task_end {}
+    core::arch::asm!(r#"
+        .rept {CNT}
+        nop
+        .endr
+    "#, CNT = const TASK0.duration_ns * CYCLES_PER_US / 1_000);
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer1Cmp() {
-    let mtimer = MTimer::instance().into_lo();
-    let sample = mtimer.counter();
     TASK1_COUNT += 1;
-    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
-    while mtimer.counter() <= task_end {}
+    core::arch::asm!(r#"
+        .rept {CNT}
+        nop
+        .endr
+    "#, CNT = const TASK1.duration_ns * CYCLES_PER_US / 1_000);
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer2Cmp() {
-    let mtimer = MTimer::instance().into_lo();
-    let sample = mtimer.counter();
     TASK2_COUNT += 1;
-    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
-    while mtimer.counter() <= task_end {}
+    core::arch::asm!(r#"
+        .rept {CNT}
+        nop
+        .endr
+    "#, CNT = const TASK2.duration_ns * CYCLES_PER_US / 1_000);
 }
 
 #[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
 #[cfg_attr(not(feature = "pcs"), nested_interrupt)]
 unsafe fn Timer3Cmp() {
-    let mtimer = MTimer::instance().into_lo();
-    let sample = mtimer.counter();
     TASK3_COUNT += 1;
-    let task_end = sample + TASK0.duration_us * CYCLES_PER_US as u32;
-    while mtimer.counter() <= task_end {}
+    core::arch::asm!(r#"
+        .rept {CNT}
+        nop
+        .endr
+    "#, CNT = const TASK3.duration_ns * CYCLES_PER_US / 1_000);
 }
 
 /// Timeout interrupt (per test-run)

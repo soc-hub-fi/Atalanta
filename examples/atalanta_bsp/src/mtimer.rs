@@ -177,7 +177,7 @@ impl MTimerLo {
     }
 }
 
-const PERIPH_CLK_DIV: u32 = 2;
+const PERIPH_CLK_DIV: u32 = 1;
 const DENOM: u32 = CPU_FREQ / PERIPH_CLK_DIV;
 pub type Duration = fugit::Duration<u64, 1, DENOM>;
 
