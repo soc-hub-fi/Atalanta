@@ -10,19 +10,19 @@ use bsp::{
     clic::{Clic, Polarity, Trig},
     embedded_io::Write,
     interrupt,
-    mmap::apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
-    mtimer::{self, MTimer},
-    nested_interrupt,
-    riscv::{
-        self,
-        asm::wfi,
+    mmap::{
+        apb_timer::{TIMER0_ADDR, TIMER1_ADDR, TIMER2_ADDR, TIMER3_ADDR},
+        CFG_BASE, PERIPH_CLK_DIV_OFS,
     },
+    mtimer::{self, MTimer},
+    nested_interrupt, read_u32,
+    riscv::{self, asm::wfi},
     rt::entry,
     sprint, sprintln,
     tb::signal_pass,
     timer_group::Timer,
     uart::*,
-    Interrupt, CPU_FREQ,
+    write_u32, Interrupt, CPU_FREQ,
 };
 use ufmt::derive::uDebug;
 
@@ -84,8 +84,17 @@ static mut TIMEOUT: bool = false;
 
 #[entry]
 fn main() -> ! {
+    // Assert that periph clk div is as configured
+    // !!!: this must be done prior to configuring any timing sensitive
+    // peripherals
+    write_u32(CFG_BASE + PERIPH_CLK_DIV_OFS, PERIPH_CLK_DIV as u32);
+
     let mut serial = ApbUart::init(CPU_FREQ, 115_200);
     sprintln!("[periodic_tasks (PCS={:?})]", cfg!(feature = "pcs"));
+    sprintln!(
+        "Periph CLK div = {}",
+        read_u32(CFG_BASE + PERIPH_CLK_DIV_OFS)
+    );
     sprintln!("Running test {} times", RUN_COUNT);
 
     sprintln!(
