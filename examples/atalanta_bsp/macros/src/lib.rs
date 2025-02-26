@@ -18,6 +18,20 @@ pub fn nested_interrupt_riscv32i(args: TokenStream, input: TokenStream) -> Token
     trampoline::nested_interrupt(args, input)
 }
 
+/// Sa. [crate::trampoline::generate_pcs_trap_entry]
+#[proc_macro]
+pub fn generate_pcs_trap_entry(input: TokenStream) -> TokenStream {
+    let interrupt = parse_macro_input!(input as syn::Ident);
+    trampoline::generate_pcs_trap_entry(&interrupt.to_string()).into()
+}
+
+/// Sa. [crate::trampoline::generate_nested_trap_entry]
+#[proc_macro]
+pub fn generate_nested_trap_entry(input: TokenStream) -> TokenStream {
+    let interrupt = parse_macro_input!(input as syn::Ident);
+    trampoline::generate_nested_trap_entry(&interrupt.to_string()).into()
+}
+
 /// Sa. [crate::trampoline::generate_continue_nested_trap_impl]
 #[proc_macro]
 pub fn generate_continue_nested_trap(_input: TokenStream) -> TokenStream {
