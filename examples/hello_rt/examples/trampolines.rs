@@ -50,10 +50,13 @@ fn main() -> ! {
     setup_irq(Interrupt::Dma1, 0x2);
     setup_irq(Interrupt::Dma2, 0x3);
     setup_irq(Interrupt::Dma3, 0x4);
+    setup_irq(Interrupt::Dma4, 0x5);
+    setup_irq(Interrupt::Dma5, 0x6);
     setup_irq(Interrupt::MachineTimer, u8::MAX);
 
-    enable_pcs(Interrupt::Dma0);
-    enable_pcs(Interrupt::Dma1);
+    enable_pcs(Interrupt::Dma2);
+    enable_pcs(Interrupt::Dma4);
+    enable_pcs(Interrupt::Dma5);
 
     // Use mtimer for timeout
     let mut mtimer = MTimer::instance().into_oneshot();
@@ -66,6 +69,8 @@ fn main() -> ! {
         Clic::ip(Interrupt::Dma1).pend();
         Clic::ip(Interrupt::Dma2).pend();
         Clic::ip(Interrupt::Dma3).pend();
+        Clic::ip(Interrupt::Dma4).pend();
+        Clic::ip(Interrupt::Dma5).pend();
     }
 
     loop {
@@ -81,14 +86,50 @@ static mut CNT1: usize = 0;
 static mut CNT2: usize = 0;
 #[no_mangle]
 static mut CNT3: usize = 0;
+#[no_mangle]
+static mut CNT4: usize = 0;
+#[no_mangle]
+static mut CNT5: usize = 0;
+
+// Non-nested non-PCS interrupt
+#[interrupt]
+fn Dma0() {
+    unsafe { CNT0 += 1 };
+}
+
+// Nested non-PCS interrupt
+#[nested_interrupt]
+fn Dma1() {
+    unsafe { CNT1 += 1 };
+}
 
 // Nested PCS interrupt
+#[nested_interrupt(pcs)]
+fn Dma2() {
+    unsafe { CNT2 += 1 };
+}
+
+// Nested non-PCS with separately generated entry point
+bsp::generate_nested_trap_entry!(Dma3);
+#[no_mangle]
+fn Dma3() {
+    unsafe { CNT3 += 1 };
+}
+
+// Nested PCS with separately generated entry point
+bsp::generate_pcs_trap_entry!(Dma4);
+#[no_mangle]
+fn Dma4() {
+    unsafe { CNT4 += 1 };
+}
+
+// Nested PCS interrupt in assembly (Dma5)
 global_asm!(
     r#"
 .section .trap, "ax"
 .align 4
-.global _start_Dma0_trap
-_start_Dma0_trap:
+.global _start_Dma5_trap
+_start_Dma5_trap:
     #----- Interrupts disabled on entry ---#
     csrsi mstatus, 8    // enable interrupts
     #----- Interrupts enabled -------------#
@@ -97,8 +138,8 @@ _start_Dma0_trap:
     sw      a0,4(sp)
     sw      a1,0(sp)
 
-    // Increment CNT0
-    lla     a0, {CNT0}
+    // Increment CNT
+    lla     a0, {CNT}
     lw      a1, 0(a0)
     addi    a1,a1,1
     sw      a1, 0(a0)
@@ -110,26 +151,8 @@ _start_Dma0_trap:
     csrci mstatus, 8    // disable interrupts
     #----- Interrupts disabled  ---------#
     mret
-"#, CNT0 = sym CNT0
+"#, CNT = sym CNT5
 );
-
-// Nested PCS interrupt
-#[nested_interrupt(pcs)]
-fn Dma1() {
-    unsafe { CNT1 += 1 };
-}
-
-// Nested non-PCS interrupt
-#[nested_interrupt]
-fn Dma2() {
-    unsafe { CNT2 += 1 };
-}
-
-// Non-nested non-PCS interrupt
-#[interrupt]
-fn Dma3() {
-    unsafe { CNT3 += 1 };
-}
 
 #[inline]
 fn setup_irq(irq: Interrupt, level: u8) {
@@ -147,19 +170,24 @@ unsafe fn MachineTimer() {
         #![allow(static_mut_refs)]
 
         // Check for interrupts starting from most stable to least stable
-        assert_eq!(CNT3, 1);
-        assert_eq!(CNT2, 1);
-        assert_eq!(CNT1, 1);
         assert_eq!(CNT0, 1);
+        assert_eq!(CNT1, 1);
+        assert_eq!(CNT2, 1);
+        assert_eq!(CNT3, 1);
+        assert_eq!(CNT4, 1);
+        assert_eq!(CNT5, 1);
 
         // Test tear down
         tear_irq(Interrupt::Dma0);
         tear_irq(Interrupt::Dma1);
         tear_irq(Interrupt::Dma2);
         tear_irq(Interrupt::Dma3);
+        tear_irq(Interrupt::Dma4);
+        tear_irq(Interrupt::Dma5);
         tear_irq(Interrupt::MachineTimer);
-        disable_pcs(Interrupt::Dma0);
-        disable_pcs(Interrupt::Dma1);
+        disable_pcs(Interrupt::Dma2);
+        disable_pcs(Interrupt::Dma4);
+        disable_pcs(Interrupt::Dma5);
 
         bsp::tb::signal_pass(Some(&mut ApbUart::instance()));
     }

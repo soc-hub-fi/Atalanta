@@ -35,13 +35,14 @@ pub use riscv_rt::{self as rt, interrupt};
 pub use ufmt;
 
 // Generate the `_continue_nested_trap` symbol
+#[cfg(feature = "nest-continue")]
 atalanta_bsp_macros::generate_continue_nested_trap!();
 
-// Import macro for nested_interrupt
-#[cfg(riscve)]
-pub use atalanta_bsp_macros::nested_interrupt_riscv32e as nested_interrupt;
-#[cfg(riscvi)]
-pub use atalanta_bsp_macros::nested_interrupt_riscv32i as nested_interrupt;
+// Re-export macros for nested interrupts
+pub use atalanta_bsp_macros::{
+    generate_continue_nested_trap, generate_nested_trap_entry, generate_pcs_trap_entry,
+    nested_interrupt,
+};
 
 use core::arch::asm;
 
