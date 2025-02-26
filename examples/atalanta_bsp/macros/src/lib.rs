@@ -4,23 +4,22 @@ mod trampoline;
 mod validate;
 
 use proc_macro::TokenStream;
-use trampoline::{generate_continue_nested_trap_impl, nested_interrupt};
+use syn::parse_macro_input;
 
-// Sa. [crate::nested_interrupt]
-// ???: making this into a doc comment causes ICE
+/// Sa. [crate::trampoline::nested_interrupt]
 #[proc_macro_attribute]
 pub fn nested_interrupt_riscv32e(args: TokenStream, input: TokenStream) -> TokenStream {
-    nested_interrupt(args, input)
+    trampoline::nested_interrupt(args, input)
 }
 
-// Sa. [crate::nested_interrupt]
-// ???: making this into a doc comment causes ICE
+/// Sa. [crate::trampoline::nested_interrupt]
 #[proc_macro_attribute]
 pub fn nested_interrupt_riscv32i(args: TokenStream, input: TokenStream) -> TokenStream {
-    nested_interrupt(args, input)
+    trampoline::nested_interrupt(args, input)
 }
 
+/// Sa. [crate::trampoline::generate_continue_nested_trap_impl]
 #[proc_macro]
 pub fn generate_continue_nested_trap(_input: TokenStream) -> TokenStream {
-    generate_continue_nested_trap_impl()
+    trampoline::generate_continue_nested_trap_impl()
 }
