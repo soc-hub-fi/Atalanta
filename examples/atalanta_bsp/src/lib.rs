@@ -35,6 +35,7 @@ pub use riscv_rt::{self as rt, interrupt};
 pub use ufmt;
 
 // Generate the `_continue_nested_trap` symbol
+#[cfg(feature = "nest-continue")]
 atalanta_bsp_macros::generate_continue_nested_trap!();
 
 // Re-export macros for nested interrupts
