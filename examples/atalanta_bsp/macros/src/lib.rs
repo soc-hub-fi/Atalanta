@@ -8,13 +8,7 @@ use syn::parse_macro_input;
 
 /// Sa. [crate::trampoline::nested_interrupt]
 #[proc_macro_attribute]
-pub fn nested_interrupt_riscv32e(args: TokenStream, input: TokenStream) -> TokenStream {
-    trampoline::nested_interrupt(args, input)
-}
-
-/// Sa. [crate::trampoline::nested_interrupt]
-#[proc_macro_attribute]
-pub fn nested_interrupt_riscv32i(args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn nested_interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
     trampoline::nested_interrupt(args, input)
 }
 

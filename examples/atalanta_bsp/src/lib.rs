@@ -38,10 +38,7 @@ pub use ufmt;
 atalanta_bsp_macros::generate_continue_nested_trap!();
 
 // Import macro for nested_interrupt
-#[cfg(riscve)]
-pub use atalanta_bsp_macros::nested_interrupt_riscv32e as nested_interrupt;
-#[cfg(riscvi)]
-pub use atalanta_bsp_macros::nested_interrupt_riscv32i as nested_interrupt;
+pub use atalanta_bsp_macros::nested_interrupt;
 
 use core::arch::asm;
 
