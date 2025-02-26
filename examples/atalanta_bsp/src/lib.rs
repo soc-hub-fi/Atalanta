@@ -37,8 +37,11 @@ pub use ufmt;
 // Generate the `_continue_nested_trap` symbol
 atalanta_bsp_macros::generate_continue_nested_trap!();
 
-// Import macro for nested_interrupt
-pub use atalanta_bsp_macros::nested_interrupt;
+// Re-export macros for nested interrupts
+pub use atalanta_bsp_macros::{
+    generate_continue_nested_trap, generate_nested_trap_entry, generate_pcs_trap_entry,
+    nested_interrupt,
+};
 
 use core::arch::asm;
 
