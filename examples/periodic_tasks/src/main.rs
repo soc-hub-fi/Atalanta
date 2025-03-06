@@ -16,7 +16,7 @@ use bsp::{
         CFG_BASE, PERIPH_CLK_DIV_OFS,
     },
     mtimer::{self, MTimer},
-    nested_interrupt, read_u32,
+    read_u32,
     riscv::{self, asm::wfi},
     rt::entry,
     sprint, sprintln,
@@ -252,8 +252,8 @@ fn main() -> ! {
     }
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+#[cfg_attr(feature = "pcs", bsp::nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), bsp::nested_interrupt)]
 unsafe fn Timer0Cmp() {
     TASK0_COUNT += 1;
     core::arch::asm!(r#"
@@ -263,8 +263,8 @@ unsafe fn Timer0Cmp() {
     "#, CNT = const TASK0.duration_ns * CYCLES_PER_US / 1_000);
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+#[cfg_attr(feature = "pcs", bsp::nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), bsp::nested_interrupt)]
 unsafe fn Timer1Cmp() {
     TASK1_COUNT += 1;
     core::arch::asm!(r#"
@@ -274,8 +274,8 @@ unsafe fn Timer1Cmp() {
     "#, CNT = const TASK1.duration_ns * CYCLES_PER_US / 1_000);
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+#[cfg_attr(feature = "pcs", bsp::nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), bsp::nested_interrupt)]
 unsafe fn Timer2Cmp() {
     TASK2_COUNT += 1;
     core::arch::asm!(r#"
@@ -285,8 +285,8 @@ unsafe fn Timer2Cmp() {
     "#, CNT = const TASK2.duration_ns * CYCLES_PER_US / 1_000);
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+#[cfg_attr(feature = "pcs", bsp::nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), bsp::nested_interrupt)]
 unsafe fn Timer3Cmp() {
     TASK3_COUNT += 1;
     core::arch::asm!(r#"
