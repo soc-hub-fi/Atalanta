@@ -133,10 +133,6 @@ _start_Dma5_trap:
     #----- Interrupts disabled on entry ---#
     csrsi mstatus, 8    // enable interrupts
     #----- Interrupts enabled -------------#
-    // Save context
-    addi    sp,sp,-8
-    sw      a0,4(sp)
-    sw      a1,0(sp)
 
     // Increment CNT
     lla     a0, {CNT}
@@ -144,10 +140,6 @@ _start_Dma5_trap:
     addi    a1,a1,1
     sw      a1, 0(a0)
 
-    // Restore context
-    lw      a0,4(sp)
-    lw      a1,0(sp)
-    addi    sp,sp,8
     csrci mstatus, 8    // disable interrupts
     #----- Interrupts disabled  ---------#
     mret
