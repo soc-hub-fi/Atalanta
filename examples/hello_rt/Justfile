@@ -1,2 +1,7 @@
+#!/usr/bin/env just --justfile
+
 bloat example:
   cargo bloat --profile bloat --example {{example}}
+
+build *args:
+  cargo build {{args}}
