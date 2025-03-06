@@ -16,7 +16,7 @@ use bsp::{
         CFG_BASE, PERIPH_CLK_DIV_OFS,
     },
     mtimer::{self, MTimer},
-    nested_interrupt, read_u32,
+    read_u32,
     riscv::{self, asm::wfi},
     rt::entry,
     sprint, sprintln,
@@ -252,8 +252,46 @@ fn main() -> ! {
     }
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+// This gets pasted for each inline handler if `-Finline-isrs` is defined
+#[cfg(feature = "inline-isrs")]
+macro_rules! impl_inline_isr {
+    ($irq:expr, $TASK_COUNT:expr, $TASK:expr) => {
+        core::arch::global_asm!(
+            concat!(
+            r#"
+            .section .trap, "ax"
+            .align 4
+            "#,
+            concat!(".global _start_", $irq, "_trap\n"),
+            concat!("_start_", $irq, "_trap:\n"),
+            r#"
+                #----- Interrupts disabled on entry ---#
+                csrsi mstatus, 8    // enable interrupts
+                #----- Interrupts enabled -------------#
+
+                // Increment CNT
+                lla     a0, {CNT}
+                lw      a1, 0(a0)
+                addi    a1,a1,1
+                sw      a1, 0(a0)
+
+                // NOP workload
+                .rept {NOP_CNT}
+                nop
+                .endr
+
+                csrci mstatus, 8    // disable interrupts
+                #----- Interrupts disabled  ---------#
+                mret
+            "#
+            ), CNT = sym $TASK_COUNT, NOP_CNT = const $TASK.duration_ns * CYCLES_PER_US / 1_000
+        );
+    };
+}
+
+#[cfg(not(feature = "inline-isrs"))]
+#[cfg_attr(feature = "pcs", bsp::nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), bsp::nested_interrupt)]
 unsafe fn Timer0Cmp() {
     TASK0_COUNT += 1;
     core::arch::asm!(r#"
@@ -263,8 +301,13 @@ unsafe fn Timer0Cmp() {
     "#, CNT = const TASK0.duration_ns * CYCLES_PER_US / 1_000);
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+// Nested PCS interrupt in assembly (Timer0Cmp)
+#[cfg(all(feature = "pcs", feature = "inline-isrs"))]
+impl_inline_isr!("Timer0Cmp", TASK0_COUNT, TASK0);
+
+#[cfg(not(feature = "inline-isrs"))]
+#[cfg_attr(feature = "pcs", bsp::nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), bsp::nested_interrupt)]
 unsafe fn Timer1Cmp() {
     TASK1_COUNT += 1;
     core::arch::asm!(r#"
@@ -274,8 +317,13 @@ unsafe fn Timer1Cmp() {
     "#, CNT = const TASK1.duration_ns * CYCLES_PER_US / 1_000);
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+// Nested PCS interrupt in assembly (Timer1Cmp)
+#[cfg(all(feature = "pcs", feature = "inline-isrs"))]
+impl_inline_isr!("Timer1Cmp", TASK1_COUNT, TASK1);
+
+#[cfg(not(feature = "inline-isrs"))]
+#[cfg_attr(feature = "pcs", bsp::nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), bsp::nested_interrupt)]
 unsafe fn Timer2Cmp() {
     TASK2_COUNT += 1;
     core::arch::asm!(r#"
@@ -285,8 +333,13 @@ unsafe fn Timer2Cmp() {
     "#, CNT = const TASK2.duration_ns * CYCLES_PER_US / 1_000);
 }
 
-#[cfg_attr(feature = "pcs", nested_interrupt(pcs))]
-#[cfg_attr(not(feature = "pcs"), nested_interrupt)]
+// Nested PCS interrupt in assembly (Timer2Cmp)
+#[cfg(all(feature = "pcs", feature = "inline-isrs"))]
+impl_inline_isr!("Timer2Cmp", TASK2_COUNT, TASK2);
+
+#[cfg(not(feature = "inline-isrs"))]
+#[cfg_attr(feature = "pcs", bsp::nested_interrupt(pcs))]
+#[cfg_attr(not(feature = "pcs"), bsp::nested_interrupt)]
 unsafe fn Timer3Cmp() {
     TASK3_COUNT += 1;
     core::arch::asm!(r#"
@@ -295,6 +348,10 @@ unsafe fn Timer3Cmp() {
         .endr
     "#, CNT = const TASK3.duration_ns * CYCLES_PER_US / 1_000);
 }
+
+// Nested PCS interrupt in assembly (Timer3Cmp)
+#[cfg(all(feature = "pcs", feature = "inline-isrs"))]
+impl_inline_isr!("Timer3Cmp", TASK3_COUNT, TASK3);
 
 /// Timeout interrupt (per test-run)
 #[interrupt]

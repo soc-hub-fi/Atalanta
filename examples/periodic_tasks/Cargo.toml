@@ -19,6 +19,8 @@ ufmt = ["bsp/ufmt"]
 # Turn on PCS interrupts for the 4 timers
 pcs = []
 
+inline-isrs = []
+
 # Use this feature when using cosimulators such as QuestaSim
 rtl-tb = ["bsp/rtl-tb"]
 # Use this feature when deploying on FPGA
