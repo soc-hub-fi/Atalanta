@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bsp = { package = "atalanta_bsp", path = "../atalanta_bsp", features = [
+bsp = { package = "atalanta-bsp", path = "../atalanta-bsp", features = [
     "nest-continue",
     "rt",
 ] }

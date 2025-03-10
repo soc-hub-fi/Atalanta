@@ -1,11 +1,11 @@
 [package]
-name = "atalanta_bsp"
+name = "atalanta-bsp"
 authors = ["Henri Lunnikivi <henri.lunnikivi@tuni.fi>"]
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-atalanta_bsp_macros = { path = "macros" }
+atalanta-bsp-macros = { path = "macros" }
 riscv-rt = { git = "https://github.com/hegza/riscv", branch = "feat/rt-ibex", version = "0.13", features = [
     "single-hart",
     "v-trap",

@@ -3,10 +3,10 @@
 version = 4
 
 [[package]]
-name = "atalanta_bsp"
+name = "atalanta-bsp"
 version = "0.1.0"
 dependencies = [
- "atalanta_bsp_macros",
+ "atalanta-bsp-macros",
  "bitmask-enum",
  "embedded-io",
  "fugit",
@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "atalanta_bsp_macros"
+name = "atalanta-bsp-macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
@@ -79,7 +79,7 @@ checksum = "1fafa6961cabd9c63bcd77a45d7e3b7f3b552b70417831fb0f56db717e72407e"
 name = "periodic_tasks"
 version = "0.1.0"
 dependencies = [
- "atalanta_bsp",
+ "atalanta-bsp",
  "fugit",
  "more-asserts",
  "ufmt",
