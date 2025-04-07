@@ -50,7 +50,7 @@ fn main() -> ! {
 
     sprintln!("Input a character to raise an interrupt ('q' to clean up & exit)");
 
-    while unsafe { RUNNING.load(Ordering::Acquire) } {
+    while unsafe { RUNNING.load(Ordering::Relaxed) } {
         riscv::asm::wfi();
     }
 
@@ -73,7 +73,7 @@ fn Uart() {
         sprintln!("byte: {}", ch);
 
         if ch == 'q' {
-            unsafe { RUNNING.store(false, Ordering::Release) };
+            unsafe { RUNNING.store(false, Ordering::Relaxed) };
         }
     }
     sprintln!("leave receive_byte");
