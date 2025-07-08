@@ -335,7 +335,10 @@ apb_timer #(
 );
 
 apb_antiq #(
-) i_timer_queue ();
+) i_timer_queue (
+  .clk_i  (periph_clk),
+  .rst_ni (rst_ni)
+);
 
 apb_cfg_regs #(
   .DivDefault (ClkDivDef)
