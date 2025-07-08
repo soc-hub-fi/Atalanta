@@ -89,6 +89,8 @@ logic [1:0]                 spi_irqs;
 logic [DivValueWidth-1:0]   periph_div;
 logic                       periph_clk;
 
+logic [63:0]                mtime;
+
 APB #(
   .ADDR_WIDTH (AddrWidth),
   .DATA_WIDTH (DataWidth)
@@ -307,6 +309,7 @@ apb_mtimer #() i_mtimer (
   .clk_i       (periph_clk),
   .rst_ni      (rst_ni),
   .timer_irq_o (mtimer_irq),
+  .mtime_o     (mtime),
   .penable_i   (apb_out[2].penable),
   .pwrite_i    (apb_out[2].pwrite),
   .paddr_i     (apb_out[2].paddr),
@@ -336,8 +339,10 @@ apb_timer #(
 
 apb_antiq #(
 ) i_timer_queue (
-  .clk_i  (periph_clk),
-  .rst_ni (rst_ni)
+  .clk_i   (periph_clk),
+  .rst_ni  (rst_ni),
+  .mtime_i (mtime),
+  .apb_sbr (apb_out[7])
 );
 
 apb_cfg_regs #(
