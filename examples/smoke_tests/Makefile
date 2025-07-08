@@ -4,7 +4,7 @@ BUILD_DIR 		  =$(CURDIR)/build
 
 #-{ Toolchain Specifications }------------------------------------------------------ 
 
-XLEN 			 ?= 64
+XLEN 			 ?= 32
 TOOLCHAIN_PATH   := /opt/poc/rv64gcc/bin/
 TOOLCHAIN_PREFIX ?= riscv$(XLEN)-unknown-elf-
 RVGCC			  =$(TOOLCHAIN_PREFIX)gcc

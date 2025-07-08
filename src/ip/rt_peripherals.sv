@@ -51,22 +51,24 @@ typedef enum integer {
 } clic_int_ids_e;
 
 // INCLUSIVE END ADDR
-localparam int unsigned GpioStartAddr     = 32'h0003_0000;
-localparam int unsigned GpioEndAddr       = 32'h0003_00FF;
-localparam int unsigned UartStartAddr     = 32'h0003_0100;
-localparam int unsigned UartEndAddr       = 32'h0003_01FF;
-localparam int unsigned MTimerStartAddr   = 32'h0003_0200;
-localparam int unsigned MTimerEndAddr     = 32'h0003_0210;
-localparam int unsigned ApbTimerStartAddr = 32'h0003_0300;
-localparam int unsigned ApbTimerEndAddr   = 32'h0003_03FF;
+localparam int unsigned GpioStartAddr         = 32'h0003_0000;
+localparam int unsigned GpioEndAddr           = 32'h0003_00FF;
+localparam int unsigned UartStartAddr         = 32'h0003_0100;
+localparam int unsigned UartEndAddr           = 32'h0003_01FF;
+localparam int unsigned MTimerStartAddr       = 32'h0003_0200;
+localparam int unsigned MTimerEndAddr         = 32'h0003_0210;
+localparam int unsigned ApbTimerStartAddr     = 32'h0003_0300;
+localparam int unsigned ApbTimerEndAddr       = 32'h0003_03FF;
 localparam int unsigned ApbSpiMasterStartAddr = 32'h0003_0400;
 localparam int unsigned ApbSpiMasterEndAddr   = 32'h0003_04FF;
-localparam int unsigned CfgRegsStartAddr  = 32'h0003_0500;
-localparam int unsigned CfgRegsEndAddr    = 32'h0003_05FF;
-localparam int unsigned ClicStartAddr     = 32'h0005_0000;
-localparam int unsigned ClicEndAddr       = 32'h0005_FFFF;
+localparam int unsigned CfgRegsStartAddr      = 32'h0003_0500;
+localparam int unsigned CfgRegsEndAddr        = 32'h0003_05FF;
+localparam int unsigned TimerQueueStartAddr   = 32'h0004_0000;
+localparam int unsigned TimerQueueEndAddr     = 32'h0004_0030;
+localparam int unsigned ClicStartAddr         = 32'h0005_0000;
+localparam int unsigned ClicEndAddr           = 32'h0005_FFFF;
 
-localparam int unsigned NrApbPerip    = 7;
+localparam int unsigned NrApbPerip    = 8;
 localparam int unsigned SelWidth      = $clog2(NrApbPerip);
 localparam int unsigned ClkDivDef     = 1;
 localparam int unsigned DivValueWidth = 4;
@@ -331,6 +333,9 @@ apb_timer #(
   .PSLVERR        (apb_out[5].pslverr),
   .irq_o          (apb_timer_irq)
 );
+
+apb_antiq #(
+) i_timer_queue ();
 
 apb_cfg_regs #(
   .DivDefault (ClkDivDef)
