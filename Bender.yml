@@ -9,12 +9,13 @@ dependencies:
   clic: { git: "https://github.com/ANurmi/clic.git", rev: "5fa3836c2660347aaa7e0b20f7ec820a0aefec6f" }
   riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
-  #obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
+  obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
+  antiq: { path: "../AnTiQ" }
   axi: { git: "https://github.com/pulp-platform/axi.git", rev: "bfee21757bf090ec8e358456314b0b0fd3c90809" }
   apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4}
   apb_timer: { git: "https://github.com/pulp-platform/apb_timer.git", version: 0.1.0}
   apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio.git", version: 0.2.0}
-  opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", version: 0.4.0 }
+    #opentitan_peripherals: { git: "https://github.com/pulp-platform/opentitan_peripherals.git", version: 0.4.0 }
   nanodma: { git: "https://github.com/ANurmi/NanoDMA.git", rev: "c1bcd56ed3f5a95e42a27098a5ee85495e18f020" }
 
 
@@ -22,11 +23,12 @@ sources:
   files:
     - src/ip/rt_pkg.sv
     - src/vendor/safety_island/future/axi_obi/src/axi_to_detailed_mem_user.sv
-    - src/vendor/obi/src/obi_pkg.sv
-    - src/vendor/obi/src/obi_intf.sv
-    - src/vendor/obi/src/obi_mux.sv
-    - src/vendor/obi/src/obi_demux.sv
-    - src/vendor/obi/src/obi_xbar.sv
+    - src/vendor/opentitan/hw/ip/prim/rtl/prim_pkg.sv
+    - src/vendor/opentitan/hw/ip/prim/rtl/prim_util_pkg.sv
+      #- src/vendor/obi/src/obi_intf.sv
+      # - src/vendor/obi/src/obi_mux.sv
+      # - src/vendor/obi/src/obi_demux.sv
+      #- src/vendor/obi/src/obi_xbar.sv
     #- src/ip/safety_island/future/axi_obi/src/axi_to_obi.sv
     - src/vendor/axi_spi_master/spi_master_clkgen.sv
     - src/vendor/axi_spi_master/spi_master_controller.sv
@@ -85,17 +87,24 @@ vendor_package:
       - "future/axi_obi/src/obi_to_axi.sv"
       - "future/axi_obi/src/axi_to_detailed_mem_user.sv"
 
-  - name: obi
-    target_dir: src/vendor/obi
-    upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "00304bc2f6d1a67490c639ffab70af0ea9d77c54" }
+#  - name: obi
+#    target_dir: src/vendor/obi
+#    upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "00304bc2f6d1a67490c639ffab70af0ea9d77c54" }
+#    include_from_upstream:
+#      - src/obi_pkg.sv
+#      - src/obi_intf.sv
+#      - src/obi_mux.sv
+#      - src/obi_demux.sv
+#      - src/obi_xbar.sv
+#      - include/obi/assign.svh
+#      - include/obi/typedef.svh
+
+  - name: opentitan
+    target_dir: src/vendor/opentitan
+    upstream: { git: "https://github.com/lowRISC/opentitan.git", rev: "06f812c08f65fa251f0c012805d6ad8dd2617eeb" }
     include_from_upstream:
-      - src/obi_pkg.sv
-      - src/obi_intf.sv
-      - src/obi_mux.sv
-      - src/obi_demux.sv
-      - src/obi_xbar.sv
-      - include/obi/assign.svh
-      - include/obi/typedef.svh
+      - "hw/ip/prim/rtl/prim_pkg.sv"
+      - "hw/ip/prim/rtl/prim_util_pkg.sv"
 
   - name: apb_spi_master 
     target_dir: src/vendor/apb_spi_master

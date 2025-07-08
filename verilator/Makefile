@@ -46,6 +46,7 @@ endif
 VERIL_WARN_SUPPRESS ?= \
   -Wno-BLKANDNBLK      \
   -Wno-WIDTHEXPAND     \
+  -Wno-REDEFMACRO      \
   -Wno-UNOPTFLAT       \
   -Wno-UNSIGNED        \
   -Wno-WIDTHCONCAT     \
@@ -75,7 +76,7 @@ VERIL_INCLUDES ?= \
 	+incdir+$(shell bender path apb)/include \
 	+incdir+$(shell bender path axi)/include \
 	+incdir+$(shell bender path register_interface)/include \
-	+incdir+$(VERIL_DIR)/../src/vendor/obi/include \
+	+incdir+$(shell bender path obi)/include \
 	+incdir+$(shell bender path rt-ibex)/vendor/lowrisc_ip/dv/sv/dv_utils \
 	+incdir+$(shell bender path rt-ibex)/vendor/lowrisc_ip/ip/prim/rtl \
 	+incdir+$(shell bender path rt-ibex)/rtl
