@@ -5,6 +5,7 @@
 
 #define OUTPUT_REG_ADDR    0x00030008
 #define TIMER_BASE_ADDR    0x00030200
+#define TQ_BASE_ADDR       0x00040000
 
 #define MTIME_LOW_ADDR     (TIMER_BASE_ADDR +  0)
 #define MTIME_HIGH_ADDR    (TIMER_BASE_ADDR +  4)
@@ -15,33 +16,43 @@
 
 #define MTIME_IRQ_ID 7
 
-#define COMMON_ADDR 0x7000
+#define COMMON_ADDR 0x700
+
+
+#define TQ_STATUS          (TQ_BASE_ADDR +  0)
+#define TQ_LAST_PUSH       (TQ_BASE_ADDR +  4)
+#define TQ_PUSH_REL        (TQ_BASE_ADDR +  8)
+#define TQ_PUSH_ABS        (TQ_BASE_ADDR + 12)
+#define TQ_DROP            (TQ_BASE_ADDR + 16)
 
 int main() {
 
-  // set peripherals to half freq
-  write_reg_u8(0x00030500, 0x2);
-  init_uart(100000000/2, 3000000/2); // 50 MHz for simulation, 40 MHz for FPGA
-  //Init OUTPUT_REG_ADDR
-
-  //i*(uint32_t*)(MTIME_LOW_ADDR) = 0x0;
-  //*(uint32_t*)(MTIME_HIGH_ADDR) = 0x0;
-// set mtimecmp to something non-zero
-  //*(uint32_t*)(MTIMECMP_LOW_ADDR) = 0x00000123;
-  //*(uint32_t*)(MTIMECMP_HIGH_ADDR) =0x0;
-  //*(uint32_t*)(COMMON_ADDR) = 0xFF;
+  // set peripherals to full freq
+  write_reg_u8(0x00030500, 0x1);
+  init_uart(100000000, 3000000); // 50 MHz for simulation, 40 MHz for FPGA
 
   // init CLIC – nr. level bits to 8
   *(uint32_t*)(CLIC_BASE_ADDR) = 8;
 
-  // Raise interrupt threshold before enabling global interrupts
-  //csr_write(CSR_MINTTHRESH, 0xFF);
-
   // enable global interrupts
   asm("csrsi mstatus, 8");
+  
+  //enable timer [bit 0] & set prescaler to 3 [bits 10:8]
+  *(uint32_t*)(MTIME_CTRL_ADDR) = 0x00301;
 
-  // set mtime as pcs-irq
-  //enable_pcs(7);
+  // Read STATUS reg
+  volatile uint32_t status = *(uint32_t*)(TQ_STATUS);
+
+  // PUSH_REL ID 3
+  *(uint32_t*)(TQ_PUSH_REL) = 0x03000000; // NOW
+  *(uint32_t*)(TQ_PUSH_REL) = 0x03000010;
+  *(uint32_t*)(TQ_PUSH_REL) = 0x04000010; // ID 4
+  // PUSH_ABS ID 1
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x01000020;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x01000123;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x010FFFFF;
+  // DROP last inserted entry
+  *(uint32_t*)(TQ_DROP) = *(uint32_t*)(TQ_LAST_PUSH);
 
   // positive edge triggering
   set_trig(MTIME_IRQ_ID, CLIC_TRIG_POSITIVE | CLIC_TRIG_EDGE);
@@ -54,8 +65,6 @@ int main() {
   //enable_int(MTIME_IRQ_ID);
   //set_priority(MTIME_IRQ_ID, 0x88);
 
-  //enable timer [bit 0] & set prescaler to 3 [bits 10:8]
-  //*(uint32_t*)(MTIME_CTRL_ADDR) = 0x00301;
   //csr_write(CSR_MINTTHRESH, 0x00);
 
   //asm("wfi");
