@@ -210,6 +210,9 @@ always_comb
       [CfgRegsStartAddr:CfgRegsEndAddr]: begin
         demux_sel = SelWidth'('h6);
       end
+      [TimerQueueStartAddr:TimerQueueEndAddr]: begin
+        demux_sel = SelWidth'('h7);
+      end
       default: begin
         demux_sel = SelWidth'('h0);
       end
@@ -342,6 +345,7 @@ apb_antiq #(
   .clk_i   (periph_clk),
   .rst_ni  (rst_ni),
   .mtime_i (mtime),
+  .irqs_o  (),
   .apb_sbr (apb_out[7])
 );
 
