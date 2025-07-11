@@ -1,9 +1,9 @@
 packages:
   antiq:
-    revision: null
+    revision: d11eefda4d9f560976b2876b72e4fd5dd674f23d
     version: null
     source:
-      Path: ../AnTiQ
+      Git: https://github.com/soc-hub-fi/AnTiQ.git
     dependencies: []
   apb:
     revision: 77ddf073f194d44b9119949d2421be59789e69ae
