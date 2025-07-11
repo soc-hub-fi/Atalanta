@@ -82,6 +82,7 @@ VLOG_SUPPRESS = -suppress vlog-2583 \
 				-suppress vlog-2244
 VCOM_SUPPRESS =
 VOPT_SUPPRESS = -suppress vopt-2577 \
+				-suppress vopt-2986 \
 				-suppress vopt-13262
 VSIM_SUPPRESS = -suppress vsim-8360 \
 				-suppress vsim-8386 \
