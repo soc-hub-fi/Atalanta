@@ -25,7 +25,7 @@ export COMMON_CELLS_DIR ?= $(shell bender path common_cells)
 export APB_DIR          ?= $(shell bender path apb)
 export AXI_DIR          ?= $(shell bender path axi)
 export RTIBEX_DIR       ?= $(shell bender path rt-ibex)
-export OBI_DIR          ?= $(REPO_DIR)/src/vendor/obi/
+export OBI_DIR          ?= $(shell bender path obi)
 export REGIF_DIR        ?= $(shell bender path register_interface)
 
 
