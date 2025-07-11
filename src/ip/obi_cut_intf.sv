@@ -5,7 +5,7 @@
 // Michael Rogenmoser <michaero@iis.ee.ethz.ch>
 
 // Adapted by Antti Nurmi <antti.nurmi@tuni.fi> - add interface wrapper
-
+/*
 module obi_cut #(
     /// The OBI configuration.
   parameter obi_pkg::obi_cfg_t ObiCfg       = obi_pkg::ObiDefaultConfig,
@@ -65,7 +65,7 @@ module obi_cut #(
   );
 
 endmodule
-
+*/
 `include "obi/typedef.svh"
 `include "obi/assign.svh"
 
