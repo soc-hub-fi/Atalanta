@@ -44,11 +44,15 @@ int main() {
   volatile uint32_t status = *(uint32_t*)(TQ_STATUS);
 
   // PUSH_REL ID 3
-  *(uint32_t*)(TQ_PUSH_REL) = 0x03000000; // NOW
-  *(uint32_t*)(TQ_PUSH_REL) = 0x03000010;
-  *(uint32_t*)(TQ_PUSH_REL) = 0x04000010; // ID 4
+  *(uint32_t*)(TQ_PUSH_REL) = 0x07000000; // NOW
   // PUSH_ABS ID 1
-  *(uint32_t*)(TQ_PUSH_ABS) = 0x01000020;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x01000250;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x01000260;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x02000260;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x05000260;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x01000220;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x01000210;
+  *(uint32_t*)(TQ_PUSH_ABS) = 0x01000220;
   *(uint32_t*)(TQ_PUSH_ABS) = 0x01000123;
   *(uint32_t*)(TQ_PUSH_ABS) = 0x010FFFFF;
   // DROP last inserted entry
