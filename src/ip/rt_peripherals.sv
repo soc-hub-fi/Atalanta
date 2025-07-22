@@ -42,14 +42,15 @@ module rt_peripherals #(
 /////////////////////
 
 typedef enum integer {
-  MtimerIrqId = 7,
-  UartIrqId   = 17,
-  GpioIrqId   = 18,
-  SpiRxTxIrqId= 19,
-  SpiEotIrqId = 20,
-  TGIrqIdBase = 21,  // apb_timer interrupt can have multiple irq lines (2 per timer group)
-  TQFullIrqId = 49,
-  TQBaseIrqId = 50
+  MtimerIrqId    = 7,
+  UartIrqId      = 17,
+  GpioIrqId      = 18,
+  SpiRxTxIrqId   = 19,
+  SpiEotIrqId    = 20,
+  TGIrqIdBase    = 21,  // apb_timer interrupt can have multiple irq lines (2 per timer group)
+  TQFullIrqId    = 29,
+  TQNotFullIrqId = 30,
+  TQBaseIrqId    = 50
 } clic_int_ids_e;
 
 // INCLUSIVE END ADDR
@@ -87,7 +88,7 @@ logic                       mtimer_irq;
 logic                       gpio_irq;
 logic [2*TimerGroupSize-1:0]apb_timer_irq;
 logic [1:0]                 spi_irqs;
-logic                       tq_full_irq;
+logic                       tq_full_irq, tq_nfull_irq;
 logic [7:0]                 tq_irqs;
 
 logic [DivValueWidth-1:0]   periph_div;
@@ -112,6 +113,7 @@ always_comb
     intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_q; // reserve irqs 32-48 for DMAs
     // nmi 31
     intr_src[TQFullIrqId]      = tq_full_irq;
+    intr_src[TQNotFullIrqId]   = tq_nfull_irq;
     intr_src[TQBaseIrqId +: 8] = tq_irqs;
   end
 
@@ -348,12 +350,13 @@ apb_timer #(
 
 apb_antiq #(
 ) i_timer_queue (
-  .clk_i      (periph_clk),
-  .rst_ni     (rst_ni),
-  .mtime_i    (mtime),
-  .irqs_o     (tq_irqs),
-  .irq_full_o (tq_full_irq),
-  .apb_sbr    (apb_out[7])
+  .clk_i       (periph_clk),
+  .rst_ni      (rst_ni),
+  .mtime_i     (mtime),
+  .irqs_o      (tq_irqs),
+  .irq_full_o  (tq_full_irq),
+  .irq_nfull_o (tq_nfull_irq),
+  .apb_sbr     (apb_out[7])
 );
 
 apb_cfg_regs #(
