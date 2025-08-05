@@ -57,6 +57,22 @@ pub enum Interrupt {
     Dma13 = 45,
     Dma14 = 46,
     Dma15 = 47,
+    /// On timer queue dispatch 0
+    TqId0 = 50,
+    /// On timer queue dispatch 1
+    TqId1 = 51,
+    /// On timer queue dispatch 2
+    TqId2 = 52,
+    /// On timer queue dispatch 3
+    TqId3 = 53,
+    /// On timer queue dispatch 4
+    TqId4 = 54,
+    /// On timer queue dispatch 5
+    TqId5 = 55,
+    /// On timer queue dispatch 6
+    TqId6 = 56,
+    /// On timer queue dispatch 7
+    TqId7 = 57,
 }
 
 unsafe impl InterruptNumber for Interrupt {

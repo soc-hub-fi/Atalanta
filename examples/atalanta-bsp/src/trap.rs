@@ -86,9 +86,22 @@ global_asm!(
         .word _start_Dma14_trap // 46
         .word _start_Dma15_trap // 47
 
+        .rept 2
+        .word _start_DefaultHandler_trap // 48..=49
+        .endr
+
+        .word _start_TqId0_trap // 50
+        .word _start_TqId1_trap // 51
+        .word _start_TqId2_trap // 52
+        .word _start_TqId3_trap // 53
+        .word _start_TqId4_trap // 54
+        .word _start_TqId5_trap // 55
+        .word _start_TqId6_trap // 56
+        .word _start_TqId7_trap // 57
+
         // Fill the rest with `DefaultHandler`
-        .rept 16
-        .word _start_DefaultHandler_trap // 48..64
+        .rept 6
+        .word _start_DefaultHandler_trap // 58..64
         .endr
 
         // TODO: add remaining missing interrupts

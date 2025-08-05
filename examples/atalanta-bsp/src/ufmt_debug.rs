@@ -78,6 +78,14 @@ impl uDebug for crate::Interrupt {
             crate::Interrupt::Dma13 => "Dma13",
             crate::Interrupt::Dma14 => "Dma14",
             crate::Interrupt::Dma15 => "Dma15",
+            crate::Interrupt::TqId0 => "TqId0",
+            crate::Interrupt::TqId1 => "TqId1",
+            crate::Interrupt::TqId2 => "TqId2",
+            crate::Interrupt::TqId3 => "TqId3",
+            crate::Interrupt::TqId4 => "TqId4",
+            crate::Interrupt::TqId5 => "TqId5",
+            crate::Interrupt::TqId6 => "TqId6",
+            crate::Interrupt::TqId7 => "TqId7",
         })
     }
 }
