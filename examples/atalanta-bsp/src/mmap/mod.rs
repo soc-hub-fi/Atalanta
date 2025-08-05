@@ -13,6 +13,7 @@ mod clic;
 pub mod gpio;
 mod mtimer;
 mod spi;
+pub mod timer_queue;
 mod uart;
 
 pub use cfg::*;
