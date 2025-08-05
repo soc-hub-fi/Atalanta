@@ -12,6 +12,7 @@ pub mod mtimer;
 pub mod register;
 pub mod tb;
 pub mod timer_group;
+pub mod timer_queue;
 #[cfg(feature = "rt")]
 mod trap;
 pub mod uart;
