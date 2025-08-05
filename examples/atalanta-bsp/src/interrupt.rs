@@ -35,6 +35,10 @@ pub enum Interrupt {
     Timer3Ovf = 27,
     /// Timer3 compare
     Timer3Cmp = 28,
+    /// Timer queue interrupt on `~full` -> `full` transition.
+    TqFull = 29,
+    /// Timer queue interrupt on `full` -> `~full` transition.
+    TqNotFull = 30,
     /// Non-maskable interrupt, carried over from standard Ibex
     Nmi = 31,
     Dma0 = 32,

@@ -59,6 +59,8 @@ impl uDebug for crate::Interrupt {
             crate::Interrupt::Timer2Cmp => "Timer2Cmp",
             crate::Interrupt::Timer3Ovf => "Timer3Ovf",
             crate::Interrupt::Timer3Cmp => "Timer3Cmp",
+            crate::Interrupt::TqFull => "TqFull",
+            crate::Interrupt::TqNotFull => "TqNotFull",
             crate::Interrupt::Nmi => "Nmi",
             crate::Interrupt::Dma0 => "Dma0",
             crate::Interrupt::Dma1 => "Dma1",

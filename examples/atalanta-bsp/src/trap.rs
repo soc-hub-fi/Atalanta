@@ -66,12 +66,8 @@ global_asm!(
         .word _start_Timer2Cmp_trap         // 26
         .word _start_Timer3Ovf_trap         // 27
         .word _start_Timer3Cmp_trap         // 28
-
-        // Pad with `DefaultHandler`
-        .rept 2
-        .word _start_DefaultHandler_trap    // 29..=30
-        .endr
-
+        .word _start_TqFull_trap         // 29
+        .word _start_TqNotFull_trap      // 30
         .word _start_Nmi_trap   // 31
         .word _start_Dma0_trap  // 32
         .word _start_Dma1_trap  // 33
