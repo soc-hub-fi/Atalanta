@@ -36,6 +36,14 @@ impl TimerQueue {
         is_empty
     }
 
+    #[inline]
+    pub fn is_full(&self) -> bool {
+        let p = self.0;
+        let status = read_u32p(unsafe { &mut (*p).status as *mut u32 });
+        let is_full = (status & 0b1) != 0;
+        is_full
+    }
+
     /// Returns hardware queue maximum depth
     #[inline]
     pub fn capacity(&self) -> u32 {
