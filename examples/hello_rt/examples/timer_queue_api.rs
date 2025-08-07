@@ -9,8 +9,13 @@
 #![allow(non_snake_case)]
 
 use bsp::{
-    clic::Clic, nested_interrupt, riscv, rt::entry, sprint, sprintln, timer_queue::TimerQueue,
-    uart::*, Interrupt, CPU_FREQ,
+    clic::Clic,
+    nested_interrupt, riscv,
+    rt::entry,
+    sprint, sprintln,
+    timer_queue::{Entry, TimerQueue},
+    uart::*,
+    Interrupt, CPU_FREQ,
 };
 use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 
@@ -42,7 +47,7 @@ fn main() -> ! {
         let ts = idx as u64 + 1;
         let pl = (8 - idx as u8) + 1;
         sprintln!("Push ts={}, pl={}...", ts, pl);
-        indices[idx] = timer_q.push_abs(ts, pl);
+        indices[idx] = timer_q.push_abs(Entry::new(ts, pl));
         sprintln!("idx <- {} (ts={}, pl={})", indices[idx], ts, pl);
     }
 

@@ -9,8 +9,15 @@
 #![allow(non_snake_case)]
 
 use bsp::{
-    asm_delay, clic::Clic, mtimer::MTimer, nested_interrupt, riscv, rt::entry, sprint, sprintln,
-    timer_queue::TimerQueue, uart::*, Interrupt, CPU_FREQ,
+    asm_delay,
+    clic::Clic,
+    mtimer::MTimer,
+    nested_interrupt, riscv,
+    rt::entry,
+    sprint, sprintln,
+    timer_queue::{Entry, TimerQueue},
+    uart::*,
+    Interrupt, CPU_FREQ,
 };
 use hello_rt::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 
@@ -41,7 +48,7 @@ fn main() -> ! {
     // Push 8 values. Should result in 'full' interrupt.
     let mut handles = [0; 8];
     for idx in 0..8 {
-        handles[idx] = timer_q.push_abs(8000 + (idx as u64) * 0, idx as u8);
+        handles[idx] = timer_q.push_abs(Entry::new(8000 + (idx as u64) * 0, idx as u8));
         sprintln!("Push payload {}", idx as u8);
     }
 
