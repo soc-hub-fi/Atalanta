@@ -3,6 +3,19 @@ use crate::{
     read_u32p, write_u32p,
 };
 
+pub struct Entry {
+    /// Timestamp (absolute value or offset)
+    pub ts: u64,
+    pub irq_id: u8,
+}
+
+impl Entry {
+    /// Construct a new timer queue entry with a timestamp and an IRQ id
+    pub fn new(ts: u64, irq_id: u8) -> Self {
+        Self { ts, irq_id }
+    }
+}
+
 /// Driver for AnTiQ
 pub struct TimerQueue(*mut RegisterBlock);
 
@@ -53,8 +66,9 @@ impl TimerQueue {
         depth_minus_one as u32 + 1
     }
 
+    /// Returns absolute timestamp and stored interrupt id of dropped entry
     #[inline]
-    pub fn drop(&mut self, handle: u8) {
+    pub fn drop(&mut self, handle: u8) -> Entry {
         let p = self.0;
 
         write_u32p(
@@ -65,6 +79,15 @@ impl TimerQueue {
             // Drop handle
             (handle as u32) << 24,
         );
+
+        let payload = read_u32p(unsafe { &mut (*p).d_payload as *mut u32 });
+        let dispatch_lo = read_u32p(unsafe { &mut (*p).d_dispatch_lo as *mut u32 });
+        let dispatch_hi = read_u32p(unsafe { &mut (*p).d_dispatch_hi as *mut u32 });
+
+        Entry {
+            ts: (dispatch_lo as u64) | (dispatch_hi as u64) << 32,
+            irq_id: payload as u8,
+        }
     }
 
     #[inline]
@@ -94,16 +117,20 @@ impl TimerQueue {
         last as u8
     }
 
-    /// * `irq` - Timer queue interrupt id ("TqId"), *not* platform level
+    /// * `irq_id` - Timer queue interrupt id ("TqId"), *not* platform level
     ///   interrupt id.
+    /// * `ts` - Target dispatch time, relative to mtimer
     #[inline]
-    pub fn push_rel(&mut self, ofs: u64, irq_id: u8) -> u8 {
+    pub fn push_rel(&mut self, e: Entry) -> u8 {
+        // Current impl of timer queue only supports offsets representable with 24 bits
+        // or less
+        debug_assert!(e.ts < (0b1 << 24));
         let p = self.0;
 
-        write_u32p(unsafe { &mut (*p).p_rel_lo as *mut u32 }, ofs as u32);
+        write_u32p(unsafe { &mut (*p).p_rel_lo as *mut u32 }, e.ts as u32);
         write_u32p(
             unsafe { &mut (*p).p_rel_hi as *mut u32 },
-            (ofs >> 32) as u32,
+            (e.ts >> 32) as u32,
         );
 
         write_u32p(
@@ -112,7 +139,7 @@ impl TimerQueue {
             0b1
             |
             // Push irq
-            (irq_id as u32) << 16,
+            (e.irq_id as u32) << 16,
         );
 
         read_u32p(unsafe { &mut (*p).last_idx as *mut u32 }) as u8
@@ -120,14 +147,15 @@ impl TimerQueue {
 
     /// * `irq` - Timer queue interrupt id ("TqId"), *not* platform level
     ///   interrupt id.
+    /// * `ts` - Target absolute dispatch time, relative to mtimer
     #[inline]
-    pub fn push_abs(&mut self, timestamp: u64, irq_id: u8) -> u8 {
+    pub fn push_abs(&mut self, e: Entry) -> u8 {
         let p = self.0;
 
-        write_u32p(unsafe { &mut (*p).p_abs_lo as *mut u32 }, timestamp as u32);
+        write_u32p(unsafe { &mut (*p).p_abs_lo as *mut u32 }, e.ts as u32);
         write_u32p(
             unsafe { &mut (*p).p_abs_hi as *mut u32 },
-            (timestamp >> 32) as u32,
+            (e.ts >> 32) as u32,
         );
 
         write_u32p(
@@ -136,7 +164,7 @@ impl TimerQueue {
             0b1
             |
             // Push irq
-            (irq_id as u32) << 16,
+            (e.irq_id as u32) << 16,
         );
 
         read_u32p(unsafe { &mut (*p).last_idx as *mut u32 }) as u8
