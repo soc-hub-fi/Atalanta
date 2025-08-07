@@ -36,6 +36,15 @@ impl TimerQueue {
         is_empty
     }
 
+    /// Returns hardware queue maximum depth
+    #[inline]
+    pub fn capacity(&self) -> u32 {
+        let p = self.0;
+        let status = read_u32p(unsafe { &mut (*p).status as *mut u32 });
+        let depth_minus_one = ((status & (0xff << 24)) >> 24) as u8;
+        depth_minus_one as u32 + 1
+    }
+
     #[inline]
     pub fn drop(&self, handle: u8) {
         let p = self.0;

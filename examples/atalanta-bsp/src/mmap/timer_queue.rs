@@ -4,6 +4,7 @@ pub const TIMER_QUEUE_BASE: usize = 0x4_0000;
 pub struct RegisterBlock {
     /// * `[0]` - full
     /// * `[8]` - empty
+    /// * `24..=31` - hardware queue depth minus one
     pub status: u32,
     /// Handle ("index") to the last pushed entry
     pub last_idx: u32,
