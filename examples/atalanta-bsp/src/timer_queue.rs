@@ -9,7 +9,7 @@ pub struct TimerQueue(*mut RegisterBlock);
 impl TimerQueue {
     #[inline]
     pub fn init() -> Self {
-        let tim_q = Self(TIMER_QUEUE_BASE as *mut _);
+        let mut tim_q = Self(TIMER_QUEUE_BASE as *mut _);
 
         // Clear the timer queue
         while !tim_q.is_empty() {
@@ -46,7 +46,7 @@ impl TimerQueue {
     }
 
     #[inline]
-    pub fn drop(&self, handle: u8) {
+    pub fn drop(&mut self, handle: u8) {
         let p = self.0;
 
         write_u32p(
@@ -87,7 +87,7 @@ impl TimerQueue {
     }
 
     #[inline]
-    pub fn push_rel(&self, ofs: u64, payload: u8) -> u8 {
+    pub fn push_rel(&mut self, ofs: u64, irq_id: u8) -> u8 {
         let p = self.0;
 
         write_u32p(unsafe { &mut (*p).p_rel_lo as *mut u32 }, ofs as u32);
@@ -101,15 +101,15 @@ impl TimerQueue {
             // Push trigger
             0b1
             |
-            // Push payload
-            (payload as u32) << 16,
+            // Push irq
+            (irq_id as u32) << 16,
         );
 
         read_u32p(unsafe { &mut (*p).last_idx as *mut u32 }) as u8
     }
 
     #[inline]
-    pub fn push_abs(&self, timestamp: u64, payload: u8) -> u8 {
+    pub fn push_abs(&mut self, timestamp: u64, irq_id: u8) -> u8 {
         let p = self.0;
 
         write_u32p(unsafe { &mut (*p).p_abs_lo as *mut u32 }, timestamp as u32);
@@ -123,8 +123,8 @@ impl TimerQueue {
             // Push trigger
             0b1
             |
-            // Push payload
-            (payload as u32) << 16,
+            // Push irq
+            (irq_id as u32) << 16,
         );
 
         read_u32p(unsafe { &mut (*p).last_idx as *mut u32 }) as u8

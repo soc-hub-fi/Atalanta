@@ -34,7 +34,7 @@ fn main() -> ! {
     setup_irq(Interrupt::TqNotFull);
     sprintln!("done");
 
-    let timer_q = TimerQueue::init();
+    let mut timer_q = TimerQueue::init();
 
     // Push 8 values. Should result in 'full' interrupt.
     let mut indices = [0; 8];

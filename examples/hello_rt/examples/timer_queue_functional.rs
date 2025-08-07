@@ -35,7 +35,7 @@ fn main() -> ! {
     setup_irq(Interrupt::TqId5);
     sprintln!("done");
 
-    let timer_q = TimerQueue::init();
+    let mut timer_q = TimerQueue::init();
     let mut mtimer = MTimer::instance();
     mtimer.enable();
 
