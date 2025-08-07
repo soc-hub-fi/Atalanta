@@ -86,6 +86,8 @@ impl TimerQueue {
         last as u8
     }
 
+    /// * `irq` - Timer queue interrupt id ("TqId"), *not* platform level
+    ///   interrupt id.
     #[inline]
     pub fn push_rel(&mut self, ofs: u64, irq_id: u8) -> u8 {
         let p = self.0;
@@ -108,6 +110,8 @@ impl TimerQueue {
         read_u32p(unsafe { &mut (*p).last_idx as *mut u32 }) as u8
     }
 
+    /// * `irq` - Timer queue interrupt id ("TqId"), *not* platform level
+    ///   interrupt id.
     #[inline]
     pub fn push_abs(&mut self, timestamp: u64, irq_id: u8) -> u8 {
         let p = self.0;
