@@ -28,33 +28,34 @@ fn main() -> ! {
     // Enable global interrupts
     unsafe { riscv::interrupt::enable() };
 
+    sprint!("  ");
     setup_irq(Interrupt::TqFull);
+    sprint!("  ");
     setup_irq(Interrupt::TqNotFull);
     sprintln!("done");
 
     let timer_q = TimerQueue::init();
 
     // Push 8 values. Should result in 'full' interrupt.
-    let mut handles = [0; 8];
+    let mut indices = [0; 8];
     for idx in 0..8 {
         let ts = idx as u64 + 1;
         let pl = (8 - idx as u8) + 1;
-        handles[idx] = timer_q.push_abs(ts, pl);
-        sprintln!("Push {}, {} -> {}", ts, pl, handles[idx]);
+        sprintln!("Push ts={}, pl={}...", ts, pl);
+        indices[idx] = timer_q.push_abs(ts, pl);
+        sprintln!("idx <- {} (ts={}, pl={})", indices[idx], ts, pl);
     }
 
     // 8 values => queue is full
     assert!(unsafe { IS_FULL });
 
-    sprintln!("Drop {}", handles[0]);
-    timer_q.drop(handles[0]);
+    sprintln!("Drop idx={}", indices[0]);
+    timer_q.drop(indices[0]);
 
     // 7 values => queue is not full
     assert!(unsafe { !IS_FULL });
 
-    sprintln!("Top: {}", timer_q.top_idx());
-
-    sprintln!("Tear down");
+    sprintln!("Top: idx={}", timer_q.top_idx());
 
     tear_irq(Interrupt::TqFull);
     tear_irq(Interrupt::TqNotFull);
@@ -67,12 +68,12 @@ fn main() -> ! {
 
 #[nested_interrupt]
 fn TqFull() {
-    sprintln!("TQ is full (irq)");
+    sprintln!("IRQ: TQ is full");
     unsafe { IS_FULL = true };
 }
 
 #[nested_interrupt]
 fn TqNotFull() {
-    sprintln!("TQ is not full (irq)");
+    sprintln!("IRQ: TQ is not full");
     unsafe { IS_FULL = false };
 }
