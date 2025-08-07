@@ -27,6 +27,12 @@ pub struct RegisterBlock {
     pub p_abs_lo: u32,
     /// Absolute timestamp for push operation (high bits)
     pub p_abs_hi: u32,
+    /// Interrupt id of dropped value
+    pub d_payload: u32,
+    /// Timestamp of dropped value (low bits)
+    pub d_dispatch_lo: u32,
+    /// Timestamp of dropped value (high bits)
+    pub d_dispatch_hi: u32,
 }
 
 pub const TIMER_QUEUE: *mut RegisterBlock = TIMER_QUEUE_BASE as *mut _;
