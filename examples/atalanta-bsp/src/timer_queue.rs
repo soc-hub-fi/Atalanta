@@ -3,6 +3,7 @@ use crate::{
     read_u32p, write_u32p,
 };
 
+#[derive(Clone)]
 pub struct Entry {
     /// Timestamp (absolute value or offset)
     pub ts: u64,
