@@ -1,6 +1,6 @@
 packages:
   antiq:
-    revision: e1e38ea5fc9750e9d425bbdc246279fe589533e0
+    revision: 7fc1e06313d7f50aa240402d95f43858c5cb67ba
     version: null
     source:
       Git: https://github.com/soc-hub-fi/AnTiQ.git
