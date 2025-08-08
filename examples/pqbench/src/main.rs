@@ -52,6 +52,21 @@ fn main() -> ! {
     let mut serial = ApbUart::init(CPU_FREQ, UART_BAUD);
     print_example_name!();
 
+    sprintln!(
+        "{} priority queue length is {}",
+        if cfg!(feature = "use-hwq") {
+            "Hardware"
+        } else {
+            "Software"
+        },
+        Q_LEN,
+    );
+    #[cfg(feature = "virtq")]
+    sprintln!(
+        "Queue is virtualized with a backup queue of length {}",
+        B_LEN
+    );
+
     let rng = rand::rngs::SmallRng::seed_from_u64(1234);
     unsafe {
         let _ = RNG.insert(rng);
