@@ -5,14 +5,14 @@
 From project root (.../Atalanta):
 
 ```sh
-# Run the non-PCS version
+# Run with software priority queue
 make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqbench
 
-# Run the PCS version
-make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqbench CARGO_FLAGS="-Fpcs"
+# Run with non-virtualized HW priority queue
+make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqbench CARGO_FLAGS="-Fuse-hwq"
 
-# Run the PCS version with inlined ISRs
-make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqbench CARGO_FLAGS="-Fpcs -Finline-isrs"
+# Run with virtualized HW priority queue
+make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqbench CARGO_FLAGS="-Fuse-hwq -Fvirtq"
 ```
 
 ## Run on FPGA
@@ -20,12 +20,12 @@ make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqbench CARGO_FLAGS="-F
 From project directory (.../pqbench):
 
 ```sh
-# Non-PCS
+# Run with software priority queue
 cargo run --release -Ffpga
 
-# PCS
-cargo run --release -Ffpga
+# Run with non-virtualized HW priority queue
+cargo run --release -Ffpga -Fuse-hwq
 
-# PCS with inlined ISRs
-cargo run --release -Ffpga
+# Run with virtualized HW priority queue
+cargo run --release -Ffpga -Fuse-hwq -Fvirtq
 ```
