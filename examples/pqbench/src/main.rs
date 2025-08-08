@@ -174,8 +174,13 @@ fn Timer0Cmp() {
         let counter = MTimer::instance().counter();
         // SAFETY: none at all, this will break
         unsafe { abstract_insert(irq_id, ofs) };
-        sprintln!("mtime={}", counter);
-        sprintln!("scheduled interrupt ofs={} (abs~{})", ofs, ofs + counter);
+        sprintln!("  mtime={}", counter);
+        sprintln!(
+            "  scheduled interrupt {} ofs={} (abs~{})",
+            irq_id,
+            ofs,
+            ofs + counter
+        );
     });
 }
 
@@ -183,49 +188,49 @@ fn Timer0Cmp() {
 fn TqId0() {
     sprintln!("IRQ:TqId0");
     let counter = MTimer::instance().counter();
-    sprintln!("mtime={}", counter);
+    sprintln!("  mtime={}", counter);
 }
 #[interrupt]
 fn TqId1() {
     sprintln!("IRQ:TqId1");
     let counter = MTimer::instance().counter();
-    sprintln!("mtime={}", counter);
+    sprintln!("  mtime={}", counter);
 }
 #[interrupt]
 fn TqId2() {
     sprintln!("IRQ:TqId2");
     let counter = MTimer::instance().counter();
-    sprintln!("mtime={}", counter);
+    sprintln!("  mtime={}", counter);
 }
 #[interrupt]
 fn TqId3() {
     sprintln!("IRQ:TqId3");
     let counter = MTimer::instance().counter();
-    sprintln!("mtime={}", counter);
+    sprintln!("  mtime={}", counter);
 }
 #[interrupt]
 fn TqId4() {
     sprintln!("IRQ:TqId4");
     let counter = MTimer::instance().counter();
-    sprintln!("mtime={}", counter);
+    sprintln!("  mtime={}", counter);
 }
 #[interrupt]
 fn TqId5() {
     sprintln!("IRQ:TqId5");
     let counter = MTimer::instance().counter();
-    sprintln!("mtime={}", counter);
+    sprintln!("  mtime={}", counter);
 }
 #[interrupt]
 fn TqId6() {
     sprintln!("IRQ:TqId6");
     let counter = MTimer::instance().counter();
-    sprintln!("mtime={}", counter);
+    sprintln!("  mtime={}", counter);
 }
 #[interrupt]
 fn TqId7() {
     sprintln!("IRQ:TqId7");
     let counter = MTimer::instance().counter();
-    sprintln!("mtime={}", counter);
+    sprintln!("  mtime={}", counter);
 }
 
 /// Test timeout interrupt (per test-run)
