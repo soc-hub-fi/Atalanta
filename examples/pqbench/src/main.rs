@@ -36,7 +36,7 @@ const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
 static mut SW_PQ: Option<BinaryHeap<pqbench::Entry, Min, Q_LEN>> = Some(BinaryHeap::new());
 
 /// Backup queue len
-const B_LEN: usize = Q_LEN - 8;
+const B_LEN: usize = 256 - 8;
 static mut BACKUP: Option<Deque<pqbench::Entry, B_LEN>> = Some(Deque::new());
 
 static mut TIMEOUT: bool = false;
