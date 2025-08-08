@@ -14,6 +14,7 @@ use bsp::{
     interrupt,
     mmap::{apb_timer::TIMER0_ADDR, CFG_BASE, PERIPH_CLK_DIV_OFS},
     mtimer::{self, MTimer},
+    nested_interrupt,
     riscv::{self, asm::wfi},
     rt::entry,
     sprint, sprintln,
@@ -76,8 +77,8 @@ fn main() -> ! {
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
 
-    setup_irq(Interrupt::TqFull, 5);
-    setup_irq(Interrupt::TqNotFull, 5);
+    setup_irq(Interrupt::TqFull, 6);
+    setup_irq(Interrupt::TqNotFull, 6);
     setup_irq(Interrupt::Timer0Cmp, 5);
     setup_irq(Interrupt::MachineTimer, u8::MAX);
     setup_irq(Interrupt::TqId0, 1);
@@ -180,7 +181,9 @@ unsafe fn abstract_insert(irq_id: u8, ofs: u64) -> Option<u8> {
     }
 }
 
-#[interrupt]
+/// Timer0Cmp needs to be nested and lower priority than "TqFull", otherwise we
+/// will not be able to react to when the queue becomes overfull.
+#[nested_interrupt]
 fn Timer0Cmp() {
     sprintln!("IRQ:Timer0Cmp");
     unsafe { RNG.as_mut() }.map(|rng| {
