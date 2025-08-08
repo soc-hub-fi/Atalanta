@@ -168,15 +168,15 @@ unsafe fn abstract_insert(irq_id: u8, ofs: u64) -> Option<u8> {
 
 #[interrupt]
 fn Timer0Cmp() {
-    sprintln!("IRQ: Timer0Cmp");
-    let timer = MTimer::instance();
-    sprintln!("mtimer: {}", timer.counter());
-
+    sprintln!("IRQ:Timer0Cmp");
     unsafe { RNG.as_mut() }.map(|rng| {
         let irq_id = rng.next_u32() as u8 % 8;
         let ofs = rng.next_u64() % 5_000;
+        let counter = MTimer::instance().counter();
         // SAFETY: none at all, this will break
         unsafe { abstract_insert(irq_id, ofs) };
+        sprintln!("mtime={}", counter);
+        sprintln!("scheduled interrupt ofs={} (abs~{})", ofs, ofs + counter);
     });
 }
 
@@ -216,7 +216,7 @@ fn TqId7() {
 /// Test timeout interrupt (per test-run)
 #[interrupt]
 unsafe fn MachineTimer() {
-    sprintln!("IRQ: MachineTimer");
+    sprintln!("IRQ:MachineTimer");
     unsafe { TIMEOUT = true };
 
     tear_irq(Interrupt::TqFull);

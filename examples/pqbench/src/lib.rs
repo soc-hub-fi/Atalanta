@@ -2,8 +2,7 @@
 #![no_main]
 
 use bsp::{
-    clic::{Clic, InterruptNumber, Polarity, Trig},
-    sprintln,
+    clic::{Clic, Polarity, Trig},
     timer_queue::TimerQueue,
     Interrupt,
 };
@@ -28,7 +27,6 @@ pub fn setup_irq(irq: Interrupt, level: u8) {
 ///
 /// Copy and customize this function if you need more involved configurations.
 pub fn tear_irq(irq: Interrupt) {
-    sprintln!("Tear {:?} (id = {})", irq, irq.number());
     Clic::ie(irq).disable();
     Clic::ctl(irq).set_level(0x0);
     Clic::attr(irq).set_shv(false);
