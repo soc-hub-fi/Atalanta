@@ -123,17 +123,17 @@ fn TqNotFull() {
 ///
 /// Accesses timer queue in an unsynchronized way.
 unsafe fn abstract_insert(irq_id: u8, ofs: u64) -> Option<u8> {
-    // Hardware queue, no virtualization
-    if cfg!(all(feature = "use-hwq", not(feature = "virtq"))) {
-        let mut tq = TimerQueue::instance();
-        let handle = tq.push_rel(bsp::timer_queue::Entry::new(ofs, irq_id).into());
-        Some(handle)
-    }
     // Software queue, no virtualization
-    else if cfg!(all(not(feature = "use-hwq"), not(feature = "virtq"))) {
+    if cfg!(all(not(feature = "use-hwq"), not(feature = "virtq"))) {
         let swq = SW_PQ.as_mut().unwrap();
         swq.push_unchecked(Entry { ts: ofs, irq_id }.into());
         None
+    }
+    // Hardware queue, no virtualization
+    else if cfg!(all(feature = "use-hwq", not(feature = "virtq"))) {
+        let mut tq = TimerQueue::instance();
+        let handle = tq.push_rel(bsp::timer_queue::Entry::new(ofs, irq_id).into());
+        Some(handle)
     }
     // Hardware queue with virtualized backing queue
     else if cfg!(all(feature = "use-hwq", feature = "virtq")) {
@@ -158,10 +158,11 @@ unsafe fn abstract_insert(irq_id: u8, ofs: u64) -> Option<u8> {
             return Some(TimerQueue::instance().push_rel(Entry::new(ofs, irq_id)));
         }
     }
-    // Software queue with virtualization
+    // Software queue with virtualization (doesn't make sense)
     else {
+        #[cfg(all(not(feature = "use-hwq"), feature = "virtq"))]
+        compile_error!("virtualizing software queue makes no sense");
         unreachable!()
-        //compile_error!("virtualizing software queue makes no sense");
     }
 }
 
