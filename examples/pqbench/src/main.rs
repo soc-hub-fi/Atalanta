@@ -183,34 +183,50 @@ fn Timer0Cmp() {
 #[nested_interrupt]
 fn TqId0() {
     sprintln!("IRQ:TqId0");
+    let counter = MTimer::instance().counter();
+    sprintln!("mtime={}", counter);
 }
 #[nested_interrupt]
 fn TqId1() {
     sprintln!("IRQ:TqId1");
+    let counter = MTimer::instance().counter();
+    sprintln!("mtime={}", counter);
 }
 #[nested_interrupt]
 fn TqId2() {
     sprintln!("IRQ:TqId2");
+    let counter = MTimer::instance().counter();
+    sprintln!("mtime={}", counter);
 }
 #[nested_interrupt]
 fn TqId3() {
     sprintln!("IRQ:TqId3");
+    let counter = MTimer::instance().counter();
+    sprintln!("mtime={}", counter);
 }
 #[nested_interrupt]
 fn TqId4() {
     sprintln!("IRQ:TqId4");
+    let counter = MTimer::instance().counter();
+    sprintln!("mtime={}", counter);
 }
 #[nested_interrupt]
 fn TqId5() {
     sprintln!("IRQ:TqId5");
+    let counter = MTimer::instance().counter();
+    sprintln!("mtime={}", counter);
 }
 #[nested_interrupt]
 fn TqId6() {
     sprintln!("IRQ:TqId6");
+    let counter = MTimer::instance().counter();
+    sprintln!("mtime={}", counter);
 }
 #[nested_interrupt]
 fn TqId7() {
     sprintln!("IRQ:TqId7");
+    let counter = MTimer::instance().counter();
+    sprintln!("mtime={}", counter);
 }
 
 /// Test timeout interrupt (per test-run)
