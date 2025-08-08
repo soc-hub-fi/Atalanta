@@ -14,7 +14,6 @@ use bsp::{
     interrupt,
     mmap::{apb_timer::TIMER0_ADDR, CFG_BASE, PERIPH_CLK_DIV_OFS},
     mtimer::{self, MTimer},
-    nested_interrupt,
     riscv::{self, asm::wfi},
     rt::entry,
     sprint, sprintln,
@@ -102,12 +101,12 @@ fn main() -> ! {
     loop {}
 }
 
-#[nested_interrupt]
+#[interrupt]
 fn TqFull() {
     sprintln!("IRQ:TqFull");
 }
 
-#[nested_interrupt]
+#[interrupt]
 fn TqNotFull() {
     sprintln!("IRQ:TqNotFull");
 }
@@ -180,49 +179,49 @@ fn Timer0Cmp() {
     });
 }
 
-#[nested_interrupt]
+#[interrupt]
 fn TqId0() {
     sprintln!("IRQ:TqId0");
     let counter = MTimer::instance().counter();
     sprintln!("mtime={}", counter);
 }
-#[nested_interrupt]
+#[interrupt]
 fn TqId1() {
     sprintln!("IRQ:TqId1");
     let counter = MTimer::instance().counter();
     sprintln!("mtime={}", counter);
 }
-#[nested_interrupt]
+#[interrupt]
 fn TqId2() {
     sprintln!("IRQ:TqId2");
     let counter = MTimer::instance().counter();
     sprintln!("mtime={}", counter);
 }
-#[nested_interrupt]
+#[interrupt]
 fn TqId3() {
     sprintln!("IRQ:TqId3");
     let counter = MTimer::instance().counter();
     sprintln!("mtime={}", counter);
 }
-#[nested_interrupt]
+#[interrupt]
 fn TqId4() {
     sprintln!("IRQ:TqId4");
     let counter = MTimer::instance().counter();
     sprintln!("mtime={}", counter);
 }
-#[nested_interrupt]
+#[interrupt]
 fn TqId5() {
     sprintln!("IRQ:TqId5");
     let counter = MTimer::instance().counter();
     sprintln!("mtime={}", counter);
 }
-#[nested_interrupt]
+#[interrupt]
 fn TqId6() {
     sprintln!("IRQ:TqId6");
     let counter = MTimer::instance().counter();
     sprintln!("mtime={}", counter);
 }
-#[nested_interrupt]
+#[interrupt]
 fn TqId7() {
     sprintln!("IRQ:TqId7");
     let counter = MTimer::instance().counter();
