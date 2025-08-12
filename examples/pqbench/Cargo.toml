@@ -20,6 +20,10 @@ default = ["ufmt"]
 ufmt = ["bsp/ufmt", "heapless/ufmt"]
 # Use hardware priority queue
 use-hwq = []
+# Use software index map
+use-imap = []
+# Use software binary heap
+use-bheap = []
 # Virtualize queue
 virtq = []
 

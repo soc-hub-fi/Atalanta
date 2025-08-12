@@ -36,9 +36,11 @@ Run on RV32IMC (sim or FPGA):
 
 ```sh
 # Simulator (from project root .../Atalanta)
-make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqbench CARGO_FLAGS="--target riscv32imc-unknown-none-elf"
+make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqprof TARGET="riscv32imc-unknown-none-elf"
 
 # FPGA (from project directory .../pqbench)
 cargo run -Ffpga --target riscv32imc-unknown-none-elf
-```
 
+# Emit ASM for simulator build of pqprof
+cargo rustc --release --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq -Fvirtq -- --emit asm
+```

@@ -1,13 +1,24 @@
 #![no_std]
 #![no_main]
 
+#[cfg(not(any(feature = "use-hwq", feature = "use-imap", feature = "use-bheap")))]
+compile_error!("must select `use-hwq`, `use-imap`, or `use-bheap`");
+
+use core::ops;
+
 use bsp::{
     clic::{Clic, Polarity, Trig},
     timer_queue::TimerQueue,
     Interrupt,
 };
+use heapless::{binary_heap::Min, Deque};
 
 pub mod clic;
+
+#[cfg(any(feature = "use-bheap", feature = "use-hwq"))]
+pub type PQueue<const Q_LEN: usize> = heapless::BinaryHeap<Entry, Min, Q_LEN>;
+#[cfg(feature = "use-imap")]
+pub type PQueue<const Q_LEN: usize> = heapless::FnvIndexMap<u8, Entry, Q_LEN>;
 
 pub const UART_BAUD: u32 = if cfg!(feature = "rtl-tb") {
     1_500_000
@@ -66,44 +77,220 @@ macro_rules! function {
     }};
 }
 
-/// Accesses timer queue in an unsynchronized way
-pub unsafe fn hw_pq_push_rel(irq_id: u8, ofs: u64) -> u8 {
-    let mut tq = TimerQueue::instance();
-    tq.push_rel(bsp::timer_queue::Entry::new(ofs, irq_id).into())
-}
-
-/// Accesses timer queue in an unsynchronized way
-pub unsafe fn hw_pq_is_full() -> bool {
-    let tq = TimerQueue::instance();
-    tq.is_full()
-}
-
 /// Wraps [`bsp::timer_queue::Entry`] such that the same type can be used for
 /// software priority queue as well.
-pub struct Entry(bsp::timer_queue::Entry);
+#[cfg_attr(feature = "ufmt", derive(ufmt::derive::uDebug))]
+#[cfg_attr(not(feature = "ufmt"), derive(Debug))]
+#[derive(Clone)]
+pub struct Entry(pub bsp::timer_queue::Entry, pub u8);
 
-impl From<bsp::timer_queue::Entry> for Entry {
-    fn from(value: bsp::timer_queue::Entry) -> Self {
-        Self(value)
+impl Entry {
+    #[inline(always)]
+    pub fn with_handle(entry: bsp::timer_queue::Entry, handle: u8) -> Self {
+        Self(entry, handle)
+    }
+}
+
+impl ops::Deref for Entry {
+    type Target = bsp::timer_queue::Entry;
+
+    #[inline(always)]
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
 impl Eq for Entry {}
 
 impl PartialEq for Entry {
+    #[inline(always)]
     fn eq(&self, other: &Self) -> bool {
         self.0.ts == other.0.ts
     }
 }
 
 impl PartialOrd for Entry {
+    #[inline(always)]
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         self.0.ts.partial_cmp(&other.0.ts)
     }
 }
 
 impl Ord for Entry {
+    #[inline(always)]
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.0.ts.cmp(&other.0.ts)
+    }
+}
+
+const MSG_BQ_OVF: &str = "backup queue overflow";
+
+/// Inserts an IRQ with a timestamp into the timer queue in one of the defined
+/// ways based on bench configuration.
+///
+/// 1. use-hwq => inserts the entry into the long hardware queue
+/// 2. use-hwq + virtq => inserts the entry into the virtualized hardware queue
+/// 3. - => inserts the entry into the software queue
+///
+/// # Safety
+///
+/// Accesses timer queue in an unsynchronized way.
+#[inline(always)]
+pub unsafe fn abstract_insert<const Q_LEN: usize, const B_LEN: usize>(
+    irq_id: u8,
+    ofs: u64,
+    swq: &mut PQueue<Q_LEN>,
+    free_handles: &mut Deque<u8, 256>,
+    bq: &mut Deque<Entry, B_LEN>,
+) -> u8 {
+    // Software queue, no virtualization
+    if cfg!(all(not(feature = "use-hwq"), not(feature = "virtq"))) {
+        #[cfg(any(feature = "use-bheap", feature = "use-imap"))]
+        let h = free_handles.pop_front().unwrap_unchecked();
+
+        match () {
+            #[cfg(feature = "use-bheap")]
+            () => {
+                swq.push_unchecked(Entry::with_handle(
+                    bsp::timer_queue::Entry { ts: ofs, irq_id },
+                    h,
+                ));
+            }
+            #[cfg(feature = "use-imap")]
+            () => swq
+                .insert(
+                    h,
+                    Entry::with_handle(bsp::timer_queue::Entry { ts: ofs, irq_id }, h),
+                )
+                .unwrap_unchecked(),
+            () => {
+                unreachable!();
+            }
+        };
+        #[cfg(any(feature = "use-bheap", feature = "use-imap"))]
+        h
+    }
+    // Hardware queue, no virtualization
+    else if cfg!(all(feature = "use-hwq", not(feature = "virtq"))) {
+        tq_push_rel(irq_id, ofs)
+    }
+    // Hardware queue with virtualized backing queue
+    else if cfg!(all(feature = "use-hwq", feature = "virtq")) {
+        if !tq_is_full() {
+            return tq_push_rel(irq_id, ofs);
+        }
+
+        // If queue is full, retrieve bottom element
+        let mut tq = TimerQueue::instance();
+        let btm = tq.drop(tq.btm_idx());
+
+        let ts = bsp::mtimer::MTimer::instance().counter() + ofs;
+        // If incoming is more urgent than 'bottom'
+        if ts <= btm.ts {
+            // Bottom => backup
+            // Incoming => HW
+            let h = free_handles.pop_front().unwrap_unchecked();
+            bq.push_back(Entry::with_handle(btm.into(), h))
+                .unwrap_or_else(|_| panic!("{}", MSG_BQ_OVF));
+
+            return tq_push_rel(irq_id, ofs);
+        }
+        // If bottom is more urgent than incoming
+        else {
+            // Bottom => HW
+            // Incoming => backup
+            TimerQueue::instance().push_abs(btm);
+            let h = free_handles.pop_front().unwrap_unchecked();
+            bq.push_back(Entry::with_handle(
+                bsp::timer_queue::Entry::new(ts, irq_id),
+                h,
+            ))
+            .unwrap_or_else(|_| panic!("{}", MSG_BQ_OVF));
+            return h;
+        }
+    }
+    // Software queue with virtualization (doesn't make sense)
+    else {
+        #[cfg(all(not(feature = "use-hwq"), feature = "virtq"))]
+        compile_error!("virtualizing software queue makes no sense");
+        unreachable!()
+    }
+}
+
+//#[no_mangle]
+#[inline(always)]
+fn tq_push_rel(irq_id: u8, ofs: u64) -> u8 {
+    let mut tq = unsafe { TimerQueue::instance() };
+    let handle = tq.push_rel(bsp::timer_queue::Entry::new(ofs, irq_id).into());
+    handle
+}
+
+/// Accesses timer queue in an unsynchronized way
+#[inline(always)]
+pub unsafe fn tq_is_full() -> bool {
+    let tq = TimerQueue::instance();
+    tq.is_full()
+}
+
+pub unsafe fn abstract_drop<const Q_LEN: usize, const B_LEN: usize>(
+    drop_handle: u8,
+    swq: &mut PQueue<Q_LEN>,
+    free_handles: &mut Deque<u8, 256>,
+    bq: &mut Deque<Entry, B_LEN>,
+) {
+    // Software queue, no virtualization
+    if cfg!(all(not(feature = "use-hwq"), not(feature = "virtq"))) {
+        match () {
+            #[cfg(feature = "use-bheap")]
+            () => {
+                let retain = swq
+                    .into_iter()
+                    .filter(|entry| entry.1 != drop_handle)
+                    .cloned();
+                let mut nq = PQueue::new();
+                for val in retain {
+                    nq.push(val).unwrap_unchecked();
+                }
+                *swq = nq;
+            }
+            #[cfg(feature = "use-imap")]
+            () => swq.remove(&drop_handle),
+            () => unreachable!(),
+        };
+    }
+    // Hardware queue, no virtualization
+    else if cfg!(all(feature = "use-hwq", not(feature = "virtq"))) {
+        let mut tq = TimerQueue::instance();
+        tq.drop(drop_handle);
+    }
+    /*
+    // Hardware queue with virtualized backing queue
+    else if cfg!(all(feature = "use-hwq", feature = "virtq")) {
+        if !hw_pq_is_full() {
+            return Some(hw_pq_push_rel(irq_id, ofs));
+        }
+
+        // If queue is full, retrieve bottom element
+        let mut tq = TimerQueue::instance();
+        let btm = tq.drop(tq.btm_idx());
+
+        let ts = MTimer::instance().counter() + ofs;
+        if ts <= btm.ts {
+            BACKUP
+                .as_mut()
+                .map(|bk| bk.push_back(Entry::new(ofs, irq_id).into()));
+            // Put bottom entry back into HW queue
+            TimerQueue::instance().push_abs(btm);
+            return None;
+        } else {
+            BACKUP.as_mut().map(|bk| bk.push_back(btm.into()));
+            return Some(TimerQueue::instance().push_rel(Entry::new(ofs, irq_id)));
+        }
+    } */
+    // Software queue with virtualization (doesn't make sense)
+    else {
+        #[cfg(all(not(feature = "use-hwq"), feature = "virtq"))]
+        compile_error!("virtualizing software queue makes no sense");
+        unreachable!()
     }
 }

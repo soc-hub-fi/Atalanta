@@ -5,4 +5,4 @@ endif
 # Build the entire program
 .PHONY: $(TEST)
 $(TEST):
-	cargo build $(MAYBE_RELEASE) -Frtl-tb --bin $(TEST) $(CARGO_FLAGS)
+	cargo build $(MAYBE_RELEASE) -Frtl-tb --example $(TEST) $(CARGO_FLAGS) --target $(TARGET)

@@ -21,17 +21,17 @@ use bsp::{
     rt::entry,
     sprint, sprintln,
     timer_group::{Duration, Timer},
-    timer_queue::{Entry, TimerQueue},
+    timer_queue::TimerQueue,
     uart::*,
     write_u32, Interrupt, CPU_FREQ,
 };
 use heapless::{binary_heap::Min, BinaryHeap, Deque};
-use pqbench::{hw_pq_is_full, hw_pq_push_rel, print_example_name, setup_irq, tear_irq, UART_BAUD};
+use pqbench::{abstract_insert, print_example_name, setup_irq, tear_irq, UART_BAUD};
 use rand::{RngCore, SeedableRng};
 
 const PERIPH_CLK_DIV: u64 = 1;
-const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(200);
-const PUSH_PERIOD_US: u32 = 50;
+const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(500);
+const PUSH_PERIOD_US: u32 = 100;
 
 /// Main queue length
 const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
@@ -44,6 +44,8 @@ static mut BACKUP: Option<Deque<pqbench::Entry, B_LEN>> = Some(Deque::new());
 
 static mut TIMEOUT: bool = false;
 static mut RNG: Option<rand::rngs::SmallRng> = None;
+
+static mut FREE_HANDLES: heapless::Deque<u8, 256> = heapless::Deque::<u8, 256>::new();
 
 #[entry]
 fn main() -> ! {
@@ -93,6 +95,16 @@ fn main() -> ! {
     setup_irq(Interrupt::TqId7, 1);
     sprintln!(" done");
 
+    let tq = TimerQueue::init();
+    let handle_bounds = if cfg!(feature = "virtq") {
+        tq.capacity()..(tq.capacity() + B_LEN as u32)
+    } else {
+        0u32..Q_LEN as u32
+    };
+    for h in handle_bounds {
+        unsafe { FREE_HANDLES.push_back(h as u8).unwrap() }
+    }
+
     // Init mtimer
     let mut mtimer = MTimer::instance().into_oneshot();
 
@@ -115,6 +127,15 @@ fn main() -> ! {
     while !unsafe { TIMEOUT } {
         wfi();
     }
+
+    // === TEST ENDS ===
+
+    sprint!("Interrupt counts [");
+    for v in unsafe { CNT } {
+        sprint!("{}, ", v);
+    }
+    sprintln!("]");
+
     bsp::tb::signal_pass(Some(&mut serial));
     loop {}
 }
@@ -129,79 +150,33 @@ fn TqNotFull() {
     sprintln!("IRQ:TqNotFull");
 }
 
-/// Inserts an IRQ with a timestamp into the timer queue in one of the defined
-/// ways based on bench configuration.
+/// Periodically inserts N tasks with randomized offsets into the queue.
 ///
-/// 1. use-hwq => inserts the entry into the long hardware queue
-/// 2. use-hwq + virtq => inserts the entry into the virtualized hardware queue
-/// 3. - => inserts the entry into the software queue
-///
-/// # Safety
-///
-/// Accesses timer queue in an unsynchronized way.
-unsafe fn abstract_insert(irq_id: u8, ofs: u64) -> Option<u8> {
-    // Software queue, no virtualization
-    if cfg!(all(not(feature = "use-hwq"), not(feature = "virtq"))) {
-        let swq = SW_PQ.as_mut().unwrap();
-        swq.push_unchecked(Entry { ts: ofs, irq_id }.into());
-        None
-    }
-    // Hardware queue, no virtualization
-    else if cfg!(all(feature = "use-hwq", not(feature = "virtq"))) {
-        let mut tq = TimerQueue::instance();
-        let handle = tq.push_rel(bsp::timer_queue::Entry::new(ofs, irq_id).into());
-        Some(handle)
-    }
-    // Hardware queue with virtualized backing queue
-    else if cfg!(all(feature = "use-hwq", feature = "virtq")) {
-        if !hw_pq_is_full() {
-            return Some(hw_pq_push_rel(irq_id, ofs));
-        }
-
-        // If queue is full, retrieve bottom element
-        let mut tq = TimerQueue::instance();
-        let btm = tq.drop(tq.btm_idx());
-
-        let ts = MTimer::instance().counter() + ofs;
-        if ts <= btm.ts {
-            BACKUP
-                .as_mut()
-                .map(|bk| bk.push_back(Entry::new(ofs, irq_id).into()));
-            // Put bottom entry back into HW queue
-            TimerQueue::instance().push_abs(btm);
-            return None;
-        } else {
-            BACKUP.as_mut().map(|bk| bk.push_back(btm.into()));
-            return Some(TimerQueue::instance().push_rel(Entry::new(ofs, irq_id)));
-        }
-    }
-    // Software queue with virtualization (doesn't make sense)
-    else {
-        #[cfg(all(not(feature = "use-hwq"), feature = "virtq"))]
-        compile_error!("virtualizing software queue makes no sense");
-        unreachable!()
-    }
-}
-
 /// Timer0Cmp needs to be nested and lower priority than "TqFull", otherwise we
 /// will not be able to react to when the queue becomes overfull.
 #[nested_interrupt]
 fn Timer0Cmp() {
     sprintln!("IRQ:Timer0Cmp");
-    unsafe { RNG.as_mut() }.map(|rng| {
-        let irq_id = rng.next_u32() as u8 % 8;
-        let ofs = rng.next_u64() % 5_000;
-        let counter = MTimer::instance().counter();
-        // SAFETY: none at all, this will break
-        unsafe { abstract_insert(irq_id, ofs) };
-        sprintln!("  mtime={}", counter);
-        sprintln!(
-            "  scheduled interrupt {} ofs={} (abs~{})",
-            irq_id,
-            ofs,
-            ofs + counter
-        );
-    });
+    for _ in 0..10 {
+        unsafe { RNG.as_mut() }.map(|rng| {
+            let irq_id = rng.next_u32() as u8 % 8;
+            let ofs = rng.next_u64() % 1_000;
+
+            let swq = unsafe { SW_PQ.as_mut().unwrap() };
+            let bq = unsafe { BACKUP.as_mut().unwrap() };
+
+            // SAFETY: none at all, this will break
+            unsafe { abstract_insert(irq_id, ofs, swq, &mut FREE_HANDLES, bq) };
+            //let counter = MTimer::instance().counter();
+            /*sprintln!("  mtime={}", counter);
+            sprintln!(
+                "  sched'd irq {} ofs={} (abs~{})",
+                irq_id,
+                ofs,
+                ofs + counter
+            );*/
+        });
+    }
 }
 
 static mut CNT: [u32; 8] = [0; 8];
