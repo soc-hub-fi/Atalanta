@@ -9,6 +9,8 @@
 #![allow(non_snake_case)]
 #![allow(static_mut_refs)]
 
+use core::ops::AddAssign;
+
 use bsp::{
     clic::Clic,
     interrupt,
@@ -202,54 +204,35 @@ fn Timer0Cmp() {
     });
 }
 
-#[interrupt]
-fn TqId0() {
-    sprintln!("IRQ:TqId0");
-    let counter = MTimer::instance().counter();
-    sprintln!("  mtime={}", counter);
+static mut CNT: [u32; 8] = [0; 8];
+
+use paste::paste;
+macro_rules! tq_handler {
+    ($id:expr) => {
+        paste! {
+            #[interrupt]
+            fn [<TqId $id>]() {
+                /*
+                sprintln!("IRQ:TqId{}", $id);
+                let counter = MTimer::instance().counter();
+                sprintln!("  mtime={}", counter);
+                */
+
+                // Safety: CNT is not shared during test run
+                unsafe { CNT.get_unchecked_mut($id).add_assign(1) };
+            }
+        }
+    };
 }
-#[interrupt]
-fn TqId1() {
-    sprintln!("IRQ:TqId1");
-    let counter = MTimer::instance().counter();
-    sprintln!("  mtime={}", counter);
-}
-#[interrupt]
-fn TqId2() {
-    sprintln!("IRQ:TqId2");
-    let counter = MTimer::instance().counter();
-    sprintln!("  mtime={}", counter);
-}
-#[interrupt]
-fn TqId3() {
-    sprintln!("IRQ:TqId3");
-    let counter = MTimer::instance().counter();
-    sprintln!("  mtime={}", counter);
-}
-#[interrupt]
-fn TqId4() {
-    sprintln!("IRQ:TqId4");
-    let counter = MTimer::instance().counter();
-    sprintln!("  mtime={}", counter);
-}
-#[interrupt]
-fn TqId5() {
-    sprintln!("IRQ:TqId5");
-    let counter = MTimer::instance().counter();
-    sprintln!("  mtime={}", counter);
-}
-#[interrupt]
-fn TqId6() {
-    sprintln!("IRQ:TqId6");
-    let counter = MTimer::instance().counter();
-    sprintln!("  mtime={}", counter);
-}
-#[interrupt]
-fn TqId7() {
-    sprintln!("IRQ:TqId7");
-    let counter = MTimer::instance().counter();
-    sprintln!("  mtime={}", counter);
-}
+
+tq_handler!(0);
+tq_handler!(1);
+tq_handler!(2);
+tq_handler!(3);
+tq_handler!(4);
+tq_handler!(5);
+tq_handler!(6);
+tq_handler!(7);
 
 /// Test timeout interrupt (per test-run)
 #[interrupt]
