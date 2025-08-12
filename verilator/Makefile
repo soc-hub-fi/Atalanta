@@ -101,7 +101,7 @@ VERIL_FLAGS ?= \
 	--cc \
 	-CFLAGS "-DTEST=$(TEST) -DJTAG_LOAD=$(JTAG_LOAD)" \
 	-GJtagLoad=$(JTAG_LOAD) \
-	--unroll-count 4 \
+	--unroll-count 256 \
 	$(VERIL_DIR)/../src/tb/elfloader.cpp \
 	$(VERIL_DIR)/$(TOP_MODULE).vlt \
 	--top-module $(TOP_MODULE) \
