@@ -61,6 +61,8 @@ impl TimerQueue {
     }
 
     /// Returns hardware queue maximum depth
+    ///
+    /// This is also the non-inclusive upper bound for handle/index value.
     #[inline]
     pub fn capacity(&self) -> u32 {
         let p = self.0;
@@ -93,6 +95,7 @@ impl TimerQueue {
         }
     }
 
+    /// Handle for smallest ("next to trigger") value
     #[inline]
     pub fn top_idx(&self) -> u8 {
         let p = self.0;
@@ -102,6 +105,7 @@ impl TimerQueue {
         top as u8
     }
 
+    /// Handle for biggest ("last to trigger") value
     #[inline]
     pub fn btm_idx(&self) -> u8 {
         let p = self.0;
@@ -111,6 +115,7 @@ impl TimerQueue {
         btm as u8
     }
 
+    /// Handle for last pushed value
     #[inline]
     pub fn last_idx(&self) -> u8 {
         let p = self.0;
