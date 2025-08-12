@@ -4,6 +4,8 @@ use crate::{
 };
 
 #[derive(Clone)]
+#[cfg_attr(feature = "ufmt", derive(ufmt::derive::uDebug))]
+#[cfg_attr(not(feature = "ufmt"), derive(Debug))]
 pub struct Entry {
     /// Timestamp (absolute value or offset)
     pub ts: u64,
