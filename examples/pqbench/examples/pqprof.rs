@@ -33,11 +33,7 @@ const PERIPH_CLK_DIV: u64 = 1;
 const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(1);
 
 /// Main queue length
-const Q_LEN: usize = if cfg!(not(feature = "virtq")) {
-    128 /* should be 256 */
-} else {
-    8
-};
+const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
 /// Software priority queue implemented as binary heap
 static mut SW_PQ: Option<PQueue<Q_LEN>> = Some(PQueue::new());
 
