@@ -13,12 +13,12 @@
 compile_error!("must select `use-hwq`, `use-imap`, or `use-bheap`");
 
 use bsp::{
-    clic::Clic,
+    clic::{Clic, InterruptNumber},
     interrupt,
     mmap::{CFG_BASE, PERIPH_CLK_DIV_OFS},
-    mtimer::{self, MTimer},
+    mtimer::MTimer,
     register::mcycle,
-    riscv::{self, asm::wfi},
+    riscv::{self, asm::nop},
     rt::entry,
     sprint, sprintln,
     uart::*,
@@ -29,7 +29,6 @@ use pqbench::VQueue;
 use pqbench::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 
 const PERIPH_CLK_DIV: u64 = 1;
-const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(1);
 
 /// Main queue length
 const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
@@ -48,8 +47,7 @@ type TqT = BHeap<Q_LEN>;
 type TqT = IMap<Q_LEN>;
 
 static mut SHARED_TQ: Option<TqT> = None;
-
-static mut TIMEOUT: bool = false;
+static mut DISPATCHED: bool = false;
 
 fn prof<F, O>(s: &str, f: F) -> O
 where
@@ -95,11 +93,8 @@ fn main() -> ! {
     setup_irq(Interrupt::TqFull, 6);
     // Refill hardware queue at low priority
     setup_irq(Interrupt::TqNotFull, 1);
-    setup_irq(Interrupt::MachineTimer, u8::MAX);
     setup_irq(Interrupt::TqId0, 2);
     sprintln!(" done");
-
-    // === TEST STARTS ===
 
     let timer_q = match () {
         #[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
@@ -117,6 +112,7 @@ fn main() -> ! {
     }
     let timer_q = unsafe { SHARED_TQ.as_mut().unwrap_unchecked() };
 
+    // Benchmark insert
     let mut handles = heapless::Vec::<u8, 256>::new();
     for n in 0..16 {
         let mut s = heapless::String::<16>::new();
@@ -133,6 +129,7 @@ fn main() -> ! {
         unsafe { handles.push(h).unwrap_unchecked() };
     }
 
+    // Benchmark drop
     for h in handles {
         let mut s = heapless::String::<16>::new();
         #[cfg(feature = "ufmt")]
@@ -147,28 +144,44 @@ fn main() -> ! {
         });
     }
 
-    // Init mtimer
+    // mtimer is required for dispatch test
     sprintln!("Start mtimer");
-    let mut mtimer = MTimer::instance().into_oneshot();
+    let mut mtimer = MTimer::instance();
 
     // Test will end when MachineTimer fires
-    mtimer.start(TEST_DURATION);
-
-    // This benchmark requires the main queue to be 256 deep
-    //assert!(timer_q.capacity() >= Q_LEN);
+    mtimer.enable();
 
     // Enable interrupts globally
     sprintln!("interrupt::enable");
     unsafe { riscv::interrupt::enable() };
 
-    while !unsafe { TIMEOUT } {
-        sprintln!("wfi");
-        wfi();
+    // Benchmark dispatch
+    for n in 0..16 {
+        let mut s = heapless::String::<16>::new();
+        #[cfg(feature = "ufmt")]
+        ufmt::uwrite!(s, "dispatch {}", n).ok();
+        #[cfg(not(feature = "ufmt"))]
+        {
+            use core::fmt::Write;
+            write!(s, "dispatch {}", n).ok();
+        }
+        unsafe { DISPATCHED = false };
+        prof(&s, || {
+            sprintln!("about to push");
+            timer_q.push_rel(bsp::timer_queue::Entry::new(0, 0));
+            sprintln!("waiting on D");
+            while !unsafe { DISPATCHED } {
+                nop();
+            }
+        });
     }
 
-    // === TEST ENDS ===
+    // This benchmark requires the main queue to be 256 deep
+    //assert!(timer_q.capacity() >= Q_LEN);
 
-    sprintln!("Interrupt count {}", unsafe { CNT });
+    tear_irq(Interrupt::TqFull);
+    tear_irq(Interrupt::TqNotFull);
+    tear_irq(Interrupt::TqId0);
 
     bsp::tb::signal_pass(Some(&mut serial));
     loop {}
@@ -204,30 +217,19 @@ fn TqNotFull() {
     sprintln!("Refilled {} elements", refill_count);
 }
 
-static mut CNT: u32 = 0;
-
 #[interrupt]
 fn TqId0() {
     sprintln!("IRQ:TqId0");
-    // Safety: CNT is not shared during test run
-    unsafe { CNT += 1 };
-}
-
-/// Test timeout interrupt (per test-run)
-#[interrupt]
-unsafe fn MachineTimer() {
-    sprintln!("IRQ:MachineTimer");
-    unsafe { TIMEOUT = true };
-
-    tear_irq(Interrupt::TqFull);
-    tear_irq(Interrupt::TqNotFull);
-    tear_irq(Interrupt::MachineTimer);
-    tear_irq(Interrupt::TqId0);
+    unsafe { DISPATCHED = true };
 }
 
 #[export_name = "DefaultHandler"]
 fn default_handler() {
     // 8 LSBs of mcause must match interrupt id
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
-    sprintln!("IRQ:DefaultHandler {}", irq_code);
+    sprintln!(
+        "IRQ:DefaultHandler {} ({:?})",
+        irq_code,
+        bsp::Interrupt::from_number(irq_code).unwrap()
+    );
 }
