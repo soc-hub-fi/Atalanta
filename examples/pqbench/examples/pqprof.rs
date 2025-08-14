@@ -130,13 +130,7 @@ fn main() -> ! {
     let mut handles = heapless::Vec::<u8, 256>::new();
     for n in 0..12 {
         let mut s = heapless::String::<256>::new();
-        #[cfg(feature = "ufmt")]
-        ufmt::uwrite!(s, "insert {}", n).ok();
-        #[cfg(not(feature = "ufmt"))]
-        {
-            use core::fmt::Write;
-            write!(s, "insert {}", n).ok();
-        }
+        bsp::write!(s, "insert {}", n).unwrap();
         let h = prof(&s, || {
             timer_q.enqueue_rel(bsp::timer_queue::Entry::new((0b1 << 24) - 1, 0))
         });
@@ -146,13 +140,7 @@ fn main() -> ! {
     // Benchmark drop
     for h in handles {
         let mut s = heapless::String::<256>::new();
-        #[cfg(feature = "ufmt")]
-        ufmt::uwrite!(s, "drop {}", h).ok();
-        #[cfg(not(feature = "ufmt"))]
-        {
-            use core::fmt::Write;
-            write!(s, "drop {}", h).ok();
-        }
+        bsp::write!(s, "drop {}", h).unwrap();
         prof(&s, || {
             timer_q.drop(h);
         });
@@ -165,13 +153,7 @@ fn main() -> ! {
     // Benchmark dispatch
     for n in 0..12 {
         let mut s = heapless::String::<256>::new();
-        #[cfg(feature = "ufmt")]
-        ufmt::uwrite!(s, "dispatch with {} pre-existing elements", n).ok();
-        #[cfg(not(feature = "ufmt"))]
-        {
-            use core::fmt::Write;
-            write!(s, "dispatch with {} pre-existing elements", n).ok();
-        }
+        bsp::write!(s, "dispatch with {} pre-existing elements", n).unwrap();
         unsafe { DISPATCHED = false };
         // Enqueue an extra event to cause load for dispatcher
         if n > 0 {
