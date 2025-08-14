@@ -256,8 +256,7 @@ impl<const Q_LEN: usize> PQueue for BHeap<Q_LEN> {
     fn enqueue_rel(&mut self, entry: Self::Entry) -> u8 {
         bsp::riscv::interrupt::free(|| {
             // Resolve absolute timestamp
-            let cnt = self.mtimer.counter();
-            let ts = cnt + entry.ts;
+            let ts = self.mtimer.counter() + entry.ts;
 
             // Generate a handle for the value to be enqueued
             // Safety: we hope that there is enough free handles for our test case.
@@ -266,7 +265,6 @@ impl<const Q_LEN: usize> PQueue for BHeap<Q_LEN> {
 
             // Check if proposed timestamp is more urgent than what is currently programmed
             let prog = unsafe { self.mtimer.cmp() };
-
             if ts < prog {
                 // Program mtimer to fire on the proposed timestamp and enqueue the previous
                 // value

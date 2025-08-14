@@ -52,7 +52,7 @@ type TqT = pqbench::IMap<Q_LEN>;
 static mut SHARED_TQ: Option<TqT> = None;
 static mut DISPATCHED: bool = false;
 
-fn prof<F, O>(s: &str, f: F) -> O
+fn prof<F, O>(op_ident: &str, f: F) -> O
 where
     F: FnOnce() -> O,
 {
@@ -61,7 +61,7 @@ where
     let output = f();
     unsafe { asm!("fence.i") };
     let mc1 = mcycle::read();
-    sprintln!("{} took {} cycles", s, mc1 - mc0);
+    sprintln!("{} took {} cycles", op_ident, mc1 - mc0);
 
     output
 }
@@ -160,9 +160,7 @@ fn main() -> ! {
             timer_q.enqueue_rel(bsp::timer_queue::Entry::new(u64::MAX, 0));
         }
         prof(&s, || {
-            //sprintln!("about to push");
             timer_q.enqueue_rel(bsp::timer_queue::Entry::new(0, 0));
-            //sprintln!("waiting on flag");
             while !unsafe { DISPATCHED } {
                 nop();
             }
