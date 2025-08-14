@@ -147,15 +147,6 @@ fn main() -> ! {
     // Test will end when MachineTimer fires
     mtimer.start(TEST_DURATION);
 
-    // TODO: insert 2
-    // TODO: drop 2
-
-    // TODO: insert 4
-    // TODO: drop 4
-
-    // TODO: insert ...
-    // TODO: drop ...
-
     // This benchmark requires the main queue to be 256 deep
     //assert!(timer_q.capacity() >= Q_LEN);
 
