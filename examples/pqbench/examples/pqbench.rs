@@ -21,12 +21,10 @@ use bsp::{
     rt::entry,
     sprint, sprintln,
     timer_group::{Duration, Timer},
-    timer_queue::TimerQueue,
     uart::*,
     write_u32, Interrupt, CPU_FREQ,
 };
-use heapless::{binary_heap::Min, BinaryHeap, Deque};
-use pqbench::{abstract_insert, print_example_name, setup_irq, tear_irq, UART_BAUD};
+use pqbench::{print_example_name, setup_irq, tear_irq, PQueue, UART_BAUD};
 use rand::{RngCore, SeedableRng};
 
 const PERIPH_CLK_DIV: u64 = 1;
@@ -35,17 +33,23 @@ const PUSH_PERIOD_US: u32 = 100;
 
 /// Main queue length
 const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
-/// Software priority queue implemented as binary heap
-static mut SW_PQ: Option<BinaryHeap<pqbench::Entry, Min, Q_LEN>> = Some(BinaryHeap::new());
 
 /// Backup queue len
 const B_LEN: usize = 256 - 8;
-static mut BACKUP: Option<Deque<pqbench::Entry, B_LEN>> = Some(Deque::new());
 
 static mut TIMEOUT: bool = false;
 static mut RNG: Option<rand::rngs::SmallRng> = None;
 
-static mut FREE_HANDLES: heapless::Deque<u8, 256> = heapless::Deque::<u8, 256>::new();
+#[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
+type TqT = bsp::timer_queue::TimerQueue;
+#[cfg(all(feature = "use-hwq", feature = "virtq"))]
+type TqT = pqbench::VQueue<Q_LEN, B_LEN>;
+#[cfg(all(feature = "use-bheap"))]
+type TqT = pqbench::BHeap<Q_LEN>;
+#[cfg(all(feature = "use-imap"))]
+type TqT = pqbench::IMap<Q_LEN>;
+
+static mut SHARED_TQ: Option<TqT> = None;
 
 #[entry]
 fn main() -> ! {
@@ -95,15 +99,38 @@ fn main() -> ! {
     setup_irq(Interrupt::TqId7, 1);
     sprintln!(" done");
 
-    let tq = TimerQueue::init();
-    let handle_bounds = if cfg!(feature = "virtq") {
-        tq.capacity()..(tq.capacity() + B_LEN as u32)
-    } else {
-        0u32..Q_LEN as u32
+    let timer_q = match () {
+        #[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
+        () => {
+            sprintln!("Feature: use-hwq");
+            bsp::timer_queue::TimerQueue::init()
+        }
+        #[cfg(all(feature = "use-hwq", feature = "virtq"))]
+        () => {
+            sprintln!("Feature: use-hwq + virtq");
+            #[cfg(feature = "virtq")]
+            sprintln!(
+                "Queue is virtualized with a backup queue of length {}",
+                B_LEN
+            );
+            pqbench::VQueue::new()
+        }
+        #[cfg(all(feature = "use-bheap"))]
+        () => {
+            sprintln!("Feature: use-bheap");
+            pqbench::BHeap::new(mtimer)
+        }
+        #[cfg(all(feature = "use-imap"))]
+        () => {
+            sprintln!("Feature: use-imap");
+            pqbench::IMap::new(mtimer)
+        }
     };
-    for h in handle_bounds {
-        unsafe { FREE_HANDLES.push_back(h as u8).unwrap() }
+
+    unsafe {
+        let _ = SHARED_TQ.insert(timer_q);
     }
+    let _timer_q = unsafe { SHARED_TQ.as_mut().unwrap_unchecked() };
 
     // Init mtimer
     let mut mtimer = MTimer::instance().into_oneshot();
@@ -115,8 +142,6 @@ fn main() -> ! {
     let mut t0 = Timer::init::<TIMER0_ADDR>().into_periodic();
     t0.set_period(Duration::micros(PUSH_PERIOD_US));
     t0.start();
-
-    let _timer_q = TimerQueue::init();
 
     // This benchmark requires the main queue to be 256 deep
     //assert!(timer_q.capacity() >= Q_LEN);
@@ -162,11 +187,9 @@ fn Timer0Cmp() {
             let irq_id = rng.next_u32() as u8 % 8;
             let ofs = rng.next_u64() % 1_000;
 
-            let swq = unsafe { SW_PQ.as_mut().unwrap() };
-            let bq = unsafe { BACKUP.as_mut().unwrap() };
-
+            let tq = unsafe { SHARED_TQ.as_mut().unwrap_unchecked() };
             // SAFETY: none at all, this will break
-            unsafe { abstract_insert(irq_id, ofs, swq, &mut FREE_HANDLES, bq) };
+            tq.enqueue_rel(bsp::timer_queue::Entry::new(ofs, irq_id));
             //let counter = MTimer::instance().counter();
             /*sprintln!("  mtime={}", counter);
             sprintln!(

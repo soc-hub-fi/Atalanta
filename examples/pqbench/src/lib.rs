@@ -18,41 +18,55 @@ pub mod clic;
 // TODO: free_handles should possibly be a hashset instead of dequeue
 
 pub struct BHeap<const Q_LEN: usize> {
-    entries: heapless::BinaryHeap<Entry, Min, Q_LEN>,
-    free_handles: heapless::Deque<u8, 256>,
+    pub queued: heapless::BinaryHeap<Entry, Min, Q_LEN>,
+    free_handles: heapless::Deque<u8, Q_LEN>,
+    /// Monotonic timer for classic dispatch using monotonics
+    pub mtimer: bsp::mtimer::MTimer,
+    pub active_handle: Option<u8>,
 }
 
 impl<const Q_LEN: usize> BHeap<Q_LEN> {
-    pub fn new() -> Self {
+    pub fn new(mut mtimer: bsp::mtimer::MTimer) -> Self {
         let mut free_handles = heapless::Deque::new();
-        let handle_bounds = 0u32..Q_LEN as u32;
-        for h in handle_bounds {
+        for h in 0..Q_LEN {
             free_handles.push_back(h as u8).unwrap()
         }
 
+        // Make sure mtimer is enabled, as it is required for dispatch
+        mtimer.enable();
+
         BHeap {
-            entries: heapless::BinaryHeap::new(),
+            queued: heapless::BinaryHeap::new(),
             free_handles,
+            mtimer,
+            active_handle: None,
         }
     }
 }
 
 pub struct IMap<const Q_LEN: usize> {
-    entries: heapless::FnvIndexMap<u8, Entry, Q_LEN>,
-    free_handles: heapless::Deque<u8, 256>,
+    queued: heapless::FnvIndexMap<u8, bsp::timer_queue::Entry, Q_LEN>,
+    free_handles: heapless::Deque<u8, Q_LEN>,
+    /// Monotonic timer for classic dispatch using monotonics
+    mtimer: bsp::mtimer::MTimer,
+    pub active_handle: Option<u8>,
 }
 
 impl<const Q_LEN: usize> IMap<Q_LEN> {
-    pub fn new() -> Self {
+    pub fn new(mut mtimer: bsp::mtimer::MTimer) -> Self {
         let mut free_handles = heapless::Deque::new();
-        let handle_bounds = 0u32..Q_LEN as u32;
-        for h in handle_bounds {
+        for h in 0..Q_LEN {
             free_handles.push_back(h as u8).unwrap()
         }
 
+        // Make sure mtimer is enabled, as it is required for dispatch
+        mtimer.enable();
+
         IMap {
-            entries: heapless::IndexMap::new(),
+            queued: heapless::IndexMap::new(),
             free_handles,
+            mtimer,
+            active_handle: None,
         }
     }
 }
@@ -142,7 +156,7 @@ macro_rules! function {
             core::any::type_name::<T>()
         }
         let name = type_name_of(f);
-        name.strip_suffix("::f").unwrap()
+        name.strip_suffix("::f").unwrap_unchecked()
     }};
 }
 
@@ -204,26 +218,33 @@ pub trait PQueue {
     /// 1. use-hwq => inserts the entry into the long hardware queue
     /// 2. use-hwq + virtq => inserts the entry into the virtualized hardware
     ///    queue
-    /// 3. - => inserts the entry into the software queue
+    /// 3. - => inserts the entry into the software queue and programs t0 to
+    ///    fire upon the most urgent entry
     ///
     /// # Safety
     ///
     /// Accesses timer queue in an unsynchronized way.
-    fn push_rel(&mut self, entry: Self::Entry) -> u8;
+    fn enqueue_rel(&mut self, entry: Self::Entry) -> u8;
     fn drop(&mut self, handle: u8);
+}
+
+/// A queue with a software dispatch capability
+pub trait Dispatch {
+    /// Dispatches the hardward handler and sets up the timer for the next event
+    fn dispatch(&mut self);
 }
 
 impl PQueue for bsp::timer_queue::TimerQueue {
     type Entry = bsp::timer_queue::Entry;
 
     #[inline(always)]
-    fn push_rel(&mut self, entry: Self::Entry) -> u8 {
-        (self as &mut Self).push_rel(entry)
+    fn enqueue_rel(&mut self, entry: Self::Entry) -> u8 {
+        bsp::riscv::interrupt::free(|| (self as &mut Self).push_rel(entry))
     }
 
     #[inline(always)]
     fn drop(&mut self, handle: u8) {
-        (self as &mut Self).drop(handle);
+        bsp::riscv::interrupt::free(|| (self as &mut Self).drop(handle));
     }
 }
 // Software binary heap + handle lookup
@@ -232,37 +253,123 @@ impl<const Q_LEN: usize> PQueue for BHeap<Q_LEN> {
 
     /// Parameter uses relative timestamp (stored with resolved absolute)
     #[inline(always)]
-    fn push_rel(&mut self, entry: Self::Entry) -> u8 {
-        // Safety: we hope that there is enough free handles for our test case.
-        // !!!: Failure is UB
-        let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
+    fn enqueue_rel(&mut self, entry: Self::Entry) -> u8 {
+        bsp::riscv::interrupt::free(|| {
+            // Resolve absolute timestamp
+            let cnt = self.mtimer.counter();
+            let ts = cnt + entry.ts;
 
-        // Resolve absolute timestamp
-        let ts = bsp::mtimer::MTimer::instance().counter() + entry.ts;
-        let entry = Self::Entry { ts: ts, ..entry };
+            // Generate a handle for the value to be enqueued
+            // Safety: we hope that there is enough free handles for our test case.
+            // !!!: Failure is UB
+            let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
 
-        // Insert handle and return
-        // Safety: we never insert more than what the queue can take in our testbench
-        // !!!: Failure is UB
-        unsafe { self.entries.push_unchecked(Entry::with_handle(entry, h)) }
-        h
+            // Check if proposed timestamp is more urgent than what is currently programmed
+            let prog = unsafe { self.mtimer.cmp() };
+
+            if ts < prog {
+                // Program mtimer to fire on the proposed timestamp and enqueue the previous
+                // value
+                self.mtimer.set_cmp(ts);
+                self.active_handle = Some(h);
+
+                if prog != u64::MAX {
+                    // Safety: we never insert more than what the queue can take in our testbench
+                    // !!!: Failure is UB
+                    let entry = Self::Entry { ts: prog, ..entry };
+                    unsafe {
+                        self.queued
+                            .push(Entry::with_handle(entry, h))
+                            .unwrap_unchecked()
+                    }
+                }
+            }
+            // Proposed timestamp is less urgent than what is currently programmed
+            else {
+                // Enqueue the proposed entry with a resolved absolute timestamp
+                let entry = Self::Entry { ts, ..entry };
+
+                // Safety: we never insert more than what the queue can take in our testbench
+                // !!!: Failure is UB
+                unsafe {
+                    self.queued
+                        .push(Entry::with_handle(entry, h))
+                        .unwrap_unchecked()
+                }
+            }
+
+            h
+        })
     }
 
     #[inline(always)]
     fn drop(&mut self, handle: u8) {
-        let retain = self
-            .entries
-            .into_iter()
-            .filter(|entry| entry.1 != handle)
-            .cloned();
-        let mut nq = heapless::BinaryHeap::new();
-        for val in retain {
-            unsafe { nq.push(val).unwrap_unchecked() };
-        }
-        (*self).entries = nq;
+        bsp::riscv::interrupt::free(|| {
+            // If the requested drop handle is currently timered
+            if self.active_handle.is_some_and(|a| a == handle) {
+                // Return the handle into the pool of free handles
+                // Safety: we hope that there is enough capacity for all handles in our test
+                // case.
+                // !!!: Failure is UB
+                unsafe { self.free_handles.push_back(handle).unwrap_unchecked() };
+
+                // Enqueue a new value from the queue if available and make it the active handle
+                self.active_handle = self.queued.pop().map(|e| {
+                    self.mtimer.set_cmp(e.ts);
+                    e.1
+                });
+                return;
+            }
+
+            // Arbitrary drop: reallocate the entire data structure
+
+            let retain = self
+                .queued
+                .into_iter()
+                .filter(|entry| entry.1 != handle)
+                .cloned();
+            let mut nq = heapless::BinaryHeap::new();
+            for val in retain {
+                unsafe { nq.push(val).unwrap_unchecked() };
+            }
+            (*self).queued = nq;
+            // Safety: we hope that there is enough capacity for all handles in our test
+            // case.
+            // !!!: Failure is UB
+            unsafe { self.free_handles.push_back(handle).unwrap_unchecked() };
+        })
+    }
+}
+
+impl<const Q_LEN: usize> Dispatch for BHeap<Q_LEN> {
+    #[inline(always)]
+    fn dispatch(&mut self) {
+        // Safety: active handle matches currently with the event being dispatched
+        let handle = unsafe { self.active_handle.unwrap_unchecked() };
+
+        // Return the handle into the pool of free handles
         // Safety: we hope that there is enough capacity for all handles in our test
-        // case. !!!: Failure is UB
+        // case.
+        // !!!: Failure is UB
         unsafe { self.free_handles.push_back(handle).unwrap_unchecked() };
+
+        // Enqueue a new value from the queue if available, and make it the active
+        // handle
+        self.active_handle = self
+            .queued
+            .pop()
+            .map(|e| {
+                self.mtimer.set_cmp(e.ts);
+                e.1
+            })
+            .or_else(|| {
+                // No events in queue => set mtimer to never fire
+                self.mtimer.set_cmp(u64::MAX);
+                None
+            });
+
+        // Pend the hardware dispatcher
+        unsafe { Clic::ip(Interrupt::TqId0).pend() };
     }
 }
 
@@ -270,33 +377,90 @@ impl<const Q_LEN: usize> PQueue for IMap<Q_LEN> {
     type Entry = bsp::timer_queue::Entry;
 
     /// Parameter uses relative timestamp (stored with resolved absolute)
-    fn push_rel(&mut self, entry: Self::Entry) -> u8 {
-        // Safety: we hope that there is enough free handles for our test case.
-        // !!!: Failure is UB
-        let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
+    #[inline(always)]
+    fn enqueue_rel(&mut self, entry: Self::Entry) -> u8 {
+        bsp::riscv::interrupt::free(|| {
+            // Resolve absolute timestamp
+            let ts = self.mtimer.counter() + entry.ts;
 
-        // Resolve absolute timestamp
-        let ts = bsp::mtimer::MTimer::instance().counter() + entry.ts;
-        let entry = Self::Entry { ts: ts, ..entry };
+            // Generate a handle for the value to be enqueued
+            // Safety: we hope that there is enough free handles for our test case.
+            // !!!: Failure is UB
+            let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
 
-        // Insert handle and return
-        // Safety: we never insert more than what the queue can take in our testbench
-        // !!!: Failure is UB
-        unsafe {
-            self.entries
-                .insert(h, Entry::with_handle(entry, h))
-                .unwrap_unchecked();
-        }
-        h
+            // Check if proposed timestamp is more urgent than what is currently programmed
+            let prog = unsafe { self.mtimer.cmp() };
+            if ts < prog {
+                // Program mtimer to fire on the proposed timestamp and enqueue the previous
+                // value
+                self.mtimer.set_cmp(ts);
+                self.active_handle = Some(h);
+
+                if prog != u64::MAX {
+                    // Safety: we never insert more than what the queue can take in our testbench
+                    // !!!: Failure is UB
+                    let entry = Self::Entry { ts: prog, ..entry };
+                    unsafe { self.queued.insert(h, entry).unwrap_unchecked() };
+                }
+            }
+            // Proposed timestamp is less urgent than what is currently programmed
+            else {
+                // Enqueue the proposed entry with a resolved absolute timestamp
+                let entry = Self::Entry { ts: ts, ..entry };
+
+                // Safety: we never insert more than what the queue can take in our testbench
+                // !!!: Failure is UB
+                unsafe { self.queued.insert(h, entry).unwrap_unchecked() };
+            }
+
+            h
+        })
     }
 
+    #[inline(always)]
     fn drop(&mut self, handle: u8) {
-        self.entries.remove(&handle);
+        bsp::riscv::interrupt::free(|| {
+            self.queued.remove(&handle);
 
+            // Safety: we hope that there is enough capacity for all handles in our test
+            // case.
+            // !!!: Failure is UB
+            unsafe { self.free_handles.push_back(handle).unwrap_unchecked() };
+        })
+    }
+}
+
+impl<const Q_LEN: usize> Dispatch for IMap<Q_LEN> {
+    #[inline(always)]
+    fn dispatch(&mut self) {
+        // Safety: since we are dispatching right now, we are confident that there is
+        // indeed an active handle.
+        let handle = unsafe { self.active_handle.unwrap_unchecked() };
+
+        // Return the handle into the pool of free handles
         // Safety: we hope that there is enough capacity for all handles in our test
         // case.
         // !!!: Failure is UB
         unsafe { self.free_handles.push_back(handle).unwrap_unchecked() };
+
+        // Enqueue a new value from the queue if available, and make it the active
+        // handle
+
+        self.active_handle = self
+            .queued
+            .iter()
+            .min_by(|(_, a), (_, b)| a.ts.cmp(&b.ts))
+            .map(|e| {
+                self.mtimer.set_cmp(e.1.ts);
+                *e.0
+            })
+            .or_else(|| {
+                // No events in queue => set mtimer to never fire
+                self.mtimer.set_cmp(u64::MAX);
+                None
+            });
+
+        unsafe { Clic::ip(Interrupt::TqId0).pend() };
     }
 }
 
@@ -305,46 +469,52 @@ const MSG_BQ_OVF: &str = "backup queue overflow";
 impl<const Q_LEN: usize, const B_LEN: usize> PQueue for VQueue<Q_LEN, B_LEN> {
     type Entry = bsp::timer_queue::Entry;
 
-    fn push_rel(&mut self, entry: Self::Entry) -> u8 {
-        if !self.tq.is_full() {
-            return self.tq.push_rel(entry);
-        }
+    #[inline(always)]
+    fn enqueue_rel(&mut self, entry: Self::Entry) -> u8 {
+        bsp::riscv::interrupt::free(|| {
+            if !self.tq.is_full() {
+                return self.tq.push_rel(entry);
+            }
 
-        // If queue is full, retrieve bottom element
-        let btm = self.tq.drop(self.tq.btm_idx());
+            // If queue is full, retrieve bottom element
+            let btm = self.tq.drop(self.tq.btm_idx());
 
-        let ts = bsp::mtimer::MTimer::instance().counter() + entry.ts;
-        // If incoming is more urgent than 'bottom'
-        if ts <= btm.ts {
-            // Bottom => backup
-            // Incoming => HW
-            let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
-            self.bq
-                .push_back(Entry::with_handle(btm.into(), h))
-                .unwrap_or_else(|_| panic!("{}", MSG_BQ_OVF));
+            let ts = bsp::mtimer::MTimer::instance().counter() + entry.ts;
+            // If incoming is more urgent than 'bottom'
+            if ts <= btm.ts {
+                // Bottom => backup
+                // Incoming => HW
+                let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
+                self.bq
+                    .push_back(Entry::with_handle(btm.into(), h))
+                    .unwrap_or_else(|_| panic!("{}", MSG_BQ_OVF));
 
-            return self.tq.push_rel(entry);
-        }
-        // If bottom is more urgent than incoming
-        else {
-            // Bottom => HW
-            // Incoming => backup
-            self.tq.push_abs(btm);
-            let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
-            self.bq
-                .push_back(Entry::with_handle(entry, h))
-                .unwrap_or_else(|_| panic!("{}", MSG_BQ_OVF));
-            return h;
-        }
+                return self.tq.push_rel(entry);
+            }
+            // If bottom is more urgent than incoming
+            else {
+                // Bottom => HW
+                // Incoming => backup
+                self.tq.push_abs(btm);
+                let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
+                self.bq
+                    .push_back(Entry::with_handle(entry, h))
+                    .unwrap_or_else(|_| panic!("{}", MSG_BQ_OVF));
+                return h;
+            }
+        })
     }
 
+    #[inline(always)]
     fn drop(&mut self, handle: u8) {
-        if (handle as usize) < Q_LEN {
-            // Drop from main queue (HW)
-            self.tq.drop(handle);
-        } else {
-            // Record element should be dropped from backup (virtual backup)
-            unsafe { self.bq_dropq.insert(handle).unwrap_unchecked() };
-        }
+        bsp::riscv::interrupt::free(|| {
+            if (handle as usize) < Q_LEN {
+                // Drop from main queue (HW)
+                self.tq.drop(handle);
+            } else {
+                // Record element should be dropped from backup (virtual backup)
+                unsafe { self.bq_dropq.insert(handle).unwrap_unchecked() };
+            }
+        })
     }
 }

@@ -12,6 +12,8 @@
 #[cfg(not(any(feature = "use-hwq", feature = "use-imap", feature = "use-bheap")))]
 compile_error!("must select `use-hwq`, `use-imap`, or `use-bheap`");
 
+use core::arch::asm;
+
 use bsp::{
     clic::{Clic, InterruptNumber},
     interrupt,
@@ -24,27 +26,28 @@ use bsp::{
     uart::*,
     write_u32, Interrupt, CPU_FREQ,
 };
-#[cfg(all(feature = "use-hwq", feature = "virtq"))]
-use pqbench::VQueue;
-use pqbench::{print_example_name, setup_irq, tear_irq, UART_BAUD};
+#[cfg(any(feature = "use-bheap", feature = "use-imap"))]
+use pqbench::Dispatch;
+use pqbench::{print_example_name, setup_irq, tear_irq, PQueue, UART_BAUD};
 
 const PERIPH_CLK_DIV: u64 = 1;
 
 /// Main queue length
+#[cfg(not(all(feature = "use-hwq", not(feature = "virtq"))))]
 const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
 
-/// Backup queue len
+/// Backup queue len (has to be a power of 2)
 #[cfg(all(feature = "use-hwq", feature = "virtq"))]
-const B_LEN: usize = 256 - 8;
+const B_LEN: usize = 256;
 
 #[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
 type TqT = bsp::timer_queue::TimerQueue;
 #[cfg(all(feature = "use-hwq", feature = "virtq"))]
-type TqT = VQueue<Q_LEN, B_LEN>;
+type TqT = pqbench::VQueue<Q_LEN, B_LEN>;
 #[cfg(all(feature = "use-bheap"))]
-type TqT = BHeap<Q_LEN>;
+type TqT = pqbench::BHeap<Q_LEN>;
 #[cfg(all(feature = "use-imap"))]
-type TqT = IMap<Q_LEN>;
+type TqT = pqbench::IMap<Q_LEN>;
 
 static mut SHARED_TQ: Option<TqT> = None;
 static mut DISPATCHED: bool = false;
@@ -54,7 +57,9 @@ where
     F: FnOnce() -> O,
 {
     let mc0 = mcycle::read();
+    unsafe { asm!("fence.i") };
     let output = f();
+    unsafe { asm!("fence.i") };
     let mc1 = mcycle::read();
     sprintln!("{} took {} cycles", s, mc1 - mc0);
 
@@ -71,21 +76,6 @@ fn main() -> ! {
     let mut serial = ApbUart::init(CPU_FREQ, UART_BAUD);
     print_example_name!();
 
-    sprintln!(
-        "{} priority queue length is {}",
-        if cfg!(feature = "use-hwq") {
-            "Hardware"
-        } else {
-            "Software"
-        },
-        Q_LEN,
-    );
-    #[cfg(feature = "virtq")]
-    sprintln!(
-        "Queue is virtualized with a backup queue of length {}",
-        B_LEN
-    );
-
     sprint!("Setup interrupts...");
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
@@ -93,18 +83,42 @@ fn main() -> ! {
     setup_irq(Interrupt::TqFull, 6);
     // Refill hardware queue at low priority
     setup_irq(Interrupt::TqNotFull, 1);
+    setup_irq(Interrupt::MachineTimer, u8::MAX);
     setup_irq(Interrupt::TqId0, 2);
     sprintln!(" done");
 
+    // mtimer is required for dispatch test
+    let mut mtimer = MTimer::instance();
+    mtimer.set_cmp(u64::MAX);
+    sprintln!("Start mtimer");
+    mtimer.enable();
+
     let timer_q = match () {
         #[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
-        () => bsp::timer_queue::TimerQueue::init(),
+        () => {
+            sprintln!("Feature: use-hwq");
+            bsp::timer_queue::TimerQueue::init()
+        }
         #[cfg(all(feature = "use-hwq", feature = "virtq"))]
-        () => VQueue::new(),
+        () => {
+            sprintln!("Feature: use-hwq + virtq");
+            #[cfg(feature = "virtq")]
+            sprintln!(
+                "Queue is virtualized with a backup queue of length {}",
+                B_LEN
+            );
+            pqbench::VQueue::new()
+        }
         #[cfg(all(feature = "use-bheap"))]
-        () => BHeap::new(),
+        () => {
+            sprintln!("Feature: use-bheap");
+            pqbench::BHeap::new(mtimer)
+        }
         #[cfg(all(feature = "use-imap"))]
-        () => IMap::new(),
+        () => {
+            sprintln!("Feature: use-imap");
+            pqbench::IMap::new(mtimer)
+        }
     };
 
     unsafe {
@@ -114,8 +128,8 @@ fn main() -> ! {
 
     // Benchmark insert
     let mut handles = heapless::Vec::<u8, 256>::new();
-    for n in 0..16 {
-        let mut s = heapless::String::<16>::new();
+    for n in 0..12 {
+        let mut s = heapless::String::<256>::new();
         #[cfg(feature = "ufmt")]
         ufmt::uwrite!(s, "insert {}", n).ok();
         #[cfg(not(feature = "ufmt"))]
@@ -124,14 +138,14 @@ fn main() -> ! {
             write!(s, "insert {}", n).ok();
         }
         let h = prof(&s, || {
-            timer_q.push_rel(bsp::timer_queue::Entry::new((0b1 << 24) - 1, 0))
+            timer_q.enqueue_rel(bsp::timer_queue::Entry::new((0b1 << 24) - 1, 0))
         });
         unsafe { handles.push(h).unwrap_unchecked() };
     }
 
     // Benchmark drop
     for h in handles {
-        let mut s = heapless::String::<16>::new();
+        let mut s = heapless::String::<256>::new();
         #[cfg(feature = "ufmt")]
         ufmt::uwrite!(s, "drop {}", h).ok();
         #[cfg(not(feature = "ufmt"))]
@@ -144,32 +158,29 @@ fn main() -> ! {
         });
     }
 
-    // mtimer is required for dispatch test
-    sprintln!("Start mtimer");
-    let mut mtimer = MTimer::instance();
-
-    // Test will end when MachineTimer fires
-    mtimer.enable();
-
     // Enable interrupts globally
     sprintln!("interrupt::enable");
     unsafe { riscv::interrupt::enable() };
 
     // Benchmark dispatch
-    for n in 0..16 {
-        let mut s = heapless::String::<16>::new();
+    for n in 0..12 {
+        let mut s = heapless::String::<256>::new();
         #[cfg(feature = "ufmt")]
-        ufmt::uwrite!(s, "dispatch {}", n).ok();
+        ufmt::uwrite!(s, "dispatch with {} pre-existing elements", n).ok();
         #[cfg(not(feature = "ufmt"))]
         {
             use core::fmt::Write;
-            write!(s, "dispatch {}", n).ok();
+            write!(s, "dispatch with {} pre-existing elements", n).ok();
         }
         unsafe { DISPATCHED = false };
+        // Enqueue an extra event to cause load for dispatcher
+        if n > 0 {
+            timer_q.enqueue_rel(bsp::timer_queue::Entry::new(u64::MAX, 0));
+        }
         prof(&s, || {
-            sprintln!("about to push");
-            timer_q.push_rel(bsp::timer_queue::Entry::new(0, 0));
-            sprintln!("waiting on D");
+            //sprintln!("about to push");
+            timer_q.enqueue_rel(bsp::timer_queue::Entry::new(0, 0));
+            //sprintln!("waiting on flag");
             while !unsafe { DISPATCHED } {
                 nop();
             }
@@ -182,6 +193,7 @@ fn main() -> ! {
     tear_irq(Interrupt::TqFull);
     tear_irq(Interrupt::TqNotFull);
     tear_irq(Interrupt::TqId0);
+    tear_irq(Interrupt::MachineTimer);
 
     bsp::tb::signal_pass(Some(&mut serial));
     loop {}
@@ -219,8 +231,18 @@ fn TqNotFull() {
 
 #[interrupt]
 fn TqId0() {
-    sprintln!("IRQ:TqId0");
+    //sprintln!("IRQ:TqId0");
     unsafe { DISPATCHED = true };
+}
+
+// MTimer acts as dispatcher for the most urgent entry in the software queue
+#[cfg(not(feature = "use-hwq"))]
+#[interrupt]
+fn MachineTimer() {
+    //sprintln!("IRQ:MachineTimer");
+
+    let tq = unsafe { SHARED_TQ.as_mut().unwrap_unchecked() };
+    tq.dispatch();
 }
 
 #[export_name = "DefaultHandler"]
