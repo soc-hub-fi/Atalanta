@@ -41,6 +41,10 @@ static mut SW_PQ: Option<PQueue<Q_LEN>> = Some(PQueue::new());
 const B_LEN: usize = 256 - 8;
 static mut BACKUP: Option<heapless::Deque<pqbench::Entry, B_LEN>> = Some(heapless::Deque::new());
 
+/// Backup drop queue
+static mut BACKUP_DROPQ: Option<heapless::FnvIndexSet<u8, 256>> =
+    Some(heapless::FnvIndexSet::new());
+
 static mut TIMEOUT: bool = false;
 
 static mut FREE_HANDLES: heapless::Deque<u8, 256> = heapless::Deque::<u8, 256>::new();
@@ -130,7 +134,8 @@ fn main() -> ! {
             prof(&s, || {
                 let swq = SW_PQ.as_mut().unwrap_unchecked();
                 let bq = BACKUP.as_mut().unwrap_unchecked();
-                abstract_drop(h, swq, &mut FREE_HANDLES, bq);
+                let bdq = BACKUP_DROPQ.as_mut().unwrap_unchecked();
+                abstract_drop(h, swq, &mut FREE_HANDLES, bq, bdq);
             });
         }
     }
@@ -188,8 +193,14 @@ fn TqNotFull() {
     while !tq.is_full() && !bq.is_empty() {
         let f = unsafe { bq.pop_front().unwrap_unchecked() };
         unsafe { FREE_HANDLES.push_back(f.1).unwrap() };
-        tq.push_abs(f.0);
-        refill_count += 1;
+        // If encountered elem from dropq, do not restore but only drop instead
+        let bq_dropq = unsafe { BACKUP_DROPQ.as_mut().unwrap_unchecked() };
+        if !bq_dropq.contains(&f.1) {
+            tq.push_abs(f.0);
+            refill_count += 1;
+        } else {
+            bq_dropq.remove(&f.1);
+        }
     }
 
     sprintln!("Refilled {} elements", refill_count);

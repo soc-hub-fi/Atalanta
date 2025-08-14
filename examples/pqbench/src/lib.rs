@@ -11,7 +11,7 @@ use bsp::{
     timer_queue::TimerQueue,
     Interrupt,
 };
-use heapless::{binary_heap::Min, Deque};
+use heapless::{binary_heap::Min, Deque, FnvIndexSet};
 
 pub mod clic;
 
@@ -237,6 +237,7 @@ pub unsafe fn abstract_drop<const Q_LEN: usize, const B_LEN: usize>(
     swq: &mut PQueue<Q_LEN>,
     free_handles: &mut Deque<u8, 256>,
     bq: &mut Deque<Entry, B_LEN>,
+    bq_dropq: &mut FnvIndexSet<u8, 256>,
 ) {
     // Software queue, no virtualization
     if cfg!(all(not(feature = "use-hwq"), not(feature = "virtq"))) {
@@ -263,30 +264,17 @@ pub unsafe fn abstract_drop<const Q_LEN: usize, const B_LEN: usize>(
         let mut tq = TimerQueue::instance();
         tq.drop(drop_handle);
     }
-    /*
     // Hardware queue with virtualized backing queue
     else if cfg!(all(feature = "use-hwq", feature = "virtq")) {
-        if !hw_pq_is_full() {
-            return Some(hw_pq_push_rel(irq_id, ofs));
-        }
-
-        // If queue is full, retrieve bottom element
-        let mut tq = TimerQueue::instance();
-        let btm = tq.drop(tq.btm_idx());
-
-        let ts = MTimer::instance().counter() + ofs;
-        if ts <= btm.ts {
-            BACKUP
-                .as_mut()
-                .map(|bk| bk.push_back(Entry::new(ofs, irq_id).into()));
-            // Put bottom entry back into HW queue
-            TimerQueue::instance().push_abs(btm);
-            return None;
+        if (drop_handle as usize) < Q_LEN {
+            // Drop from main queue (HW)
+            let mut tq = TimerQueue::instance();
+            tq.drop(drop_handle);
         } else {
-            BACKUP.as_mut().map(|bk| bk.push_back(btm.into()));
-            return Some(TimerQueue::instance().push_rel(Entry::new(ofs, irq_id)));
+            // Record element should be dropped from backup (virtual backup)
+            bq_dropq.insert(drop_handle).unwrap_unchecked();
         }
-    } */
+    }
     // Software queue with virtualization (doesn't make sense)
     else {
         #[cfg(all(not(feature = "use-hwq"), feature = "virtq"))]
