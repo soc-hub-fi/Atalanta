@@ -25,7 +25,6 @@ use bsp::{
     uart::*,
     write_u32, Interrupt, CPU_FREQ,
 };
-use heapless::Deque;
 use pqbench::{
     abstract_drop, abstract_insert, print_example_name, setup_irq, tear_irq, PQueue, UART_BAUD,
 };
@@ -44,7 +43,7 @@ static mut SW_PQ: Option<PQueue<Q_LEN>> = Some(PQueue::new());
 
 /// Backup queue len
 const B_LEN: usize = 256 - 8;
-static mut BACKUP: Option<Deque<pqbench::Entry, B_LEN>> = Some(Deque::new());
+static mut BACKUP: Option<heapless::Deque<pqbench::Entry, B_LEN>> = Some(heapless::Deque::new());
 
 static mut TIMEOUT: bool = false;
 
