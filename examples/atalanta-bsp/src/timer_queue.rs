@@ -27,13 +27,18 @@ impl TimerQueue {
     pub fn init() -> Self {
         let mut tim_q = Self(TIMER_QUEUE_BASE as *mut _);
 
-        // Clear the timer queue
-        while !tim_q.is_empty() {
-            let top = tim_q.top_idx();
-            tim_q.drop(top);
-        }
+        tim_q.reset();
 
         tim_q
+    }
+
+    #[inline]
+    pub fn reset(&mut self) {
+        // Clear the timer queue
+        while !self.is_empty() {
+            let top = self.top_idx();
+            self.drop(top);
+        }
     }
 
     /// # Safety
