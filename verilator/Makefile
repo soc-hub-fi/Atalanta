@@ -56,7 +56,6 @@ VERIL_WARN_SUPPRESS ?= \
   -Wno-LITENDIAN       \
   -Wno-CASEINCOMPLETE  \
   -Wno-PINMISSING      \
-  -Wno-MULTIDRIVEN     \
   -Wno-CMPCONST        \
   -Wno-IMPLICIT        \
   -Wno-BLKLOOPINIT

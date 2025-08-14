@@ -17,5 +17,7 @@ lint_off -rule PINMISSING -file "*/ips/*" -match "*"
 // Ignore missing pins on the axi_cdc_src
 //lint_off -rule PINMISSING -file "*/pulp_axi/*" -match "*"
 
+lint_off -rule MULTIDRIVEN -file "*/rt-ibex-*/*" -match "*"
+
 // Ignore usage of reserved words on Ariane
 //lint_off -rule BLKANDNBLK -file "*/*uart*" -match "*"
