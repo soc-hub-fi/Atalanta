@@ -21,42 +21,46 @@ use bsp::{
     riscv::{self, asm::wfi},
     rt::entry,
     sprint, sprintln,
-    timer_queue::TimerQueue,
     uart::*,
     write_u32, Interrupt, CPU_FREQ,
 };
-use pqbench::{
-    abstract_drop, abstract_insert, print_example_name, setup_irq, tear_irq, SwQueue, UART_BAUD,
-};
+#[cfg(all(feature = "use-hwq", feature = "virtq"))]
+use pqbench::VQueue;
+use pqbench::{print_example_name, setup_irq, tear_irq, UART_BAUD};
 
 const PERIPH_CLK_DIV: u64 = 1;
 const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(1);
 
 /// Main queue length
 const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
-/// Software priority queue implemented as binary heap
-static mut SW_PQ: Option<SwQueue<Q_LEN>> = Some(SwQueue::new());
 
 /// Backup queue len
+#[cfg(all(feature = "use-hwq", feature = "virtq"))]
 const B_LEN: usize = 256 - 8;
-static mut BACKUP: Option<heapless::Deque<pqbench::Entry, B_LEN>> = Some(heapless::Deque::new());
 
-/// Backup drop queue
-static mut BACKUP_DROPQ: Option<heapless::FnvIndexSet<u8, 256>> =
-    Some(heapless::FnvIndexSet::new());
+#[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
+type TqT = bsp::timer_queue::TimerQueue;
+#[cfg(all(feature = "use-hwq", feature = "virtq"))]
+type TqT = VQueue<Q_LEN, B_LEN>;
+#[cfg(all(feature = "use-bheap"))]
+type TqT = BHeap<Q_LEN>;
+#[cfg(all(feature = "use-imap"))]
+type TqT = IMap<Q_LEN>;
+
+static mut SHARED_TQ: Option<TqT> = None;
 
 static mut TIMEOUT: bool = false;
 
-static mut FREE_HANDLES: heapless::Deque<u8, 256> = heapless::Deque::<u8, 256>::new();
-
-fn prof<F>(s: &str, f: F)
+fn prof<F, O>(s: &str, f: F) -> O
 where
-    F: FnOnce() -> (),
+    F: FnOnce() -> O,
 {
     let mc0 = mcycle::read();
-    f();
+    let output = f();
     let mc1 = mcycle::read();
     sprintln!("{} took {} cycles", s, mc1 - mc0);
+
+    output
 }
 
 #[entry]
@@ -95,49 +99,52 @@ fn main() -> ! {
     setup_irq(Interrupt::TqId0, 2);
     sprintln!(" done");
 
-    let tq = TimerQueue::init();
-    let handle_bounds = if cfg!(feature = "virtq") {
-        tq.capacity()..(tq.capacity() + B_LEN as u32)
-    } else {
-        0u32..Q_LEN as u32
-    };
-    for h in handle_bounds {
-        unsafe { FREE_HANDLES.push_back(h as u8).unwrap() }
-    }
-
     // === TEST STARTS ===
 
-    let _timer_q = TimerQueue::init();
+    let timer_q = match () {
+        #[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
+        () => bsp::timer_queue::TimerQueue::init(),
+        #[cfg(all(feature = "use-hwq", feature = "virtq"))]
+        () => VQueue::new(),
+        #[cfg(all(feature = "use-bheap"))]
+        () => BHeap::new(),
+        #[cfg(all(feature = "use-imap"))]
+        () => IMap::new(),
+    };
 
     unsafe {
-        let mut handles = heapless::Vec::<u8, 256>::new();
-        for n in 0..16 {
-            let mut s = heapless::String::<16>::new();
-            #[cfg(feature = "ufmt")]
-            ufmt::uwrite!(s, "insert {}", n).ok();
-            #[cfg(not(feature = "ufmt"))]
-            {
-                use core::fmt::Write;
-                write!(s, "insert {}", n).ok();
-            }
-            prof(&s, || {
-                let swq = SW_PQ.as_mut().unwrap_unchecked();
-                let bq = BACKUP.as_mut().unwrap_unchecked();
-                let h = abstract_insert(0, (0b1 << 24) - 1, swq, &mut FREE_HANDLES, bq);
-                handles.push(h).unwrap_unchecked();
-            });
-        }
+        let _ = SHARED_TQ.insert(timer_q);
+    }
+    let timer_q = unsafe { SHARED_TQ.as_mut().unwrap_unchecked() };
 
-        for h in handles {
-            let mut s = heapless::String::<16>::new();
-            ufmt::uwrite!(s, "drop {}", h).ok();
-            prof(&s, || {
-                let swq = SW_PQ.as_mut().unwrap_unchecked();
-                let bq = BACKUP.as_mut().unwrap_unchecked();
-                let bdq = BACKUP_DROPQ.as_mut().unwrap_unchecked();
-                abstract_drop(h, swq, &mut FREE_HANDLES, bq, bdq);
-            });
+    let mut handles = heapless::Vec::<u8, 256>::new();
+    for n in 0..16 {
+        let mut s = heapless::String::<16>::new();
+        #[cfg(feature = "ufmt")]
+        ufmt::uwrite!(s, "insert {}", n).ok();
+        #[cfg(not(feature = "ufmt"))]
+        {
+            use core::fmt::Write;
+            write!(s, "insert {}", n).ok();
         }
+        let h = prof(&s, || {
+            timer_q.push_rel(bsp::timer_queue::Entry::new((0b1 << 24) - 1, 0))
+        });
+        unsafe { handles.push(h).unwrap_unchecked() };
+    }
+
+    for h in handles {
+        let mut s = heapless::String::<16>::new();
+        #[cfg(feature = "ufmt")]
+        ufmt::uwrite!(s, "drop {}", h).ok();
+        #[cfg(not(feature = "ufmt"))]
+        {
+            use core::fmt::Write;
+            write!(s, "drop {}", h).ok();
+        }
+        prof(&s, || {
+            timer_q.drop(h);
+        });
     }
 
     // Init mtimer
@@ -174,23 +181,23 @@ fn TqFull() {
 
 // Hardware reports that there is space in the hardware queue
 // => restore elements from backup to hardware queue
+#[cfg(feature = "virtq")]
 #[interrupt]
 fn TqNotFull() {
     sprintln!("IRQ:TqNotFull");
 
-    let mut tq = unsafe { TimerQueue::instance() };
-    let bq = unsafe { BACKUP.as_mut().unwrap() };
+    let tq = unsafe { SHARED_TQ.as_mut().unwrap_unchecked() };
+
     let mut refill_count = 0;
-    while !tq.is_full() && !bq.is_empty() {
-        let f = unsafe { bq.pop_front().unwrap_unchecked() };
-        unsafe { FREE_HANDLES.push_back(f.1).unwrap() };
+    while !tq.tq.is_full() && !tq.bq.is_empty() {
+        let f = unsafe { tq.bq.pop_front().unwrap_unchecked() };
+        tq.free_handles.push_back(f.1).unwrap();
         // If encountered elem from dropq, do not restore but only drop instead
-        let bq_dropq = unsafe { BACKUP_DROPQ.as_mut().unwrap_unchecked() };
-        if !bq_dropq.contains(&f.1) {
-            tq.push_abs(f.0);
+        if !tq.bq_dropq.contains(&f.1) {
+            tq.tq.push_abs(f.0);
             refill_count += 1;
         } else {
-            bq_dropq.remove(&f.1);
+            tq.bq_dropq.remove(&f.1);
         }
     }
 

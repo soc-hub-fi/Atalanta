@@ -13,12 +13,11 @@ OUTDATED
 
 ### HW is RVI and SW is RVI use-hwq (depth=8) + virtq
 
-OUTDATED
-
 | op | mcycle |
 | :- | :-: |
-| insert 0..8 | 120 |
-| insert 8..16 | 281 once then 279 |
+| insert 0..8 | 91 |
+| insert 8..16 | 260 |
+| drop 0..16 | 82 |
 
 ### HW is RVI and SW is RVI no feature flags, using BinaryHeap
 
@@ -41,11 +40,11 @@ size on disk 38k
 
 size on disk 39k
 
-### HW is RVI and SW is RVI use-hwq (depth=64)
+### HW is RVI and SW is RVI use-hwq (depth=256)
 
 | op | mcycle |
 | :- | :-: |
-| insert 0..16 | 73 |
+| insert 0..16 | 68 |
 | drop 0..16 | 67 |
 
 size on disk 31k
