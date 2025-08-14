@@ -26,7 +26,7 @@ use bsp::{
     write_u32, Interrupt, CPU_FREQ,
 };
 use pqbench::{
-    abstract_drop, abstract_insert, print_example_name, setup_irq, tear_irq, PQueue, UART_BAUD,
+    abstract_drop, abstract_insert, print_example_name, setup_irq, tear_irq, SwQueue, UART_BAUD,
 };
 
 const PERIPH_CLK_DIV: u64 = 1;
@@ -35,7 +35,7 @@ const TEST_DURATION: mtimer::Duration = mtimer::Duration::micros(1);
 /// Main queue length
 const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
 /// Software priority queue implemented as binary heap
-static mut SW_PQ: Option<PQueue<Q_LEN>> = Some(PQueue::new());
+static mut SW_PQ: Option<SwQueue<Q_LEN>> = Some(SwQueue::new());
 
 /// Backup queue len
 const B_LEN: usize = 256 - 8;

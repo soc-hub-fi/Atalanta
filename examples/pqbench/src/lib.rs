@@ -16,9 +16,9 @@ use heapless::{binary_heap::Min, Deque, FnvIndexSet};
 pub mod clic;
 
 #[cfg(any(feature = "use-bheap", feature = "use-hwq"))]
-pub type PQueue<const Q_LEN: usize> = heapless::BinaryHeap<Entry, Min, Q_LEN>;
+pub type SwQueue<const Q_LEN: usize> = heapless::BinaryHeap<Entry, Min, Q_LEN>;
 #[cfg(feature = "use-imap")]
-pub type PQueue<const Q_LEN: usize> = heapless::FnvIndexMap<u8, Entry, Q_LEN>;
+pub type SwQueue<const Q_LEN: usize> = heapless::FnvIndexMap<u8, Entry, Q_LEN>;
 
 pub const UART_BAUD: u32 = if cfg!(feature = "rtl-tb") {
     1_500_000
@@ -139,7 +139,7 @@ const MSG_BQ_OVF: &str = "backup queue overflow";
 pub unsafe fn abstract_insert<const Q_LEN: usize, const B_LEN: usize>(
     irq_id: u8,
     ofs: u64,
-    swq: &mut PQueue<Q_LEN>,
+    swq: &mut SwQueue<Q_LEN>,
     free_handles: &mut Deque<u8, 256>,
     bq: &mut Deque<Entry, B_LEN>,
 ) -> u8 {
@@ -234,7 +234,7 @@ pub unsafe fn tq_is_full() -> bool {
 
 pub unsafe fn abstract_drop<const Q_LEN: usize, const B_LEN: usize>(
     drop_handle: u8,
-    swq: &mut PQueue<Q_LEN>,
+    swq: &mut SwQueue<Q_LEN>,
     free_handles: &mut Deque<u8, 256>,
     bq: &mut Deque<Entry, B_LEN>,
     bq_dropq: &mut FnvIndexSet<u8, 256>,
@@ -248,7 +248,7 @@ pub unsafe fn abstract_drop<const Q_LEN: usize, const B_LEN: usize>(
                     .into_iter()
                     .filter(|entry| entry.1 != drop_handle)
                     .cloned();
-                let mut nq = PQueue::new();
+                let mut nq = SwQueue::new();
                 for val in retain {
                     nq.push(val).unwrap_unchecked();
                 }
