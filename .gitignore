@@ -9,5 +9,8 @@ vsim/*.log
 stims/
 **/*.swp
 
+# Logs from benchmarks (maintainer: heksa)
+logs/
+
 # Rust build artifacts
 **/target/
