@@ -20,8 +20,6 @@ use bsp::{
     Interrupt,
 };
 
-pub mod clic;
-
 #[cfg(feature = "use-bheap")]
 pub use bheap::BHeap;
 #[cfg(feature = "use-imap")]
