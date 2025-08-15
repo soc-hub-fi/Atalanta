@@ -1,0 +1,12 @@
+check-all:
+    cargo check --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq
+    cargo check --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-bheap
+    cargo check --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-imap
+    cargo check --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq -Fvirtq
+
+clippy-all:
+    cargo clippy --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq
+    cargo clippy --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-bheap
+    cargo clippy --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-imap
+    cargo clippy --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq -Fvirtq
+
