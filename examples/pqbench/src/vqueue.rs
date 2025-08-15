@@ -49,10 +49,10 @@ impl<const Q_LEN: usize, const B_LEN: usize> PQueue for VQueue<Q_LEN, B_LEN> {
                 // Incoming => HW
                 let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
                 self.bq
-                    .push_back(Entry::with_handle(btm.into(), h))
+                    .push_back(Entry::with_handle(btm, h))
                     .unwrap_or_else(|_| panic!("{}", MSG_BQ_OVF));
 
-                return self.tq.push_rel(entry);
+                self.tq.push_rel(entry)
             }
             // If bottom is more urgent than incoming
             else {
@@ -63,7 +63,7 @@ impl<const Q_LEN: usize, const B_LEN: usize> PQueue for VQueue<Q_LEN, B_LEN> {
                 self.bq
                     .push_back(Entry::with_handle(entry, h))
                     .unwrap_or_else(|_| panic!("{}", MSG_BQ_OVF));
-                return h;
+                h
             }
         })
     }

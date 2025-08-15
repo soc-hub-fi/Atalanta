@@ -115,7 +115,7 @@ impl<const Q_LEN: usize> PQueue for BHeap<Q_LEN> {
             for val in retain {
                 unsafe { nq.push(val).unwrap_unchecked() };
             }
-            (*self).queued = nq;
+            self.queued = nq;
             // Safety: we hope that there is enough capacity for all handles in our test
             // case.
             // !!!: Failure is UB

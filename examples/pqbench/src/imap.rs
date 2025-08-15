@@ -64,7 +64,7 @@ impl<const Q_LEN: usize> PQueue for IMap<Q_LEN> {
             // Proposed timestamp is less urgent than what is currently programmed
             else {
                 // Enqueue the proposed entry with a resolved absolute timestamp
-                let entry = Self::Entry { ts: ts, ..entry };
+                let entry = Self::Entry { ts, ..entry };
 
                 // Safety: we never insert more than what the queue can take in our testbench
                 // !!!: Failure is UB
