@@ -4,10 +4,10 @@ ENTRY(_start)
 
 MEMORY
 {
-  /* LENGTH = 0x4000 = 16K */
-  IMEM (rx ) : ORIGIN = 0x1000, LENGTH = 0x4000
-  /* LENGTH = 0xA000 = 40K */
-  DMEM (rwx) : ORIGIN = 0x5000, LENGTH = 0xA000
+  /* LENGTH = 0x5000 = 20K */
+  IMEM (rx ) : ORIGIN = 0x1000, LENGTH = 0x5000
+  /* LENGTH = 0x9000 = 36K */
+  DMEM (rwx) : ORIGIN = 0x6000, LENGTH = 0x9000
   /* LENGTH = 0x10000 = 64K */
   SRAM (rwx) : ORIGIN = 0x20000, LENGTH = 0x10000
 }

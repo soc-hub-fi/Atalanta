@@ -3,10 +3,10 @@ _hart_stack_size = 0x400;
 /* Memory maps based on <src/ip/rt_pkg.sv> */
 MEMORY
 {
-  /* Instruction memory : 0x4000 = 16 KiB */
-  IMEM (rx ): ORIGIN = 0x1000, LENGTH = 0x4000
-  /* Data memory        : 0x4000 = 16 KiB */
-  DMEM (rwx): ORIGIN = 0x5000, LENGTH = 0x4000
+  /* Instruction memory : 0x5000 = 20 KiB */
+  IMEM (rx ): ORIGIN = 0x1000, LENGTH = 0x5000
+  /* Data memory        : 0x9000 = 36 KiB */
+  DMEM (rwx): ORIGIN = 0x6000, LENGTH = 0x9000
   /* ROM */
   /* ROM (r): ORIGIN = 0x9000, LENGTH = 0x300 */
   /* SRAM */
