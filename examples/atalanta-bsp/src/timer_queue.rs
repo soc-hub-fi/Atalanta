@@ -23,7 +23,7 @@ impl Entry {
 pub struct TimerQueue(*mut RegisterBlock);
 
 impl TimerQueue {
-    #[inline]
+    #[inline(always)]
     pub fn init() -> Self {
         let mut tim_q = Self(TIMER_QUEUE_BASE as *mut _);
 
@@ -32,7 +32,7 @@ impl TimerQueue {
         tim_q
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn reset(&mut self) {
         // Clear the timer queue
         while !self.is_empty() {
@@ -44,12 +44,12 @@ impl TimerQueue {
     /// # Safety
     ///
     /// Returns a potentially uninitialized instance of timer queue
-    #[inline]
+    #[inline(always)]
     pub unsafe fn instance() -> Self {
         Self(TIMER_QUEUE_BASE as *mut _)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn is_empty(&self) -> bool {
         let p = self.0;
         let status = read_u32p(unsafe { &mut (*p).status as *mut u32 });
@@ -57,7 +57,7 @@ impl TimerQueue {
         is_empty
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn is_full(&self) -> bool {
         let p = self.0;
         let status = read_u32p(unsafe { &mut (*p).status as *mut u32 });
@@ -68,7 +68,7 @@ impl TimerQueue {
     /// Returns hardware queue maximum depth
     ///
     /// This is also the non-inclusive upper bound for handle/index value.
-    #[inline]
+    #[inline(always)]
     pub fn capacity(&self) -> u32 {
         let p = self.0;
         let status = read_u32p(unsafe { &mut (*p).status as *mut u32 });
@@ -77,7 +77,7 @@ impl TimerQueue {
     }
 
     /// Returns absolute timestamp and stored interrupt id of dropped entry
-    #[inline]
+    #[inline(always)]
     pub fn drop(&mut self, handle: u8) -> Entry {
         let p = self.0;
 
@@ -101,7 +101,7 @@ impl TimerQueue {
     }
 
     /// Handle for smallest ("next to trigger") value
-    #[inline]
+    #[inline(always)]
     pub fn top_idx(&self) -> u8 {
         let p = self.0;
 
@@ -111,7 +111,7 @@ impl TimerQueue {
     }
 
     /// Handle for biggest ("last to trigger") value
-    #[inline]
+    #[inline(always)]
     pub fn btm_idx(&self) -> u8 {
         let p = self.0;
 
@@ -121,7 +121,7 @@ impl TimerQueue {
     }
 
     /// Handle for last pushed value
-    #[inline]
+    #[inline(always)]
     pub fn last_idx(&self) -> u8 {
         let p = self.0;
 
@@ -133,11 +133,12 @@ impl TimerQueue {
     /// * `irq_id` - Timer queue interrupt id ("TqId"), *not* platform level
     ///   interrupt id.
     /// * `ts` - Target dispatch time, relative to mtimer
-    #[inline]
+    #[inline(always)]
     pub fn push_rel(&mut self, e: Entry) -> u8 {
         // Current impl of timer queue only supports offsets representable with 24 bits
         // or less
         debug_assert!(e.ts < (0b1 << 24));
+
         let p = self.0;
 
         write_u32p(unsafe { &mut (*p).p_rel_lo as *mut u32 }, e.ts as u32);
@@ -161,7 +162,7 @@ impl TimerQueue {
     /// * `irq` - Timer queue interrupt id ("TqId"), *not* platform level
     ///   interrupt id.
     /// * `ts` - Target absolute dispatch time, relative to mtimer
-    #[inline]
+    #[inline(always)]
     pub fn push_abs(&mut self, e: Entry) -> u8 {
         let p = self.0;
 
