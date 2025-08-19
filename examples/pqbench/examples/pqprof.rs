@@ -165,7 +165,7 @@ fn main() -> ! {
         unsafe { DISPATCHED = false };
         // Enqueue an extra event to cause load for dispatcher
         if n > 0 {
-            timer_q.enqueue_rel(bsp::timer_queue::Entry::new(u64::MAX, 0));
+            timer_q.enqueue_abs(bsp::timer_queue::Entry::new((0b1 << 24) - 1, 0));
         }
         prof(&s, || {
             timer_q.enqueue_rel(bsp::timer_queue::Entry::new(0, 0));
