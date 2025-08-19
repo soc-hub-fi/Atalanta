@@ -5,7 +5,7 @@ use crate::{Dispatch, PQueue};
 // TODO: free_handles should possibly be a hashset instead of dequeue
 
 pub struct IMap<const Q_LEN: usize> {
-    queued: heapless::FnvIndexMap<u8, bsp::timer_queue::Entry, Q_LEN>,
+    pub queued: heapless::FnvIndexMap<u8, bsp::timer_queue::Entry, Q_LEN>,
     free_handles: heapless::Deque<u8, Q_LEN>,
     /// Monotonic timer for classic dispatch using monotonics
     mtimer: bsp::mtimer::MTimer,
