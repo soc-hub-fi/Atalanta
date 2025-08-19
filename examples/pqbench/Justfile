@@ -4,6 +4,14 @@ check-all:
     cargo check --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-imap
     cargo check --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq -Fvirtq
 
+# Each build overrides the previous so this is mostly useful for verifying that the program fits in
+# given memory constraints.
+build-all:
+    cargo build --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq
+    cargo build --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-bheap
+    cargo build --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-imap
+    cargo build --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq -Fvirtq
+
 clippy-all:
     cargo clippy --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-hwq
     cargo clippy --example pqprof -Frtl-tb --target riscv32imc-unknown-none-elf -Fuse-bheap
