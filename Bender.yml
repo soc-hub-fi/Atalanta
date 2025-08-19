@@ -10,7 +10,7 @@ dependencies:
   riscv-dbg: { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   apb_uart: { git: "https://github.com/pulp-platform/apb_uart.git", version: 0.2.1 }
   obi: { git: "https://github.com/pulp-platform/obi.git", version: 0.1.5 }
-  antiq: { git: "https://github.com/soc-hub-fi/AnTiQ.git", rev: "24937a31d236447137d474a70ea6969a4874a023" }
+  antiq: { git: "https://github.com/soc-hub-fi/AnTiQ.git", rev: "109b98211672cb9e199b9caf8c7c804dcb2e535a" }
   axi: { git: "https://github.com/pulp-platform/axi.git", rev: "bfee21757bf090ec8e358456314b0b0fd3c90809" }
   apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4}
   apb_timer: { git: "https://github.com/pulp-platform/apb_timer.git", version: 0.1.0}
