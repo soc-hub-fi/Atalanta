@@ -64,7 +64,7 @@ where
     let output = f();
     unsafe { asm!("fence.i") };
     let mc1 = mcycle::read();
-    sprintln!("{} took {} cycles", op_ident, mc1 - mc0);
+    sprintln!("{} took {} cc", op_ident, mc1 - mc0);
 
     output
 }
