@@ -3,6 +3,11 @@
 # Fail on error
 set -e
 
+# Check that everything compiles
+cd examples/pqbench/
+just check-novirt
+cd -
+
 # Run make verilate first to discard the majority of output
 make verilate
 
