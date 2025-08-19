@@ -59,11 +59,11 @@ fn prof<F, O>(op_ident: &str, f: F) -> O
 where
     F: FnOnce() -> O,
 {
-    let mc0 = mcycle::read();
+    let mc0 = mcycle::read64();
     unsafe { asm!("fence.i") };
     let output = f();
     unsafe { asm!("fence.i") };
-    let mc1 = mcycle::read();
+    let mc1 = mcycle::read64();
     sprintln!("{} took {} cc", op_ident, mc1 - mc0);
 
     output
