@@ -100,17 +100,20 @@ fn main() -> ! {
         #[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
         () => {
             sprintln!("Feature: use-hwq");
-            bsp::timer_queue::TimerQueue::init()
+            let tq = bsp::timer_queue::TimerQueue::init();
+            // This benchmark requires the main queue to be 256 deep
+            assert!(tq.capacity() >= 256);
+            tq
         }
         #[cfg(all(feature = "use-hwq", feature = "virtq"))]
         () => {
             sprintln!("Feature: use-hwq + virtq");
             #[cfg(feature = "virtq")]
-            sprintln!(
-                "Queue is virtualized with a backup queue of length {}",
-                B_LEN
-            );
-            pqbench::VQueue::default()
+            sprintln!("Queue is virtualized w/ a backup queue of length {}", B_LEN);
+            let tq = pqbench::VQueue::default();
+            // This benchmark requires the main queue to be 8 deep
+            assert_eq!(tq.tq.capacity(), 8);
+            tq
         }
         #[cfg(feature = "use-bheap")]
         () => {
@@ -169,9 +172,6 @@ fn main() -> ! {
             }
         });
     }
-
-    // This benchmark requires the main queue to be 256 deep
-    //assert!(timer_q.capacity() >= Q_LEN);
 
     tear_irq(Interrupt::TqFull);
     tear_irq(Interrupt::TqNotFull);
