@@ -149,6 +149,7 @@ pub trait PQueue {
     ///
     /// Accesses timer queue in an unsynchronized way.
     fn enqueue_rel(&mut self, entry: Self::Entry) -> u8;
+    fn enqueue_abs(&mut self, entry: Self::Entry) -> u8;
     fn drop(&mut self, handle: u8);
 }
 

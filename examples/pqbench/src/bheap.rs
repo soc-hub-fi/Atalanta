@@ -85,6 +85,53 @@ impl<const Q_LEN: usize> PQueue for BHeap<Q_LEN> {
         })
     }
 
+    /// Parameter uses absolute timestamp
+    #[inline(always)]
+    fn enqueue_abs(&mut self, entry: Self::Entry) -> u8 {
+        let ts = entry.ts;
+        bsp::riscv::interrupt::free(|| {
+            // Generate a handle for the value to be enqueued
+            // Safety: we hope that there is enough free handles for our test case.
+            // !!!: Failure is UB
+            let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
+
+            // Check if proposed timestamp is more urgent than what is currently programmed
+            let prog = unsafe { self.mtimer.cmp() };
+            if ts < prog {
+                // Program mtimer to fire on the proposed timestamp and enqueue the previous
+                // value
+                self.mtimer.set_cmp(ts);
+                self.active_handle = Some(h);
+
+                if prog != u64::MAX {
+                    // Safety: we never insert more than what the queue can take in our testbench
+                    // !!!: Failure is UB
+                    let entry = Self::Entry { ts: prog, ..entry };
+                    unsafe {
+                        self.queued
+                            .push(Entry::with_handle(entry, h))
+                            .unwrap_unchecked()
+                    }
+                }
+            }
+            // Proposed timestamp is less urgent than what is currently programmed
+            else {
+                // Enqueue the proposed entry with a resolved absolute timestamp
+                let entry = Self::Entry { ts, ..entry };
+
+                // Safety: we never insert more than what the queue can take in our testbench
+                // !!!: Failure is UB
+                unsafe {
+                    self.queued
+                        .push(Entry::with_handle(entry, h))
+                        .unwrap_unchecked()
+                }
+            }
+
+            h
+        })
+    }
+
     #[inline(always)]
     fn drop(&mut self, handle: u8) {
         bsp::riscv::interrupt::free(|| {
