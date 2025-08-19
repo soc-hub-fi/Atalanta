@@ -159,7 +159,7 @@ fn main() -> ! {
     // Benchmark dispatch
     for n in 0..12 {
         let mut s = heapless::String::<256>::new();
-        bsp::write!(s, "dispatch with {} pre-existing elements", n).unwrap();
+        bsp::write!(s, "dispatch w/ {} pre-existing elems", n).unwrap();
         unsafe { DISPATCHED = false };
         // Enqueue an extra event to cause load for dispatcher
         if n > 0 {
