@@ -83,9 +83,9 @@ fn main() -> ! {
     // Set level bits to 8
     Clic::smclicconfig().set_mnlbits(8);
 
-    setup_irq(Interrupt::TqFull, 6);
+    //setup_irq(Interrupt::TqFull, 6);
     // Refill hardware queue at low priority
-    setup_irq(Interrupt::TqNotFull, 1);
+    //setup_irq(Interrupt::TqNotFull, 1);
     setup_irq(Interrupt::MachineTimer, u8::MAX);
     setup_irq(Interrupt::TqId0, 2);
     sprintln!(" done");
@@ -148,9 +148,6 @@ fn main() -> ! {
         });
         unsafe { handles.push(h).unwrap_unchecked() };
     }
-    if mtimer_state {
-        mtimer.enable()
-    };
 
     // Benchmark drop
     for h in handles {
@@ -161,6 +158,15 @@ fn main() -> ! {
         });
     }
 
+    // Unpend no-op interrupts caused by the test case
+    unsafe {
+        Clic::ip(Interrupt::TqFull).unpend();
+        Clic::ip(Interrupt::TqNotFull).unpend();
+    }
+
+    if mtimer_state {
+        mtimer.enable()
+    };
     // Enable interrupts globally
     sprintln!("interrupt::enable");
     unsafe { riscv::interrupt::enable() };
