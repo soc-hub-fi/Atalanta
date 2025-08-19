@@ -20,7 +20,10 @@ use bsp::{
     mmap::{CFG_BASE, PERIPH_CLK_DIV_OFS},
     mtimer::MTimer,
     register::mcycle,
-    riscv::{self, asm::nop},
+    riscv::{
+        self,
+        asm::{nop, wfi},
+    },
     rt::entry,
     sprint, sprintln,
     uart::*,
@@ -44,9 +47,9 @@ const B_LEN: usize = 256;
 type TqT = bsp::timer_queue::TimerQueue;
 #[cfg(all(feature = "use-hwq", feature = "virtq"))]
 type TqT = pqbench::VQueue<Q_LEN, B_LEN>;
-#[cfg(all(feature = "use-bheap"))]
+#[cfg(feature = "use-bheap")]
 type TqT = pqbench::BHeap<Q_LEN>;
-#[cfg(all(feature = "use-imap"))]
+#[cfg(feature = "use-imap")]
 type TqT = pqbench::IMap<Q_LEN>;
 
 static mut SHARED_TQ: Option<TqT> = None;
@@ -107,14 +110,14 @@ fn main() -> ! {
                 "Queue is virtualized with a backup queue of length {}",
                 B_LEN
             );
-            pqbench::VQueue::new()
+            pqbench::VQueue::default()
         }
-        #[cfg(all(feature = "use-bheap"))]
+        #[cfg(feature = "use-bheap")]
         () => {
             sprintln!("Feature: use-bheap");
             pqbench::BHeap::new(mtimer)
         }
-        #[cfg(all(feature = "use-imap"))]
+        #[cfg(feature = "use-imap")]
         () => {
             sprintln!("Feature: use-imap");
             pqbench::IMap::new(mtimer)
@@ -176,7 +179,9 @@ fn main() -> ! {
     tear_irq(Interrupt::MachineTimer);
 
     bsp::tb::signal_pass(Some(&mut serial));
-    loop {}
+    loop {
+        wfi()
+    }
 }
 
 #[interrupt]

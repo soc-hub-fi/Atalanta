@@ -8,8 +8,8 @@ pub struct VQueue<const Q_LEN: usize, const B_LEN: usize> {
     pub free_handles: heapless::Deque<u8, B_LEN>,
 }
 
-impl<const Q_LEN: usize, const B_LEN: usize> VQueue<Q_LEN, B_LEN> {
-    pub fn new() -> Self {
+impl<const Q_LEN: usize, const B_LEN: usize> Default for VQueue<Q_LEN, B_LEN> {
+    fn default() -> Self {
         let tq = TimerQueue::init();
 
         let mut free_handles = heapless::Deque::new();

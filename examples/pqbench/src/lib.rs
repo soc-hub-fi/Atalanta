@@ -119,7 +119,7 @@ impl PartialEq for Entry {
 impl PartialOrd for Entry {
     #[inline(always)]
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.0.ts.partial_cmp(&other.0.ts)
+        Some(self.cmp(other))
     }
 }
 
@@ -142,8 +142,8 @@ pub trait PQueue {
     /// 1. use-hwq => inserts the entry into the long hardware queue
     /// 2. use-hwq + virtq => inserts the entry into the virtualized hardware
     ///    queue
-    /// 3. - => inserts the entry into the software queue and programs t0 to
-    ///    fire upon the most urgent entry
+    /// 3. (none) => inserts the entry into the software queue and programs t0
+    ///    to fire upon the most urgent entry
     ///
     /// # Safety
     ///

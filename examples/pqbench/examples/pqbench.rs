@@ -44,9 +44,9 @@ static mut RNG: Option<rand::rngs::SmallRng> = None;
 type TqT = bsp::timer_queue::TimerQueue;
 #[cfg(all(feature = "use-hwq", feature = "virtq"))]
 type TqT = pqbench::VQueue<Q_LEN, B_LEN>;
-#[cfg(all(feature = "use-bheap"))]
+#[cfg(feature = "use-bheap")]
 type TqT = pqbench::BHeap<Q_LEN>;
-#[cfg(all(feature = "use-imap"))]
+#[cfg(feature = "use-imap")]
 type TqT = pqbench::IMap<Q_LEN>;
 
 static mut SHARED_TQ: Option<TqT> = None;
@@ -113,14 +113,14 @@ fn main() -> ! {
                 "Queue is virtualized with a backup queue of length {}",
                 B_LEN
             );
-            pqbench::VQueue::new()
+            pqbench::VQueue::default()
         }
-        #[cfg(all(feature = "use-bheap"))]
+        #[cfg(feature = "use-bheap")]
         () => {
             sprintln!("Feature: use-bheap");
             pqbench::BHeap::new(mtimer)
         }
-        #[cfg(all(feature = "use-imap"))]
+        #[cfg(feature = "use-imap")]
         () => {
             sprintln!("Feature: use-imap");
             pqbench::IMap::new(mtimer)
@@ -162,7 +162,9 @@ fn main() -> ! {
     sprintln!("]");
 
     bsp::tb::signal_pass(Some(&mut serial));
-    loop {}
+    loop {
+        wfi();
+    }
 }
 
 #[interrupt]
@@ -183,7 +185,7 @@ fn TqNotFull() {
 fn Timer0Cmp() {
     sprintln!("IRQ:Timer0Cmp");
     for _ in 0..10 {
-        unsafe { RNG.as_mut() }.map(|rng| {
+        if let Some(rng) = unsafe { RNG.as_mut() } {
             let irq_id = rng.next_u32() as u8 % 8;
             let ofs = rng.next_u64() % 1_000;
 
@@ -198,7 +200,7 @@ fn Timer0Cmp() {
                 ofs,
                 ofs + counter
             );*/
-        });
+        };
     }
 }
 
