@@ -34,9 +34,6 @@ const PUSH_PERIOD_US: u32 = 100;
 /// Main queue length
 const Q_LEN: usize = if cfg!(not(feature = "virtq")) { 256 } else { 8 };
 
-/// Backup queue len
-const B_LEN: usize = 256 - 8;
-
 static mut TIMEOUT: bool = false;
 static mut RNG: Option<rand::rngs::SmallRng> = None;
 
@@ -98,6 +95,12 @@ fn main() -> ! {
     setup_irq(Interrupt::TqId6, 1);
     setup_irq(Interrupt::TqId7, 1);
     sprintln!(" done");
+
+    // mtimer is required for dispatch test
+    let mut mtimer = MTimer::instance();
+    mtimer.set_cmp(u64::MAX);
+    sprintln!("Start mtimer");
+    mtimer.enable();
 
     let timer_q = match () {
         #[cfg(all(feature = "use-hwq", not(feature = "virtq")))]
