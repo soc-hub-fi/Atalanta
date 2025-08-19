@@ -58,6 +58,8 @@ impl<const Q_LEN: usize, const B_LEN: usize> PQueue for VQueue<Q_LEN, B_LEN> {
             else {
                 // Bottom => HW
                 // Incoming => backup
+                // !!!: this erases the handle that was previously bottom of hwq. It's a design
+                // error in the hardware.
                 self.tq.push_abs(btm);
                 let h = unsafe { self.free_handles.pop_front().unwrap_unchecked() };
                 self.bq
