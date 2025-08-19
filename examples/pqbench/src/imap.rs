@@ -143,7 +143,7 @@ impl<const Q_LEN: usize> Dispatch for IMap<Q_LEN> {
         // Enqueue a new value from the queue if available, and make it the active
         // handle
 
-        self.active_handle = self
+        let next = self
             .queued
             .iter()
             .min_by(|(_, a), (_, b)| a.ts.cmp(&b.ts))
@@ -156,6 +156,12 @@ impl<const Q_LEN: usize> Dispatch for IMap<Q_LEN> {
                 self.mtimer.set_cmp(u64::MAX);
                 None
             });
+
+        if let Some(next) = next {
+            self.queued.swap_remove(&next);
+        }
+
+        self.active_handle = next;
 
         unsafe { Clic::ip(Interrupt::TqId0).pend() };
     }
