@@ -132,9 +132,11 @@ fn main() -> ! {
     }
     let timer_q = unsafe { SHARED_TQ.as_mut().unwrap_unchecked() };
 
+    const INS_CNT: usize = 12;
+
     // Benchmark insert
     let mut handles = heapless::Vec::<u8, 256>::new();
-    for n in 0..12 {
+    for n in 0..INS_CNT {
         let mut s = heapless::String::<256>::new();
         bsp::write!(s, "insert {}", n).unwrap();
         let h = prof(&s, || {
@@ -157,7 +159,7 @@ fn main() -> ! {
     unsafe { riscv::interrupt::enable() };
 
     // Benchmark dispatch
-    for n in 0..12 {
+    for n in 0..INS_CNT {
         let mut s = heapless::String::<256>::new();
         bsp::write!(s, "dispatch w/ {} pre-existing elems", n).unwrap();
         unsafe { DISPATCHED = false };
