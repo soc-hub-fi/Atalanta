@@ -164,6 +164,10 @@ impl TimerQueue {
     /// * `ts` - Target absolute dispatch time, relative to mtimer
     #[inline(always)]
     pub fn push_abs(&mut self, e: Entry) -> u8 {
+        // Current impl of timer queue only supports offsets representable with 24 bits
+        // or less
+        debug_assert!(e.ts < (0b1 << 24));
+
         let p = self.0;
 
         write_u32p(unsafe { &mut (*p).p_abs_lo as *mut u32 }, e.ts as u32);
