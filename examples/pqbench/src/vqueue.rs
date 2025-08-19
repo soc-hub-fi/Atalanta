@@ -15,7 +15,7 @@ impl<const Q_LEN: usize, const B_LEN: usize> Default for VQueue<Q_LEN, B_LEN> {
         let mut free_handles = heapless::Deque::new();
         let handle_bounds = tq.capacity()..(tq.capacity() + B_LEN as u32);
         for h in handle_bounds {
-            free_handles.push_back(h as u8).unwrap()
+            unsafe { free_handles.push_back(h as u8).unwrap_unchecked() }
         }
 
         Self {

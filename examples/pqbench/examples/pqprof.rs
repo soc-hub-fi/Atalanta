@@ -136,19 +136,26 @@ fn main() -> ! {
 
     // Benchmark insert
     let mut handles = heapless::Vec::<u8, 256>::new();
+    let mut mtimer = MTimer::instance();
+    let mtimer_state = mtimer.is_enabled();
+    mtimer.disable();
+    unsafe { mtimer.set_counter(0) };
     for n in 0..INS_CNT {
         let mut s = heapless::String::<256>::new();
-        bsp::write!(s, "insert {}", n).unwrap();
+        unsafe { bsp::write!(s, "ins {}", n).unwrap_unchecked() };
         let h = prof(&s, || {
             timer_q.enqueue_rel(bsp::timer_queue::Entry::new((0b1 << 24) - 1, 0))
         });
         unsafe { handles.push(h).unwrap_unchecked() };
     }
+    if mtimer_state {
+        mtimer.enable()
+    };
 
     // Benchmark drop
     for h in handles {
         let mut s = heapless::String::<256>::new();
-        bsp::write!(s, "drop {}", h).unwrap();
+        unsafe { bsp::write!(s, "drp {}", h).unwrap_unchecked() };
         prof(&s, || {
             timer_q.drop(h);
         });
@@ -161,7 +168,7 @@ fn main() -> ! {
     // Benchmark dispatch
     for n in 0..INS_CNT {
         let mut s = heapless::String::<256>::new();
-        bsp::write!(s, "dispatch w/ {} pre-existing elems", n).unwrap();
+        unsafe { bsp::write!(s, "dsp w/ {} prior elems", n).unwrap_unchecked() };
         unsafe { DISPATCHED = false };
         // Enqueue an extra event to cause load for dispatcher
         if n > 0 {
@@ -203,7 +210,7 @@ fn TqNotFull() {
     let mut refill_count = 0;
     while !tq.tq.is_full() && !tq.bq.is_empty() {
         let f = unsafe { tq.bq.pop_front().unwrap_unchecked() };
-        tq.free_handles.push_back(f.1).unwrap();
+        unsafe { tq.free_handles.push_back(f.1).unwrap_unchecked() };
         // If encountered elem from dropq, do not restore but only drop instead
         if !tq.bq_dropq.contains(&f.1) {
             tq.tq.push_abs(f.0);
@@ -236,9 +243,7 @@ fn MachineTimer() {
 fn default_handler() {
     // 8 LSBs of mcause must match interrupt id
     let irq_code = (riscv::register::mcause::read().bits() & 0xfff) as u16;
-    sprintln!(
-        "IRQ:DefaultHandler {} ({:?})",
-        irq_code,
-        bsp::Interrupt::from_number(irq_code).unwrap()
-    );
+    sprintln!("IRQ:DefaultHandler {} ({:?})", irq_code, unsafe {
+        bsp::Interrupt::from_number(irq_code).unwrap_unchecked()
+    });
 }

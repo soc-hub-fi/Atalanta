@@ -17,7 +17,7 @@ impl<const Q_LEN: usize> BHeap<Q_LEN> {
     pub fn new(mut mtimer: bsp::mtimer::MTimer) -> Self {
         let mut free_handles = heapless::Deque::new();
         for h in 0..Q_LEN {
-            free_handles.push_back(h as u8).unwrap()
+            unsafe { free_handles.push_back(h as u8).unwrap_unchecked() }
         }
 
         // Make sure mtimer is enabled, as it is required for dispatch
