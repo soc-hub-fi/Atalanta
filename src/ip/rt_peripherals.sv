@@ -99,7 +99,7 @@ logic [63:0]                mtime;
 APB #(
   .ADDR_WIDTH (AddrWidth),
   .DATA_WIDTH (DataWidth)
-) apb_out [NrApbPerip-1:0] (), apb_div ();
+) apb_out [NrApbPerip-1:0] (); //, apb_div ();
 
 always_comb
   begin : irq_assign
@@ -110,13 +110,14 @@ always_comb
     intr_src[SpiRxTxIrqId] = spi_irqs[0];
     intr_src[SpiEotIrqId]  = spi_irqs[1];
     intr_src[TGIrqIdBase+2*TimerGroupSize-1:TGIrqIdBase] = apb_timer_irq;
-    intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_q; // reserve irqs 32-48 for DMAs
+    intr_src[32 +: rt_pkg::NumDMAs] = dma_irqs_i; // reserve irqs 32-48 for DMAs
     // nmi 31
     intr_src[TQFullIrqId]      = tq_full_irq;
     intr_src[TQNotFullIrqId]   = tq_nfull_irq;
     intr_src[TQBaseIrqId +: 8] = tq_irqs;
   end
 
+/*
 apb_cdc_intf #(
   .APB_ADDR_WIDTH (AddrWidth),
   .APB_DATA_WIDTH (DataWidth)
@@ -157,18 +158,21 @@ apb_cdc_intf #(
   );
 
 `endif
+*/
 
+assign periph_clk = clk_i;
 
 apb_demux_intf #(
   .APB_ADDR_WIDTH (AddrWidth),
   .APB_DATA_WIDTH (DataWidth),
   .NoMstPorts     (NrApbPerip)
 ) i_apb_demux (
-  .slv      (apb_div),
+  .slv      (apb_i),
   .mst      (apb_out),
   .select_i (demux_sel)
 );
 
+/*
 irq_pulse_cdc #(
   .DivMax (DivValueWidth)
 ) i_irq_ready_sync (
@@ -179,7 +183,8 @@ irq_pulse_cdc #(
   .pulse_i   (irq_ready_i),
   .pulse_o   (irq_ready_slow)
 );
-
+*/
+/*
 for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++)
   begin : g_dma_sync
     irq_pulse_cdc #(
@@ -193,10 +198,11 @@ for (genvar ii=0; ii<rt_pkg::NumDMAs; ii++)
       .pulse_o   (dma_irqs_q[ii])
     );
   end : g_dma_sync
+*/
 
 always_comb
   begin : decode // TODO: Make enum for values
-    unique case (apb_div.paddr) inside
+    unique case (apb_i.paddr) inside
       [rt_pkg::GpioStartAddr:rt_pkg::GpioEndAddr]: begin
         demux_sel = SelWidth'('h0);
       end
@@ -243,7 +249,7 @@ clic_apb #(
   .pslverr_o      (apb_out[3].pslverr),
   .intr_src_i     (intr_src), // 0-31 -> CLINT IRQS
   .irq_valid_o    (irq_valid_o),
-  .irq_ready_i    (irq_ready_slow),
+  .irq_ready_i    (irq_ready_i),
   .irq_id_o       (irq_id_o),
   .irq_level_o    (irq_level_o),
   .irq_shv_o      (irq_shv_o),
