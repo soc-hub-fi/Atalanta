@@ -45,7 +45,6 @@ ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/ve
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines -Os -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__12.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__12.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines -Os -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__13.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__13.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines -Os -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__14.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__14.cpp
-ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines -Os -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__15.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__15.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines -Os -c -o Vrt_top_unpacked_APB__DepSet_h791d346c__0.o Vrt_top_unpacked_APB__DepSet_h791d346c__0.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines -Os -c -o Vrt_top_unpacked_OBI_BUS__DepSet_h5c26730f__0.o Vrt_top_unpacked_OBI_BUS__DepSet_h5c26730f__0.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines -Os -c -o Vrt_top_unpacked_APB__A20_D20__DepSet_hb26526e0__0.o Vrt_top_unpacked_APB__A20_D20__DepSet_hb26526e0__0.cpp
@@ -62,11 +61,11 @@ ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/ve
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_hf5917141__0__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__0__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_hf5917141__1__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__1__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_hf5917141__2__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__2__Slow.cpp
-ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_hf5917141__3__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__3__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__0__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__0__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__1__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__1__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__2__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__2__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__3__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__3__Slow.cpp
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked___024root__DepSet_he8d2b33d__4__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__4__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked_prim_util_pkg__Slow.o Vrt_top_unpacked_prim_util_pkg__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked_prim_util_pkg__DepSet_h6cdd520a__0__Slow.o Vrt_top_unpacked_prim_util_pkg__DepSet_h6cdd520a__0__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked_APB__Slow.o Vrt_top_unpacked_APB__Slow.cpp
@@ -92,7 +91,7 @@ ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/ve
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked__Trace__7__Slow.o Vrt_top_unpacked__Trace__7__Slow.cpp
 ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=1 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow     -DTEST=pqprof -DJTAG_LOAD=0   -fcoroutines  -c -o Vrt_top_unpacked__Trace__8__Slow.o Vrt_top_unpacked__Trace__8__Slow.cpp
 echo "" > Vrt_top_unpacked__ALL.verilator_deplist.tmp
-Archive ar -rcs Vrt_top_unpacked__ALL.a Vrt_top_unpacked.o Vrt_top_unpacked__Dpi_Export__0.o Vrt_top_unpacked___024root__DepSet_hf5917141__0.o Vrt_top_unpacked___024root__DepSet_hf5917141__1.o Vrt_top_unpacked___024root__DepSet_hf5917141__2.o Vrt_top_unpacked___024root__DepSet_hf5917141__3.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__0.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__1.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__2.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__3.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__4.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__5.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__6.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__7.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__8.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__9.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__10.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__11.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__12.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__13.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__14.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__15.o Vrt_top_unpacked_APB__DepSet_h791d346c__0.o Vrt_top_unpacked_OBI_BUS__DepSet_h5c26730f__0.o Vrt_top_unpacked_APB__A20_D20__DepSet_hb26526e0__0.o Vrt_top_unpacked_REG_BUS__A20_D20__DepSet_ha9c69a7f__0.o Vrt_top_unpacked__Dpi.o Vrt_top_unpacked__Trace__0.o Vrt_top_unpacked__Trace__1.o Vrt_top_unpacked__Trace__2.o Vrt_top_unpacked__Trace__3.o Vrt_top_unpacked__Trace__4.o Vrt_top_unpacked__Trace__5.o Vrt_top_unpacked__ConstPool_0.o Vrt_top_unpacked___024root__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__0__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__1__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__2__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__3__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__0__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__1__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__2__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__3__Slow.o Vrt_top_unpacked_prim_util_pkg__Slow.o Vrt_top_unpacked_prim_util_pkg__DepSet_h6cdd520a__0__Slow.o Vrt_top_unpacked_APB__Slow.o Vrt_top_unpacked_APB__DepSet_h791d346c__0__Slow.o Vrt_top_unpacked_OBI_BUS__Slow.o Vrt_top_unpacked_OBI_BUS__DepSet_h5c26730f__0__Slow.o Vrt_top_unpacked_APB__A20_D20__Slow.o Vrt_top_unpacked_APB__A20_D20__DepSet_hb26526e0__0__Slow.o Vrt_top_unpacked_REG_BUS__A20_D20__Slow.o Vrt_top_unpacked_REG_BUS__A20_D20__DepSet_ha9c69a7f__0__Slow.o Vrt_top_unpacked_clicint_reg_pkg__Slow.o Vrt_top_unpacked_clicint_reg_pkg__DepSet_hc6b41b49__0__Slow.o Vrt_top_unpacked_mclic_reg_pkg__Slow.o Vrt_top_unpacked_mclic_reg_pkg__DepSet_hce533ff3__0__Slow.o Vrt_top_unpacked__Syms.o Vrt_top_unpacked__Trace__0__Slow.o Vrt_top_unpacked__Trace__1__Slow.o Vrt_top_unpacked__Trace__2__Slow.o Vrt_top_unpacked__Trace__3__Slow.o Vrt_top_unpacked__Trace__4__Slow.o Vrt_top_unpacked__Trace__5__Slow.o Vrt_top_unpacked__Trace__6__Slow.o Vrt_top_unpacked__Trace__7__Slow.o Vrt_top_unpacked__Trace__8__Slow.o
+Archive ar -rcs Vrt_top_unpacked__ALL.a Vrt_top_unpacked.o Vrt_top_unpacked__Dpi_Export__0.o Vrt_top_unpacked___024root__DepSet_hf5917141__0.o Vrt_top_unpacked___024root__DepSet_hf5917141__1.o Vrt_top_unpacked___024root__DepSet_hf5917141__2.o Vrt_top_unpacked___024root__DepSet_hf5917141__3.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__0.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__1.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__2.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__3.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__4.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__5.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__6.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__7.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__8.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__9.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__10.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__11.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__12.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__13.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__14.o Vrt_top_unpacked_APB__DepSet_h791d346c__0.o Vrt_top_unpacked_OBI_BUS__DepSet_h5c26730f__0.o Vrt_top_unpacked_APB__A20_D20__DepSet_hb26526e0__0.o Vrt_top_unpacked_REG_BUS__A20_D20__DepSet_ha9c69a7f__0.o Vrt_top_unpacked__Dpi.o Vrt_top_unpacked__Trace__0.o Vrt_top_unpacked__Trace__1.o Vrt_top_unpacked__Trace__2.o Vrt_top_unpacked__Trace__3.o Vrt_top_unpacked__Trace__4.o Vrt_top_unpacked__Trace__5.o Vrt_top_unpacked__ConstPool_0.o Vrt_top_unpacked___024root__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__0__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__1__Slow.o Vrt_top_unpacked___024root__DepSet_hf5917141__2__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__0__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__1__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__2__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__3__Slow.o Vrt_top_unpacked___024root__DepSet_he8d2b33d__4__Slow.o Vrt_top_unpacked_prim_util_pkg__Slow.o Vrt_top_unpacked_prim_util_pkg__DepSet_h6cdd520a__0__Slow.o Vrt_top_unpacked_APB__Slow.o Vrt_top_unpacked_APB__DepSet_h791d346c__0__Slow.o Vrt_top_unpacked_OBI_BUS__Slow.o Vrt_top_unpacked_OBI_BUS__DepSet_h5c26730f__0__Slow.o Vrt_top_unpacked_APB__A20_D20__Slow.o Vrt_top_unpacked_APB__A20_D20__DepSet_hb26526e0__0__Slow.o Vrt_top_unpacked_REG_BUS__A20_D20__Slow.o Vrt_top_unpacked_REG_BUS__A20_D20__DepSet_ha9c69a7f__0__Slow.o Vrt_top_unpacked_clicint_reg_pkg__Slow.o Vrt_top_unpacked_clicint_reg_pkg__DepSet_hc6b41b49__0__Slow.o Vrt_top_unpacked_mclic_reg_pkg__Slow.o Vrt_top_unpacked_mclic_reg_pkg__DepSet_hce533ff3__0__Slow.o Vrt_top_unpacked__Syms.o Vrt_top_unpacked__Trace__0__Slow.o Vrt_top_unpacked__Trace__1__Slow.o Vrt_top_unpacked__Trace__2__Slow.o Vrt_top_unpacked__Trace__3__Slow.o Vrt_top_unpacked__Trace__4__Slow.o Vrt_top_unpacked__Trace__5__Slow.o Vrt_top_unpacked__Trace__6__Slow.o Vrt_top_unpacked__Trace__7__Slow.o Vrt_top_unpacked__Trace__8__Slow.o
 g++    elfloader.o rt_top_unpacked.o verilated.o verilated_dpi.o verilated_fst_c.o verilated_timing.o verilated_threads.o Vrt_top_unpacked__ALL.a   -lz  -pthread -lpthread -latomic   -o Vrt_top_unpacked
 rm Vrt_top_unpacked__ALL.verilator_deplist.tmp
 make[2]: Leaving directory '/home/heksa/code/git/Atalanta/build/verilator_build/obj_dir'
@@ -109,9 +108,9 @@ TOP.rt_top_unpacked.i_rt_top.i_core.i_cpu.u_ibex_tracer.unnamedblk2.unnamedblk3:
 [JTAG] init ok      	-	 time 824
 [JTAG] Attempting to halt hart 0
 [JTAG] Halted hart 0
-[ELF] INFO: File ./tmp_elf was memory mapped to 0x7225a0f3b000
+[ELF] INFO: File ./tmp_elf was memory mapped to 0x734e01067000
 [ELF] INFO: Entrypoint at 0x1100
-[ELF] WARNING: The section starting @ 0x6e84 contains 0x817c zero bytes which will NOT be preloaded!
+[ELF] WARNING: The section starting @ 0x7e84 contains 0x717c zero bytes which will NOT be preloaded!
 [ELF] INFO: Found symbol table at offset 0x82d0
 [ELF] INFO: Found string table at offset 0x9ab0
 [JTAG] Resumed hart 0 from 0x1100
@@ -120,59 +119,59 @@ TOP.rt_top_unpacked.i_rt_top.i_core.i_cpu.u_ibex_tracer.unnamedblk2.unnamedblk3:
 Setup interrupts... done
 Start mtimer
 Feature: use-bheap
-insert 0 took 228 cc (50561 - 50333)
-insert 1 took 240 cc (53274 - 53034)
-insert 2 took 262 cc (56009 - 55747)
-insert 3 took 262 cc (58744 - 58482)
-insert 4 took 262 cc (61479 - 61217)
-insert 5 took 262 cc (64214 - 63952)
-insert 6 took 262 cc (66949 - 66687)
-insert 7 took 262 cc (69684 - 69422)
-insert 8 took 262 cc (72419 - 72157)
-insert 9 took 262 cc (75154 - 74892)
-insert 10 took 262 cc (77932 - 77670)
-insert 11 took 262 cc (80748 - 80486)
-drop 0 took 619 cc (84454 - 83835)
-drop 1 took 619 cc (87465 - 86846)
-drop 2 took 23752 cc (113609 - 89857)
-drop 3 took 619 cc (116917 - 116298)
-drop 4 took 23622 cc (143129 - 119507)
-drop 5 took 23557 cc (169474 - 145917)
-drop 6 took 23492 cc (195754 - 172262)
-drop 7 took 503 cc (199045 - 198542)
-drop 8 took 23362 cc (224997 - 201635)
-drop 9 took 23297 cc (251082 - 227785)
-drop 10 took 23246 cc (277158 - 253912)
-drop 11 took 89 cc (280115 - 280026)
+ins 0 took 163 cc (48014 - 47851)
+ins 1 took 204 cc (49870 - 49666)
+ins 2 took 226 cc (51748 - 51522)
+ins 3 took 226 cc (53626 - 53400)
+ins 4 took 226 cc (55504 - 55278)
+ins 5 took 226 cc (57382 - 57156)
+ins 6 took 226 cc (59260 - 59034)
+ins 7 took 226 cc (61138 - 60912)
+ins 8 took 226 cc (63016 - 62790)
+ins 9 took 226 cc (64894 - 64668)
+ins 10 took 226 cc (66814 - 66588)
+ins 11 took 226 cc (68752 - 68526)
+drp 0 took 591 cc (71555 - 70964)
+drp 1 took 591 cc (73797 - 73206)
+drp 2 took 23764 cc (99212 - 75448)
+drp 3 took 591 cc (101612 - 101021)
+drp 4 took 23632 cc (127053 - 103421)
+drp 5 took 23566 cc (152586 - 129020)
+drp 6 took 23500 cc (178053 - 154553)
+drp 7 took 475 cc (180495 - 180020)
+drp 8 took 23368 cc (205672 - 182304)
+drp 9 took 23302 cc (230941 - 207639)
+drp 10 took 23250 cc (256201 - 232951)
+drp 11 took 91 cc (258320 - 258229)
 interrupt::enable
-dispatch w/ 0 pre-existing elems took 578 cc (284067 - 283489)
-dispatch w/ 1 pre-existing elems took 772 cc (288704 - 287932)
-dispatch w/ 2 pre-existing elems took 878 cc (293462 - 292584)
-dispatch w/ 3 pre-existing elems took 914 cc (298256 - 297342)
-dispatch w/ 4 pre-existing elems took 914 cc (303050 - 302136)
-dispatch w/ 5 pre-existing elems took 914 cc (307844 - 306930)
-dispatch w/ 6 pre-existing elems took 994 cc (312718 - 311724)
-dispatch w/ 7 pre-existing elems took 1030 cc (317628 - 316598)
-dispatch w/ 8 pre-existing elems took 1030 cc (322638 - 321608)
-dispatch w/ 9 pre-existing elems took 1030 cc (327648 - 326618)
-dispatch w/ 10 pre-existing elems took 1030 cc (332707 - 331677)
-dispatch w/ 11 pre-existing elems took 1030 cc (337804 - 336774)
+dsp w/ 0 prior elems took 458 cc (260994 - 260536)
+dsp w/ 1 prior elems took 652 cc (263958 - 263306)
+dsp w/ 2 prior elems took 757 cc (267042 - 266285)
+dsp w/ 3 prior elems took 794 cc (270163 - 269369)
+dsp w/ 4 prior elems took 794 cc (273284 - 272490)
+dsp w/ 5 prior elems took 794 cc (276405 - 275611)
+dsp w/ 6 prior elems took 874 cc (279606 - 278732)
+dsp w/ 7 prior elems took 911 cc (282844 - 281933)
+dsp w/ 8 prior elems took 911 cc (286082 - 285171)
+dsp w/ 9 prior elems took 911 cc (289320 - 288409)
+dsp w/ 10 prior elems took 911 cc (292606 - 291695)
+dsp w/ 11 prior elems took 911 cc (295910 - 294999)
 [PASSED]
 [TB] Program returned EXIT_SUCCESS
 make[1]: Leaving directory '/home/heksa/code/git/Atalanta/verilator'
--rwxrwxr-x 2 heksa heksa 44K elo    19 15:14 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof
+-rwxrwxr-x 2 heksa heksa 44K elo    20 11:47 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof
 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof  :
 section              size     addr
 .text.dummy             0     4096
-.text               14526     4096
-.rodata              1388    20480
+.text               14344     4096
+.rodata              1388    24576
 .data                6424   131072
-.bss                    4    28292
-.heap                   0    28296
-.stack              33144    28296
-.eh_frame             420    18624
+.bss                    4    32388
+.heap                   0    32392
+.stack              29048    32392
+.eh_frame             420    18440
 .comment               52        0
 .riscv.attributes    2016        0
-Total               57974
+Total               53696
 
 
