@@ -18,6 +18,9 @@ module obi_to_apb_intf #(
   typedef enum logic [1:0] {SETUP, ACCESS, HANDSHAKE} state_e;
   state_e state_d, state_q;
 
+  logic [31:0] rdata_d, rdata_q;
+  logic        err_d, err_q;
+
   // Feed these through.
   assign apb_o.paddr  = obi_i.addr;
   assign apb_o.pwrite = obi_i.we;
@@ -25,8 +28,11 @@ module obi_to_apb_intf #(
   assign apb_o.psel   = obi_i.req;
   assign apb_o.pstrb  = obi_i.be;
 
-  assign obi_i.err    = apb_o.pslverr;
-  assign obi_i.rdata  = apb_o.prdata;
+  // Add single latency cycle to read response
+  assign obi_i.err    = err_q;
+  assign obi_i.rdata  = rdata_q;
+  assign err_d    = apb_o.pslverr;
+  assign rdata_d  = apb_o.prdata;
 
   // Tie PPROT to {0: unprivileged, 1: non-secure, 0: data}
   assign apb_o.pprot   = 3'b010;
@@ -60,6 +66,16 @@ module obi_to_apb_intf #(
       state_q <= SETUP;
     end else begin
       state_q <= state_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rdata_q <= 32'h0;
+      err_q   <=  1'h0;
+    end else begin
+      rdata_q <= rdata_d;
+      err_q   <= err_d;
     end
   end
 
