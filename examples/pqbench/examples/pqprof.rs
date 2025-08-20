@@ -12,7 +12,7 @@
 #[cfg(not(any(feature = "use-hwq", feature = "use-imap", feature = "use-bheap")))]
 compile_error!("must select `use-hwq`, `use-imap`, or `use-bheap`");
 
-use core::arch::asm;
+use core::arch::{asm, global_asm};
 
 use bsp::{
     clic::{Clic, InterruptNumber},
@@ -31,7 +31,9 @@ use bsp::{
 };
 #[cfg(any(feature = "use-bheap", feature = "use-imap"))]
 use pqbench::Dispatch;
-use pqbench::{print_example_name, setup_irq, tear_irq, PQueue, UART_BAUD};
+use pqbench::{
+    disable_pcs, enable_pcs, print_example_name, setup_irq, tear_irq, PQueue, UART_BAUD,
+};
 
 const PERIPH_CLK_DIV: u64 = 1;
 
@@ -53,7 +55,7 @@ type TqT = pqbench::BHeap<Q_LEN>;
 type TqT = pqbench::IMap<Q_LEN>;
 
 static mut SHARED_TQ: Option<TqT> = None;
-static mut DISPATCHED: bool = false;
+static mut DISPATCHED: usize = 0;
 
 fn prof<F, O>(op_ident: &str, f: F) -> O
 where
@@ -88,6 +90,7 @@ fn main() -> ! {
     //setup_irq(Interrupt::TqNotFull, 1);
     setup_irq(Interrupt::MachineTimer, u8::MAX);
     setup_irq(Interrupt::TqId0, 2);
+    enable_pcs(Interrupt::TqId0);
     sprintln!(" done");
 
     // mtimer is required for dispatch test
@@ -175,14 +178,14 @@ fn main() -> ! {
     for n in 0..INS_CNT {
         let mut s = heapless::String::<256>::new();
         unsafe { bsp::write!(s, "dsp w/ {} prior elems", n).unwrap_unchecked() };
-        unsafe { DISPATCHED = false };
+        unsafe { DISPATCHED = 0 };
         // Enqueue an extra event to cause load for dispatcher
         if n > 0 {
             timer_q.enqueue_abs(bsp::timer_queue::Entry::new((0b1 << 24) - 1, 0));
         }
         prof(&s, || {
             timer_q.enqueue_rel(bsp::timer_queue::Entry::new(0, 0));
-            while !unsafe { DISPATCHED } {
+            while !unsafe { DISPATCHED != 0 } {
                 nop();
             }
         });
@@ -192,6 +195,7 @@ fn main() -> ! {
     tear_irq(Interrupt::TqNotFull);
     tear_irq(Interrupt::TqId0);
     tear_irq(Interrupt::MachineTimer);
+    disable_pcs(Interrupt::TqId0);
 
     bsp::tb::signal_pass(Some(&mut serial));
     loop {
@@ -229,11 +233,22 @@ fn TqNotFull() {
     sprintln!("Refilled {} elements", refill_count);
 }
 
-#[interrupt]
-fn TqId0() {
-    //sprintln!("IRQ:TqId0");
-    unsafe { DISPATCHED = true };
-}
+// PCS interrupt in assembly (TqId0)
+global_asm!(
+    r#"
+.section .trap, "ax"
+.align 4
+.global _start_TqId0_trap
+_start_TqId0_trap:
+    // Increment DISPATCHED
+    lla     a0, {DISPATCHED}
+    lw      a1, 0(a0)
+    addi    a1, a1, 1
+    sw      a1, 0(a0)
+
+    mret
+"#, DISPATCHED = sym DISPATCHED
+);
 
 // MTimer acts as dispatcher for the most urgent entry in the software queue
 #[cfg(not(feature = "use-hwq"))]
