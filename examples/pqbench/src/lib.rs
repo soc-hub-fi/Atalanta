@@ -17,7 +17,9 @@ use core::ops;
 
 use bsp::{
     clic::{Clic, Polarity, Trig},
-    Interrupt,
+    mask_u32,
+    mmap::CLIC_BASE_ADDR,
+    unmask_u32, Interrupt,
 };
 
 #[cfg(feature = "use-bheap")]
@@ -50,6 +52,22 @@ pub fn tear_irq(irq: Interrupt) {
     Clic::attr(irq).set_shv(false);
     Clic::attr(irq).set_trig(Trig::Level);
     Clic::attr(irq).set_polarity(Polarity::Pos);
+}
+
+pub fn enable_pcs(irq: Interrupt) {
+    const PCS_BIT_IDX: u32 = 12;
+    mask_u32(
+        CLIC_BASE_ADDR + 0x1000 + 0x04 * irq as usize,
+        0b1 << PCS_BIT_IDX,
+    );
+}
+
+pub fn disable_pcs(irq: Interrupt) {
+    const PCS_BIT_IDX: u32 = 12;
+    unmask_u32(
+        CLIC_BASE_ADDR + 0x1000 + 0x04 * irq as usize,
+        0b1 << PCS_BIT_IDX,
+    );
 }
 
 /// Print the name of the current file, i.e., test name.
