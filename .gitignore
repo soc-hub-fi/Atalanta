@@ -10,7 +10,8 @@ stims/
 **/*.swp
 
 # Logs from benchmarks (maintainer: heksa)
-logs/
+logs/*.log
+!logs/*-frozen.log
 
 # Rust build artifacts
 **/target/
