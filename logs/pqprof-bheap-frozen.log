@@ -108,70 +108,70 @@ TOP.rt_top_unpacked.i_rt_top.i_core.i_cpu.u_ibex_tracer.unnamedblk2.unnamedblk3:
 [JTAG] init ok      	-	 time 824
 [JTAG] Attempting to halt hart 0
 [JTAG] Halted hart 0
-[ELF] INFO: File ./tmp_elf was memory mapped to 0x734e01067000
+[ELF] INFO: File ./tmp_elf was memory mapped to 0x73d43341f000
 [ELF] INFO: Entrypoint at 0x1100
 [ELF] WARNING: The section starting @ 0x7e84 contains 0x717c zero bytes which will NOT be preloaded!
 [ELF] INFO: Found symbol table at offset 0x82d0
-[ELF] INFO: Found string table at offset 0x9ab0
+[ELF] INFO: Found string table at offset 0x9ad0
 [JTAG] Resumed hart 0 from 0x1100
 [JTAG] Waiting for end of computation
 [examples/pqprof.rs]
 Setup interrupts... done
 Start mtimer
 Feature: use-bheap
-ins 0 took 163 cc (48014 - 47851)
-ins 1 took 204 cc (49870 - 49666)
-ins 2 took 226 cc (51748 - 51522)
-ins 3 took 226 cc (53626 - 53400)
-ins 4 took 226 cc (55504 - 55278)
-ins 5 took 226 cc (57382 - 57156)
-ins 6 took 226 cc (59260 - 59034)
-ins 7 took 226 cc (61138 - 60912)
-ins 8 took 226 cc (63016 - 62790)
-ins 9 took 226 cc (64894 - 64668)
-ins 10 took 226 cc (66814 - 66588)
-ins 11 took 226 cc (68752 - 68526)
-drp 0 took 591 cc (71555 - 70964)
-drp 1 took 591 cc (73797 - 73206)
-drp 2 took 23764 cc (99212 - 75448)
-drp 3 took 591 cc (101612 - 101021)
-drp 4 took 23632 cc (127053 - 103421)
-drp 5 took 23566 cc (152586 - 129020)
-drp 6 took 23500 cc (178053 - 154553)
-drp 7 took 475 cc (180495 - 180020)
-drp 8 took 23368 cc (205672 - 182304)
-drp 9 took 23302 cc (230941 - 207639)
-drp 10 took 23250 cc (256201 - 232951)
-drp 11 took 91 cc (258320 - 258229)
+ins 0 took 163 cc (48045 - 47882)
+ins 1 took 204 cc (49902 - 49698)
+ins 2 took 226 cc (51781 - 51555)
+ins 3 took 226 cc (53660 - 53434)
+ins 4 took 226 cc (55539 - 55313)
+ins 5 took 226 cc (57418 - 57192)
+ins 6 took 226 cc (59297 - 59071)
+ins 7 took 226 cc (61176 - 60950)
+ins 8 took 226 cc (63055 - 62829)
+ins 9 took 226 cc (64934 - 64708)
+ins 10 took 226 cc (66855 - 66629)
+ins 11 took 226 cc (68794 - 68568)
+drp 0 took 591 cc (71598 - 71007)
+drp 1 took 591 cc (73841 - 73250)
+drp 2 took 23765 cc (99258 - 75493)
+drp 3 took 591 cc (101659 - 101068)
+drp 4 took 23633 cc (127102 - 103469)
+drp 5 took 23567 cc (152637 - 129070)
+drp 6 took 23501 cc (178106 - 154605)
+drp 7 took 475 cc (180549 - 180074)
+drp 8 took 23369 cc (205728 - 182359)
+drp 9 took 23303 cc (230999 - 207696)
+drp 10 took 23251 cc (256261 - 233010)
+drp 11 took 91 cc (258381 - 258290)
 interrupt::enable
-dsp w/ 0 prior elems took 458 cc (260994 - 260536)
-dsp w/ 1 prior elems took 652 cc (263958 - 263306)
-dsp w/ 2 prior elems took 757 cc (267042 - 266285)
-dsp w/ 3 prior elems took 794 cc (270163 - 269369)
-dsp w/ 4 prior elems took 794 cc (273284 - 272490)
-dsp w/ 5 prior elems took 794 cc (276405 - 275611)
-dsp w/ 6 prior elems took 874 cc (279606 - 278732)
-dsp w/ 7 prior elems took 911 cc (282844 - 281933)
-dsp w/ 8 prior elems took 911 cc (286082 - 285171)
-dsp w/ 9 prior elems took 911 cc (289320 - 288409)
-dsp w/ 10 prior elems took 911 cc (292606 - 291695)
-dsp w/ 11 prior elems took 911 cc (295910 - 294999)
+dsp w/ 0 prior elems took 432 cc (261030 - 260598)
+dsp w/ 1 prior elems took 626 cc (263969 - 263343)
+dsp w/ 2 prior elems took 731 cc (267028 - 266297)
+dsp w/ 3 prior elems took 768 cc (270124 - 269356)
+dsp w/ 4 prior elems took 768 cc (273220 - 272452)
+dsp w/ 5 prior elems took 768 cc (276316 - 275548)
+dsp w/ 6 prior elems took 848 cc (279492 - 278644)
+dsp w/ 7 prior elems took 885 cc (282705 - 281820)
+dsp w/ 8 prior elems took 885 cc (285918 - 285033)
+dsp w/ 9 prior elems took 885 cc (289131 - 288246)
+dsp w/ 10 prior elems took 885 cc (292392 - 291507)
+dsp w/ 11 prior elems took 885 cc (295671 - 294786)
 [PASSED]
 [TB] Program returned EXIT_SUCCESS
 make[1]: Leaving directory '/home/heksa/code/git/Atalanta/verilator'
--rwxrwxr-x 2 heksa heksa 44K elo    20 11:47 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof
+-rwxrwxr-x 2 heksa heksa 44K elo    20 13:46 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof
 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof  :
 section              size     addr
 .text.dummy             0     4096
-.text               14344     4096
+.text               14426     4096
 .rodata              1388    24576
 .data                6424   131072
-.bss                    4    32388
-.heap                   0    32392
-.stack              29048    32392
-.eh_frame             420    18440
+.bss                    8    32388
+.heap                   0    32396
+.stack              29044    32396
+.eh_frame             420    18524
 .comment               52        0
 .riscv.attributes    2016        0
-Total               53696
+Total               53778
 
 

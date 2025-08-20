@@ -108,70 +108,70 @@ TOP.rt_top_unpacked.i_rt_top.i_core.i_cpu.u_ibex_tracer.unnamedblk2.unnamedblk3:
 [JTAG] init ok      	-	 time 824
 [JTAG] Attempting to halt hart 0
 [JTAG] Halted hart 0
-[ELF] INFO: File ./tmp_elf was memory mapped to 0x7b9eb1b03000
+[ELF] INFO: File ./tmp_elf was memory mapped to 0x75420da4a000
 [ELF] INFO: Entrypoint at 0x1100
 [ELF] WARNING: The section starting @ 0x6000 contains 0x8a4c zero bytes which will NOT be preloaded!
 [ELF] INFO: Found symbol table at offset 0x4f8c
-[ELF] INFO: Found string table at offset 0x676c
+[ELF] INFO: Found string table at offset 0x678c
 [JTAG] Resumed hart 0 from 0x1100
 [JTAG] Waiting for end of computation
 [examples/pqprof.rs]
 Setup interrupts... done
 Start mtimer
 Feature: use-hwq
-ins 0 took 44 cc (3556 - 3512)
-ins 1 took 44 cc (4994 - 4950)
-ins 2 took 44 cc (6432 - 6388)
-ins 3 took 44 cc (7870 - 7826)
-ins 4 took 44 cc (9308 - 9264)
-ins 5 took 44 cc (10746 - 10702)
-ins 6 took 44 cc (12343 - 12299)
-ins 7 took 44 cc (13940 - 13896)
-ins 8 took 44 cc (15537 - 15493)
-ins 9 took 44 cc (17134 - 17090)
-ins 10 took 44 cc (18772 - 18728)
-ins 11 took 44 cc (20428 - 20384)
-drp 0 took 33 cc (22550 - 22517)
-drp 1 took 33 cc (24133 - 24100)
-drp 2 took 33 cc (25716 - 25683)
-drp 3 took 33 cc (27299 - 27266)
-drp 4 took 33 cc (28882 - 28849)
-drp 5 took 33 cc (30465 - 30432)
-drp 6 took 33 cc (32048 - 32015)
-drp 7 took 33 cc (33631 - 33598)
-drp 8 took 33 cc (35214 - 35181)
-drp 9 took 33 cc (36797 - 36764)
-drp 10 took 33 cc (38420 - 38387)
-drp 11 took 33 cc (40061 - 40028)
+ins 0 took 44 cc (3586 - 3542)
+ins 1 took 44 cc (5025 - 4981)
+ins 2 took 44 cc (6464 - 6420)
+ins 3 took 44 cc (7903 - 7859)
+ins 4 took 44 cc (9342 - 9298)
+ins 5 took 44 cc (10781 - 10737)
+ins 6 took 44 cc (12379 - 12335)
+ins 7 took 44 cc (13977 - 13933)
+ins 8 took 44 cc (15575 - 15531)
+ins 9 took 44 cc (17173 - 17129)
+ins 10 took 44 cc (18812 - 18768)
+ins 11 took 44 cc (20469 - 20425)
+drp 0 took 33 cc (22592 - 22559)
+drp 1 took 33 cc (24176 - 24143)
+drp 2 took 33 cc (25760 - 25727)
+drp 3 took 33 cc (27344 - 27311)
+drp 4 took 33 cc (28928 - 28895)
+drp 5 took 33 cc (30512 - 30479)
+drp 6 took 33 cc (32096 - 32063)
+drp 7 took 33 cc (33680 - 33647)
+drp 8 took 33 cc (35264 - 35231)
+drp 9 took 33 cc (36848 - 36815)
+drp 10 took 33 cc (38472 - 38439)
+drp 11 took 33 cc (40114 - 40081)
 interrupt::enable
-dsp w/ 0 prior elems took 86 cc (42170 - 42084)
-dsp w/ 1 prior elems took 86 cc (44193 - 44107)
-dsp w/ 2 prior elems took 86 cc (46216 - 46130)
-dsp w/ 3 prior elems took 86 cc (48239 - 48153)
-dsp w/ 4 prior elems took 86 cc (50262 - 50176)
-dsp w/ 5 prior elems took 86 cc (52285 - 52199)
-dsp w/ 6 prior elems took 86 cc (54308 - 54222)
-dsp w/ 7 prior elems took 86 cc (56331 - 56245)
-dsp w/ 8 prior elems took 86 cc (58354 - 58268)
-dsp w/ 9 prior elems took 86 cc (60377 - 60291)
-dsp w/ 10 prior elems took 86 cc (62449 - 62363)
-dsp w/ 11 prior elems took 86 cc (64539 - 64453)
+dsp w/ 0 prior elems took 61 cc (42199 - 42138)
+dsp w/ 1 prior elems took 61 cc (44198 - 44137)
+dsp w/ 2 prior elems took 61 cc (46197 - 46136)
+dsp w/ 3 prior elems took 61 cc (48196 - 48135)
+dsp w/ 4 prior elems took 61 cc (50195 - 50134)
+dsp w/ 5 prior elems took 61 cc (52194 - 52133)
+dsp w/ 6 prior elems took 61 cc (54193 - 54132)
+dsp w/ 7 prior elems took 61 cc (56192 - 56131)
+dsp w/ 8 prior elems took 61 cc (58191 - 58130)
+dsp w/ 9 prior elems took 61 cc (60190 - 60129)
+dsp w/ 10 prior elems took 61 cc (62238 - 62177)
+dsp w/ 11 prior elems took 61 cc (64304 - 64243)
 [PASSED]
 [TB] Program returned EXIT_SUCCESS
 make[1]: Leaving directory '/home/heksa/code/git/Atalanta/verilator'
--rwxrwxr-x 2 heksa heksa 31K elo    20 12:04 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof
+-rwxrwxr-x 2 heksa heksa 31K elo    20 13:29 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof
 examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof  :
 section              size     addr
 .text.dummy             0     4096
-.text               11316     4096
+.text               11398     4096
 .rodata              1460    24576
 .data                   0   131072
-.bss                    4    26036
-.heap                   0    26040
-.stack              35400    26040
-.eh_frame             452    15412
+.bss                    8    26036
+.heap                   0    26044
+.stack              35396    26044
+.eh_frame             452    15496
 .comment               52        0
 .riscv.attributes    2016        0
-Total               50700
+Total               50782
 
 
