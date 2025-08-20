@@ -4,14 +4,14 @@
 set -e
 
 # -Fuse-bheap
-cp logs/bheap.log logs/bheap-frozen.log
+cp logs/pqprof-bheap.log logs/pqprof-bheap-frozen.log
 
 # -Fuse-imap
-cp logs/imap.log logs/imap-frozen.log
+cp logs/pqprof-imap.log logs/pqprof-imap-frozen.log
 
 # -Fuse-hwq
-cp logs/hwq.log logs/hwq-frozen.log
+cp logs/pqprof-hwq.log logs/pqprof-hwq-frozen.log
 
 # -Fuse-hwq -Fuse-virtq
-cp logs/virtq.log logs/virtq-frozen.log
+cp logs/pqprof-virtq.log logs/pqprof-virtq-frozen.log
 

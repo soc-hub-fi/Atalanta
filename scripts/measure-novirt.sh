@@ -14,17 +14,20 @@ make verilate
 mkdir -p logs
 
 # -Fuse-bheap
-make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqprof TARGET="riscv32imc-unknown-none-elf" CARGO_FLAGS="-Fuse-bheap" | tee logs/bheap.log
-ls -lah examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a logs/bheap.log
-size -A -d examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a logs/bheap.log
+LOG=logs/pqprof-bheap.log
+make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqprof TARGET="riscv32imc-unknown-none-elf" CARGO_FLAGS="-Fuse-bheap" | tee $LOG
+ls -lah examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a $LOG
+size -A -d examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a $LOG
 
 # -Fuse-imap
-make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqprof TARGET="riscv32imc-unknown-none-elf" CARGO_FLAGS="-Fuse-imap" | tee logs/imap.log
-ls -lah examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a logs/imap.log
-size -A -d examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a logs/imap.log
+LOG=logs/pqprof-imap.log
+make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqprof TARGET="riscv32imc-unknown-none-elf" CARGO_FLAGS="-Fuse-imap" | tee $LOG
+ls -lah examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a $LOG
+size -A -d examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a $LOG
 
 # -Fuse-hwq
-make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqprof TARGET="riscv32imc-unknown-none-elf" CARGO_FLAGS="-Fuse-hwq" | tee logs/hwq.log
-ls -lah examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a logs/hwq.log
-size -A -d examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a logs/hwq.log
+LOG=logs/pqprof-hwq.log
+make verilate simv RUST=1 TEST_DIR=examples/pqbench TEST=pqprof TARGET="riscv32imc-unknown-none-elf" CARGO_FLAGS="-Fuse-hwq" | tee $LOG
+ls -lah examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a $LOG
+size -A -d examples/pqbench/target/riscv32imc-unknown-none-elf/release/examples/pqprof | tee -a $LOG
 
