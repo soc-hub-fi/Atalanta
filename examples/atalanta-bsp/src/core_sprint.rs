@@ -4,11 +4,11 @@ use crate::uart::ApbUartHal;
 macro_rules! sprint {
     ($s:expr) => {{
         use core::fmt::Write;
-        write!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }> {}, $s).unwrap()
+        core::write!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }> {}, $s).unwrap()
     }};
     ($($tt:tt)*) => {{
         use core::fmt::Write;
-        write!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }>, $($tt)*).unwrap()
+        core::write!($crate::uart::ApbUartHal::<{ $crate::mmap::UART_BASE }>, $($tt)*).unwrap()
     }};
 }
 

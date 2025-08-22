@@ -127,7 +127,7 @@ TEST_DIR ?= $(CURDIR)/examples/smoke_tests
 
 .PHONY: $(TEST)
 $(TEST):
-	$(MAKE) -C $(TEST_DIR) $(TEST) CFLAGS=$(VERILATOR_CFLAGS)
+	$(MAKE) -C $(TEST_DIR) $(TEST) CFLAGS=$(VERILATOR_CFLAGS) TARGET=$(TARGET)
 
 .PHONY: verilate
 verilate: $(TEST)

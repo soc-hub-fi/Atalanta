@@ -44,6 +44,11 @@ impl MTimer {
         unmask_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS, 0b1);
     }
 
+    #[inline(always)]
+    pub fn is_enabled(&self) -> bool {
+        (read_u32(MTIMER_BASE + MTIME_CTRL_ADDR_OFS) & 0b1) != 0
+    }
+
     /// N.b., you may sometimes get a disjoint value if the function gets
     /// interrupted in the middle of the read transaction
     #[inline]

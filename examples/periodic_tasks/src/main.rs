@@ -161,7 +161,7 @@ fn main() -> ! {
             // clear mcycle, minstret at start of critical section
             asm!("csrw 0xB00, {0}", in(reg) 0x0);
             asm!("csrw 0xB02, {0}", in(reg) 0x0);
-            /* !!! mcycle and minstret are missing write-methdods in BSP !!! */
+            /* !!! mcycle and minstret are missing write-methods in BSP !!! */
         };
 
         // Test will end when MachineTimer fires

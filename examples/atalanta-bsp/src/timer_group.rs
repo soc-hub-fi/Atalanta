@@ -5,6 +5,8 @@ use crate::{
 };
 
 /// Relocatable driver for PULP APB Timer IP
+///
+/// Associates with interrupts `TimerNCmp` and `TimerNOvf`.
 pub struct Timer(*mut RegisterBlock);
 
 impl Timer {
@@ -101,8 +103,8 @@ pub type Duration = fugit::Duration<u32, 1, DENOM>;
 pub struct Periodic(Timer);
 
 impl Periodic {
-    /// Schedules an interrupt to be fired every `duration`. Call [Self::start]
-    /// to start the timer.
+    /// Schedules the TimerNCmp interrupt to fire every `duration`. Call
+    /// [Self::start] to start the timer.
     ///
     /// Also resets the internal counter.
     #[inline]
@@ -114,7 +116,7 @@ impl Periodic {
         self.0.set_cmp(duration.ticks() / pclk_div as u32);
     }
 
-    /// Schedules an interrupt to be fired every `duration`
+    /// Schedules the TimerNCmp interrupt to fire every `duration`
     ///
     /// Also sets the counter to a specific value, allowing to trigger the first
     /// interrupt ahead of schedule.

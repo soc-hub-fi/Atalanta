@@ -207,3 +207,21 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
         () => tb::blink_panic(),
     }
 }
+
+#[cfg(feature = "ufmt")]
+#[macro_export]
+macro_rules! write {
+    ($dst:expr, $($arg:tt)*) => {{
+        use $crate::ufmt;
+        ufmt::uwrite!($dst, $($arg)*)
+    }};
+}
+
+#[cfg(not(feature = "ufmt"))]
+#[macro_export]
+macro_rules! write {
+    ($dst:expr, $($arg:tt)*) => {{
+        use core::fmt::Write;
+        $dst.write_fmt(core::format_args!($($arg)*))
+    }};
+}
