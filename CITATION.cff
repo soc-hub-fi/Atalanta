@@ -38,12 +38,12 @@ preferred-citation:
 - family-names: "Hämäläinen"
   given-names: "Timo"
   orcid: "https://orcid.org/0000-0002-7867-0800"
-  doi: "10.1007/978-3-031-66146-4_21"
-  journal: "Architecture of Computing Systems"
-  month: 8
-  start: 316 # First page number
-  end: 330 # Last page number
-  title: "Atalanta: Open-Source RISC-V Microcontroller for Rust-Based Hard Real-Time Systems"
-  issue: 1
-  volume: 1
-  year: 2024
+doi: "10.1007/978-3-031-66146-4_21"
+journal: "Architecture of Computing Systems"
+month: 8
+start: 316 # First page number
+end: 330 # Last page number
+title: "Atalanta: Open-Source RISC-V Microcontroller for Rust-Based Hard Real-Time Systems"
+issue: 1
+volume: 1
+year: 2024
