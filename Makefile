@@ -21,7 +21,7 @@ SHELL=bash
 VERILATOR_CFLAGS="-O0 -ffunction-sections -fdata-sections -g -c -DVERILATOR"
 
 BENDER ?= bender
-TARGET ?= riscv32emc-unknown-none-elf
+TARGET ?= riscv32imc-unknown-none-elf
 
 ######################################################################
 # Repository targets
