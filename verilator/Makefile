@@ -132,7 +132,7 @@ $(TEST):
 	cp $(ELF_PATH) $(VERIL_BUILD_DIR)/tmp_elf
 	@echo "Created temporary copy \"tmp_elf\" of \"$(TEST).elf\" in $(VERIL_BUILD_DIR)/tmp_elf"
 	@echo "Creting hex stims from ELF"
-	riscv32-unknown-elf-elf2hex \
+	riscv64-unknown-elf-elf2hex \
 	--bit-width 32 \
 	--input $(VERIL_BUILD_DIR)/tmp_elf \
 	--output $(VERIL_BUILD_DIR)/tmp_full.hex
