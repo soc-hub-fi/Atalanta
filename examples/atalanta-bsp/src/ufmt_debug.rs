@@ -1,5 +1,6 @@
 use ufmt::uDebug;
 
+#[allow(dead_code)]
 struct Mstatus(riscv::register::mstatus::Mstatus);
 
 impl From<riscv::register::mstatus::Mstatus> for Mstatus {
