@@ -11,7 +11,7 @@ module rt_top #(
   parameter int unsigned AxiIdWidth   = 9,
   parameter int unsigned AxiUserWidth = 4,
   parameter int unsigned ClicIrqSrcs  = 64,
-  parameter bit          IbexRve      = 1,
+  parameter bit          IbexRve      = 0,
   // Derived parameters
   localparam int SrcW                 = $clog2(ClicIrqSrcs),
   localparam int unsigned StrbWidth   = (AxiDataWidth / 8),
