@@ -57,6 +57,9 @@ type TqT = pqbench::IMap<Q_LEN>;
 static mut SHARED_TQ: Option<TqT> = None;
 static mut DISPATCHED: usize = 0;
 
+/// Profile wrapper
+///
+/// Takes and prints a measurement of `f` before and after.
 fn prof<F, O>(op_ident: &str, f: F) -> O
 where
     F: FnOnce() -> O,
