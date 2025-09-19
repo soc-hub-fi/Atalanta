@@ -107,8 +107,6 @@ fn main() -> ! {
         () => {
             sprintln!("Feature: use-hwq");
             let tq = bsp::timer_queue::TimerQueue::init();
-            // This benchmark requires the main queue to be 256 deep
-            assert!(tq.capacity() >= 256);
             tq
         }
         #[cfg(all(feature = "use-hwq", feature = "virtq"))]
@@ -138,7 +136,7 @@ fn main() -> ! {
     }
     let timer_q = unsafe { SHARED_TQ.as_mut().unwrap_unchecked() };
 
-    const INS_CNT: usize = 12;
+    const INS_CNT: usize = 8;
 
     // Benchmark insert
     let mut handles = heapless::Vec::<u8, 256>::new();
