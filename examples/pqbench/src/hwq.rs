@@ -5,16 +5,16 @@ impl PQueue for bsp::timer_queue::TimerQueue {
 
     #[inline(always)]
     fn enqueue_rel(&mut self, entry: Self::Entry) -> u8 {
-        bsp::riscv::interrupt::free(|| (self as &mut Self).push_rel(entry))
+        bsp::riscv::interrupt::free(|| todo!())
     }
 
     #[inline(always)]
     fn enqueue_abs(&mut self, entry: Self::Entry) -> u8 {
-        bsp::riscv::interrupt::free(|| (self as &mut Self).push_abs(entry))
+        bsp::riscv::interrupt::free(|| todo!())
     }
 
     #[inline(always)]
     fn drop(&mut self, handle: u8) {
-        bsp::riscv::interrupt::free(|| (self as &mut Self).drop(handle));
+        bsp::riscv::interrupt::free(|| todo!());
     }
 }
