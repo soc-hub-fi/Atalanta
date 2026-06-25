@@ -9,6 +9,7 @@ mod interrupt;
 pub mod led;
 pub mod mmap;
 pub mod mtimer;
+mod peripherals;
 pub mod register;
 pub mod tb;
 pub mod timer_group;
@@ -28,6 +29,7 @@ compile_error!(
 pub use embedded_io;
 pub use fugit;
 pub use interrupt::{nested, Interrupt};
+pub use peripherals::Peripherals;
 pub use riscv;
 #[cfg(feature = "rt")]
 pub use riscv_rt::{self as rt, interrupt};
@@ -45,15 +47,6 @@ pub use atalanta_bsp_macros::{
 };
 
 use core::arch::asm;
-
-/// Placeholder for RTIC
-pub struct Peripherals {}
-
-impl Peripherals {
-    pub unsafe fn steal() -> Self {
-        Self {}
-    }
-}
 
 pub const CPU_FREQ: u32 = match () {
     #[cfg(feature = "rtl-tb")]
